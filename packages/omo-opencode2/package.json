@@ -1,0 +1,16 @@
+{
+  "name": "@oh-my-opencode/omo-opencode2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OMO adapter for OpenCode 2 (v2 plugin API). Spike: proves agent registration, tool hooks, session orchestration, synthetic injection, and MCP interop against @opencode-ai/plugin@next.",
+  "license": "MIT",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "bun test src",
+    "typecheck": "tsgo --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "0.0.0-next-17055"
+  }
+}
