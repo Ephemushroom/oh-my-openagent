@@ -32,7 +32,7 @@ Phase 1 agents-core extraction plan stays valid.
   transcript in `.omo/evidence/20260810-opencode2-spike/out/qa-console-resync.log` —
   the omo-opencode2 adapter is unaffected by the sync (it depends only on the pinned
   `@opencode-ai/plugin`, not on v1 adapter internals).
-- Full `bun test`: classified against the known pre-existing environmental failure set
+- Full `bun test` on the merged tree: 14011 pass / 39 fail / 2 errors (14114 tests). Every failure is classified: (a) the known pre-existing environmental set from the spike phase; (b) upstream-introduced suites (omo-native launcher/setup, memory-core + senpi memory timeouts, codex release-pin script tests) that reproduce identically on a PURE `upstream/dev` worktree in this environment (282 pass / 11 fail on the same file set) — i.e. upstream-on-Windows-host issues, not merge defects. No omo-opencode2 test is affected.
   (see `.omo/evidence/20260810-opencode2-spike/out/bun-test-classification.md`); any new
   failure class would be called out in the PR. Result recorded in the PR body.
 
