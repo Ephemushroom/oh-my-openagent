@@ -14,6 +14,7 @@
   "dependencies": {
     "@clack/prompts": "^1.4.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@oh-my-opencode/agents-core": "workspace:*",
     "@oh-my-opencode/agents-md-core": "workspace:*",
     "@oh-my-opencode/boulder-state": "workspace:*",
     "@oh-my-opencode/claude-code-compat-core": "workspace:*",

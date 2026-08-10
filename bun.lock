@@ -25,6 +25,7 @@
       },
       "devDependencies": {
         "@code-yeongyu/senpi": "2026.8.11",
+        "@oh-my-opencode/agents-core": "workspace:*",
         "@oh-my-opencode/agents-md-core": "workspace:*",
         "@oh-my-opencode/ast-grep-mcp": "workspace:*",
         "@oh-my-opencode/boulder-state": "workspace:*",
@@ -77,6 +78,15 @@
         "oh-my-opencode-windows-arm64": "5.0.0-beta.4",
         "oh-my-opencode-windows-x64": "5.0.0-beta.4",
         "oh-my-opencode-windows-x64-baseline": "5.0.0-beta.4",
+      },
+    },
+    "packages/agents-core": {
+      "name": "@oh-my-opencode/agents-core",
+      "version": "0.1.0",
+      "peerDependencies": {
+        "@oh-my-opencode/model-core": "workspace:*",
+        "@oh-my-opencode/prompts-core": "workspace:*",
+        "@oh-my-opencode/utils": "workspace:*",
       },
     },
     "packages/agents-md-core": {
@@ -216,6 +226,7 @@
       "dependencies": {
         "@clack/prompts": "^1.4.0",
         "@modelcontextprotocol/sdk": "^1.29.0",
+        "@oh-my-opencode/agents-core": "workspace:*",
         "@oh-my-opencode/agents-md-core": "workspace:*",
         "@oh-my-opencode/boulder-state": "workspace:*",
         "@oh-my-opencode/claude-code-compat-core": "workspace:*",
@@ -711,6 +722,8 @@
     "@msgpackr-extract/msgpackr-extract-win32-x64": ["@msgpackr-extract/msgpackr-extract-win32-x64@3.0.4", "", { "os": "win32", "cpu": "x64" }, "sha512-CmCXPQrkbwExx3j946/PtHWHbYJiCRBRDl4BlkRQcJB/YOwQxJRTpoo7aTsortjgoJ1x7opzTSxn7C+ASSLVjQ=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.6", "", { "dependencies": { "@tybys/wasm-util": "^0.10.3" }, "peerDependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1" } }, "sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg=="],
+
+    "@oh-my-opencode/agents-core": ["@oh-my-opencode/agents-core@workspace:packages/agents-core"],
 
     "@oh-my-opencode/agents-md-core": ["@oh-my-opencode/agents-md-core@workspace:packages/agents-md-core"],
 
