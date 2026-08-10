@@ -20,3 +20,33 @@ export {
   UnsupportedHephaestusModelError,
 } from "./hephaestus/prompt-router"
 export type { HephaestusContext, HephaestusPromptSource } from "./hephaestus/prompt-router"
+
+// Specialist agent prompts + metadata (oracle / librarian / explore / metis / momus / multimodal-looker)
+export { EXPLORE_PROMPT, EXPLORE_AGENT_DESCRIPTION, EXPLORE_PROMPT_METADATA } from "./specialists/explore-prompt"
+export {
+  MULTIMODAL_LOOKER_PROMPT,
+  MULTIMODAL_LOOKER_AGENT_DESCRIPTION,
+  MULTIMODAL_LOOKER_PROMPT_METADATA,
+} from "./specialists/multimodal-looker-prompt"
+export { buildLibrarianPrompt, LIBRARIAN_AGENT_DESCRIPTION, LIBRARIAN_PROMPT_METADATA } from "./specialists/librarian-prompt"
+export {
+  METIS_SYSTEM_PROMPT,
+  METIS_K2_7_SYSTEM_PROMPT,
+  METIS_AGENT_DESCRIPTION,
+  getMetisPrompt,
+  metisPromptMetadata,
+} from "./specialists/metis-prompt"
+export {
+  MOMUS_SYSTEM_PROMPT,
+  MOMUS_AGENT_DESCRIPTION,
+  getMomusPromptSelection,
+  momusPromptMetadata,
+} from "./specialists/momus-prompt"
+export type { MomusPromptSelection } from "./specialists/momus-prompt"
+export { MOMUS_GPT_5_6_PROMPT } from "./specialists/momus-gpt-5-6"
+export {
+  ORACLE_AGENT_DESCRIPTION,
+  getOraclePromptSelection,
+  ORACLE_PROMPT_METADATA,
+} from "./specialists/oracle-prompt"
+export type { OraclePromptSelection } from "./specialists/oracle-prompt"
