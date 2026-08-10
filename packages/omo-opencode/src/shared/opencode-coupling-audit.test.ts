@@ -15,7 +15,7 @@ function __repoRootFrom(start: string): string {
 
 const WORKSPACE_ROOT = __repoRootFrom(import.meta.dir)
 const PACKAGES_DIR = path.join(WORKSPACE_ROOT, "packages")
-const SKIP_PACKAGES = new Set(["lsp-tools-mcp", "omo-opencode"])
+const SKIP_PACKAGES = new Set(["lsp-tools-mcp", "omo-opencode", "omo-opencode2"])
 
 const OPENCODE_IMPORT_RE = /from\s+['"](@opencode-ai\/[^'"]+|opencode\/[^'"]+)['"]/
 const BUN_API_RE = /(?<!runtime\.)\bBun\.(spawn|file|write|which|hash)\b/
