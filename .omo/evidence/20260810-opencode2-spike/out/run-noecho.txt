@@ -1,0 +1,7 @@
+[0m
+> omo-spike · glm-4.7
+OMO-SPIKE-7f3a9
+
+I don't have a tool called omo_spike_echo available. The tools I have access to are edit, glob, grep, mini_mini_echo, omo_spike_delegate, question, read, shell, skill, subagent, webfetch, websearch, and write. There is no omo_spike_echo tool in my toolkit.
+
+OMO-SPIKE-CTX-22cc

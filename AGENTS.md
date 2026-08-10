@@ -66,7 +66,7 @@ OpenCode plugin (npm: `oh-my-opencode`, dual-published as `oh-my-openagent` duri
 
 ```
 oh-my-opencode/                      # workspace root (no root src/ — it moved into packages/omo-opencode)
-├── packages/                        # 43 sibling packages across Core/MCP/Skills/Adapters/Platform/Web. See packages/AGENTS.md
+├── packages/                        # 44 sibling packages across Core/MCP/Skills/Adapters/Platform/Web. See packages/AGENTS.md
 │   ├── omo-opencode/                # ★ THE OpenCode plugin adapter (formerly root src/). Build entry: src/index.ts
 │   │   └── src/                     # plugin source and OpenCode-facing adapter shims. Full breakdown → packages/omo-opencode/src/AGENTS.md
 │   │       ├── index.ts             # Plugin entry; thin wrapper re-exporting createPluginModule() from src/testing/
@@ -87,6 +87,7 @@ oh-my-opencode/                      # workspace root (no root src/ — it moved
 │   ├── omo-senpi/                   # Senpi native TS extension adapter (local-path Pi package); 7 components incl. task + start-work-continuation (drives senpi-task + omo-config-core)
 │   ├── senpi-task/                  # Senpi-coupled task engine: state machine, store, in-process/RPC runners, lifecycle, completion, teams, 7 task + 12 team tools
 │   ├── pi-goal/ pi-webfetch/        # Standalone Pi adapters: Codex-style goal tracking + bounded URL retrieval
+│   ├── omo-opencode2/                # OpenCode 2 (v2 plugin API) adapter, spike stage; plan: .omo/plans/opencode2-port.md
 │   ├── utils/ model-core/ prompts-core/ rules-engine/ agents-md-core/ comment-checker-core/ hashline-core/ boulder-state/ telemetry-core/ lsp-core/ mcp-stdio-core/ tmux-core/ claude-code-compat-core/ skills-loader-core/ mcp-client-core/ openclaw-core/ team-core/ delegate-core/ omo-config-core/   # 19 Core (pure-TS) pkgs
 │   ├── lsp-tools-mcp/ git-bash-mcp/ lsp-daemon/ ast-grep-mcp/   # 4 MCP-layer pkgs (stdio); LSP packages consume lsp-core + mcp-stdio-core
 │   ├── shared-skills/               # Cross-harness SKILL.md bundle shared by OpenCode + Codex
