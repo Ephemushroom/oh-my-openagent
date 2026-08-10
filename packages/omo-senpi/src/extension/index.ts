@@ -7,14 +7,17 @@ import { createAstGrepComponent } from "../components/ast-grep"
 import { createLspComponent } from "../components/lsp"
 import { createSenpiTelemetryComponent } from "../components/telemetry"
 import { createTaskComponent } from "../components/task"
+import { createMemoryComponent } from "../components/memory"
 import { createStartWorkContinuationComponent } from "../components/start-work-continuation"
 import { createUltraworkComponent } from "../components/ultrawork"
 import { createUlwLoopComponent } from "../components/ulw-loop"
 import { createTodoFanoutReminderComponent } from "../components/todo-fanout-reminder"
 import { createFallbackArchitectComponent } from "../components/fallback-architect"
+import { createNativeBadgeComponent } from "../components/native-badge"
 
 const components: OmoSenpiComponent[] = [
   createConfigStartupComponent(),
+  createNativeBadgeComponent(),
   createUltraworkComponent(),
   createStartWorkContinuationComponent(),
   createUlwLoopComponent(),
@@ -25,6 +28,7 @@ const components: OmoSenpiComponent[] = [
   createAstGrepComponent(),
   createLspComponent(),
   createTaskComponent(),
+  createMemoryComponent(),
   createConfigWatchComponent(),
 ]
 
