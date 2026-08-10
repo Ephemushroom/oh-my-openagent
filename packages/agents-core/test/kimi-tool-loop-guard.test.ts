@@ -1,9 +1,9 @@
 /// <reference types="bun-types" />
 
 import { describe, expect, test } from "bun:test"
-import { KIMI_TOOL_LOOP_GUARD } from "./kimi-tool-loop-guard"
-import { buildKimiK26SisyphusPrompt } from "./sisyphus/kimi-k2-6"
-import { buildKimiK26SisyphusJuniorPrompt } from "./sisyphus-junior/kimi-k2-6"
+import { KIMI_TOOL_LOOP_GUARD } from "../src/kimi-tool-loop-guard"
+import { buildKimiK26SisyphusPrompt } from "../src/sisyphus/kimi-k2-6"
+import { buildKimiK26SisyphusJuniorPrompt } from "../src/sisyphus-junior/kimi-k2-6"
 
 // Kimi prompt builders embed the shared KIMI_TOOL_LOOP_GUARD artifact verbatim
 // (sisyphus/kimi-k2-6.ts, sisyphus-junior/kimi-k2-6.ts). Assert the real
