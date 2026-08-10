@@ -1,0 +1,58 @@
+sandbox: /tmp/tmp.7ZaKmeULn8
+## opencode2 opencode2 v0.0.0-next-17055  model=zhipuai/glm-4.7
+## step 1: run echo (default agent + custom tool + execute.before/after + context system push)
+== run-echo (exit 0) ==
+[0m
+> omo-spike 路 glm-4.7
+OMO-SPIKE-7f3a9
+[0m鈿?[0momo_spike_echo {"text":"hello"} 
+> omo-spike 路 glm-4.7
+OMO-SPIKE-7f3a9
+
+The tool returned: "echo:BEFORE(hello):AFTER"
+
+OMO-SPIKE-CTX-22cc
+PASS  agent.registered.and.default  (run header shows omo-spike as default agent)
+PASS  agent.system.active  (RUN_MARKER in output)
+PASS  tool.before.mutated  (tool received BEFORE-mutated input (trace))
+PASS  tool.after.mutated  (after hook mutated result (trace))
+PASS  tool.after.visible  (mutated tool result in exported session)
+PASS  context.system.pushed  (CONTEXT_MARKER followed in at least one run (trace shows context hook fired on every dispatch))
+## step 2: run redact (context messages mutation)
+== run-redact (exit 0) ==
+PASS  context.messages.redacted.trace  (redaction recorded in trace)
+PASS  context.messages.redacted.reply  (assistant reacted to redacted content)
+## step 3: run no-echo (context tools removal)
+== run-noecho (exit 0) ==
+PASS  context.tools.removed.trace  (removed entry in trace)
+PASS  context.tools.removed.effect  (echo tool never executed in the run)
+## step 4: run delegate (child session orchestration + event-stream output + synthetic parent wake)
+== run-delegate (exit 0) ==
+[0m
+> omo-spike 路 glm-4.7
+OMO-SPIKE-7f3a9
+[0m鈿?[0momo_spike_delegate {"prompt":"compute 2+2 and reply with just the number"} 
+> omo-spike 路 glm-4.7
+> omo-spike 路 glm-4.7
+OMO-SPIKE-7f3a9
+[0m鈿?[0momo_spike_delegate {"prompt":"compute 2+2 and reply with just the number"} 
+> omo-spike 路 glm-4.7
+> omo-spike 路 glm-4.7
+OMO-SPIKE-7f3a9The helper's answer is: 4
+
+OMO-SPIKE-CTX-22cc
+PASS  delegate.output.captured  (child output captured via event stream)
+parent session: ses_016b6970bffeABOJSc7jDK6Yes
+PASS  synthetic.admitted  (synthetic marker in exported parent session)
+PASS  synthetic.message.type  (synthetic message present in export)
+## step 5: MCP exposure (mini_echo visible to model dispatch)
+PASS  mcp.tool.exposed  (mini_echo in context tools trace)
+## step 6: isolation (no v2 writes into the real opencode stores)
+sandbox store:
+/tmp/tmp.7ZaKmeULn8/data/opencode/log/opencode.log
+/tmp/tmp.7ZaKmeULn8/data/opencode/opencode.db
+/tmp/tmp.7ZaKmeULn8/data/opencode/opencode.db-shm
+/tmp/tmp.7ZaKmeULn8/data/opencode/opencode.db-wal
+PASS  isolation.clean  (no new files in real stores (live v1 paths excluded))
+
+## summary: PASS=15 FAIL=0

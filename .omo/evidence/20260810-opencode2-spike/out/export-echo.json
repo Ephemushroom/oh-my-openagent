@@ -1,0 +1,143 @@
+{
+  "info": {
+    "id": "ses_016b85974ffebshld7qPBBwr3o",
+    "projectID": "global",
+    "cost": 0.00535604,
+    "tokens": {
+      "input": 7155,
+      "output": 65,
+      "reasoning": 111,
+      "cache": {
+        "read": 6144,
+        "write": 0
+      }
+    },
+    "time": {
+      "created": 1786325214876,
+      "updated": 1786325215991
+    },
+    "location": {
+      "directory": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.7ZaKmeULn8\\proj"
+    },
+    "subpath": "Users/Bryan/AppData/Local/Temp/tmp.7ZaKmeULn8/proj"
+  },
+  "messages": [
+    {
+      "id": "msg_fe947aaec001tbELz3haVB9xQK",
+      "time": {
+        "created": 1786325216125
+      },
+      "text": "\"Use the omo_spike_echo tool to echo the word hello, then quote exactly what the tool returned.\"",
+      "files": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_fe947ab0c001qMNWu2J3fm9pmq",
+      "time": {
+        "created": 1786325228689,
+        "completed": 1786325231105
+      },
+      "type": "assistant",
+      "agent": "omo-spike",
+      "model": {
+        "id": "glm-4.7",
+        "providerID": "zhipuai"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "\nThe user wants me to use the omo_spike_echo tool to echo the word \"hello\", and then quote exactly what the tool returns.\n\nI need to start my reply with OMO-SPIKE-7f3a9 and end it with OMO-SPIKE-CTX-22cc.\n\nLet me call the tool first.",
+          "state": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1786325228692,
+            "completed": 1786325230557
+          }
+        },
+        {
+          "type": "text",
+          "text": "OMO-SPIKE-7f3a9"
+        },
+        {
+          "type": "tool",
+          "id": "tool-39c4fd7f649a456f9539cc9409726d2d",
+          "name": "omo_spike_echo",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "text": "hello"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "echo:BEFORE(hello):AFTER"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1786325231079,
+            "ran": 1786325231089,
+            "completed": 1786325231100
+          }
+        }
+      ],
+      "finish": "tool-calls",
+      "cost": 0.004007,
+      "tokens": {
+        "input": 6330,
+        "output": 25,
+        "reasoning": 70,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_fe947e60f001eYeuSAemdgVac4",
+      "time": {
+        "created": 1786325232548,
+        "completed": 1786325234339
+      },
+      "type": "assistant",
+      "agent": "omo-spike",
+      "model": {
+        "id": "glm-4.7",
+        "providerID": "zhipuai"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "\nNow I need to quote exactly what the tool returned, which was \"echo:BEFORE(hello):AFTER\".\n\nLet me provide the complete response with the required tokens.",
+          "state": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1786325232553,
+            "completed": 1786325233597
+          }
+        },
+        {
+          "type": "text",
+          "text": "OMO-SPIKE-7f3a9\n\nThe tool returned: \"echo:BEFORE(hello):AFTER\"\n\nOMO-SPIKE-CTX-22cc"
+        }
+      ],
+      "finish": "stop",
+      "cost": 0.00101664,
+      "tokens": {
+        "input": 293,
+        "output": 39,
+        "reasoning": 36,
+        "cache": {
+          "read": 6144,
+          "write": 0
+        }
+      }
+    }
+  ]
+}

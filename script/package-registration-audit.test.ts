@@ -37,6 +37,7 @@ const adapterPackagePaths: readonly string[] = [
   "packages/omo-senpi",
   "packages/senpi-task",
   "packages/omo-opencode",
+  "packages/omo-opencode2",
   "packages/pi-goal",
   "packages/pi-webfetch",
 ] as const

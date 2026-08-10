@@ -1,0 +1,13 @@
+[0m
+> omo-spike · glm-4.7
+OMO-SPIKE-7f3a9
+[0m⚙ [0momo_spike_delegate {"prompt":"compute 2+2 and reply with just the number"} 
+> omo-spike · glm-4.7
+> omo-spike · glm-4.7
+OMO-SPIKE-7f3a9
+[0m⚙ [0momo_spike_delegate {"prompt":"compute 2+2 and reply with just the number"} 
+> omo-spike · glm-4.7
+> omo-spike · glm-4.7
+OMO-SPIKE-7f3a9The helper's answer is: 4
+
+OMO-SPIKE-CTX-22cc

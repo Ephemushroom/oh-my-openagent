@@ -1,0 +1,10 @@
+[0m
+> omo-spike · glm-4.7
+OMO-SPIKE-7f3a9
+[0m⚙ [0momo_spike_echo {"text":"hello"} 
+> omo-spike · glm-4.7
+OMO-SPIKE-7f3a9
+
+The tool returned: "echo:BEFORE(hello):AFTER"
+
+OMO-SPIKE-CTX-22cc
