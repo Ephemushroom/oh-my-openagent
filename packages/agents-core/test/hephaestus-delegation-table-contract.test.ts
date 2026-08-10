@@ -5,10 +5,10 @@ import type {
 	AvailableAgent,
 	AvailableCategory,
 	AvailableSkill,
-} from "../dynamic-agent-prompt-builder";
-import { buildGpt55SisyphusPrompt } from "../sisyphus/gpt-5-5";
-import { buildGpt55HephaestusPrompt } from "./gpt-5-5";
-import { buildGpt56HephaestusPrompt } from "./gpt-5-6";
+} from "../src/dynamic-agent-prompt-builder";
+import { buildGpt55SisyphusPrompt } from "../src/sisyphus/gpt-5-5";
+import { buildGpt55HephaestusPrompt } from "../src/hephaestus/gpt-5-5";
+import { buildGpt56HephaestusPrompt } from "../src/hephaestus/gpt-5-6";
 
 const AVAILABLE_AGENTS: AvailableAgent[] = [
 	{

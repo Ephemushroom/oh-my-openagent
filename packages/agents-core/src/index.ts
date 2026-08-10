@@ -12,3 +12,11 @@ export { buildFallbackSisyphusPrompt } from "./sisyphus-dynamic-prompt"
 export { applyGeminiFallbackOverrides } from "./sisyphus-gemini-fallback-overrides"
 export { KIMI_TOOL_LOOP_GUARD } from "./kimi-tool-loop-guard"
 export * from "./sisyphus-junior"
+export {
+  getHephaestusPrompt,
+  getHephaestusPromptSource,
+  buildDynamicHephaestusPrompt,
+  isHephaestusSupportedModel,
+  UnsupportedHephaestusModelError,
+} from "./hephaestus/prompt-router"
+export type { HephaestusContext, HephaestusPromptSource } from "./hephaestus/prompt-router"
