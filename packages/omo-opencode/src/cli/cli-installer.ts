@@ -26,6 +26,7 @@ import {
 import { getUnsupportedOpenCodeVersionMessage } from "./minimum-opencode-version"
 import { runCodexInstaller } from "./install-codex"
 import { runSenpiInstaller } from "./install-senpi"
+import { runOpenCode2Installer } from "./install-opencode2"
 import { starGitHubRepositories } from "./star-request"
 import { getNoModelProvidersWarning, hasAnyConfiguredProvider } from "./provider-availability"
 import { ensureTuiPluginEntry } from "./config-manager/add-tui-plugin-to-tui-config"
@@ -171,6 +172,22 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       printError(`Senpi install failed: ${message}`)
+      return 1
+    }
+    console.log()
+  }
+
+  if (config.hasOpenCode2) {
+    printInfo("Installing OpenCode2 MCP servers (codegraph / lsp)...")
+    try {
+      const openCode2Result = await runOpenCode2Installer()
+      printSuccess(
+        `OpenCode2 MCP config ${SYMBOLS.arrow} ${color.dim(openCode2Result.configPath)}` +
+          (openCode2Result.added.length > 0 ? ` added: ${openCode2Result.added.join(", ")}` : " (nothing to add)"),
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      printError(`OpenCode2 install failed: ${message}`)
       return 1
     }
     console.log()

@@ -26,6 +26,21 @@ function createArgs(overrides: Partial<InstallArgs> = {}): InstallArgs {
 }
 
 describe("argsToConfig", () => {
+  test("enables only OpenCode2 when platform is opencode2", () => {
+    // #given
+    const args = createArgs({ platform: "opencode2" })
+
+    // #when
+    const config = argsToConfig(args)
+
+    // #then
+    expect(config.platform).toBe("opencode2")
+    expect(config.hasOpenCode).toBe(false)
+    expect(config.hasCodex).toBe(false)
+    expect(config.hasSenpi).toBe(false)
+    expect(config.hasOpenCode2).toBe(true)
+  })
+
   test("enables only OpenCode when platform is opencode", () => {
     // #given
     const args = createArgs({ platform: "opencode" })
