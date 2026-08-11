@@ -35,6 +35,7 @@ export interface TaskToolInput {
   description?: string
   category?: string
   subagent_type?: string
+  model?: string
   load_skills?: string[]
   run_in_background?: boolean
   task_id?: string
@@ -62,6 +63,11 @@ const TASK_TOOL_INPUT: JsonSchemaLike = {
       type: "string",
       description:
         "Direct subagent name (e.g. 'oracle', 'explore', 'librarian'). Use ONLY one of category or subagent_type.",
+    },
+    model: {
+      type: "string",
+      description:
+        "IMPORTANT: the task tool DOES accept this model parameter ('<provider>/<model>', e.g. 'zhipuai/glm-4.7'). Always pass model together with subagent_type or category so the child session runs on that model. When omitted the agent's fallback chain is used.",
     },
     load_skills: {
       type: "array",
@@ -136,6 +142,7 @@ export function createTaskTool(options: CreateTaskToolOptions): {
       const description = readString(input, "description") ?? prompt.slice(0, 60)
       const category = readString(input, "category")
       const subagentType = readString(input, "subagent_type")
+      const modelOverride = readString(input, "model")
       const loadSkills = readStringArray(input, "load_skills") ?? []
       const runInBackground = readBoolean(input, "run_in_background") ?? false
       const taskId = readString(input, "task_id")
@@ -179,7 +186,7 @@ export function createTaskTool(options: CreateTaskToolOptions): {
           }
         }
         agent = subagentType
-        model = categoryModels.get(subagentType) ?? ""
+        model = modelOverride ?? categoryModels.get(subagentType) ?? ""
       } else if (category !== undefined) {
         const resolved = options.resolveCategory(category)
         if (!resolved) {
@@ -188,7 +195,7 @@ export function createTaskTool(options: CreateTaskToolOptions): {
           }
         }
         agent = resolved.agent
-        model = resolved.model
+        model = modelOverride ?? resolved.model
       } else {
         return {
           content:
