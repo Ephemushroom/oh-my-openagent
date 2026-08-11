@@ -29,7 +29,8 @@ import {
 import { atlasPromptVariants, loadPromptSync, resolveVariant } from "@oh-my-opencode/prompts-core"
 import { getPrometheusPrompt } from "./prometheus"
 
-import { resolveAgentModel, snapshotCatalog } from "./model-resolution"
+import { resolveAgentModel } from "./model-resolution"
+import type { CatalogSource } from "./model-resolution"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 
 const PRIMARY = "primary"
@@ -114,16 +115,17 @@ const PRIMARIES: PrimaryDefinition[] = [
 export async function registerPrimaries(
   ctx: Context,
   options: {
+    catalog: CatalogSource;
     systemDefaultModel?: string;
     defaultAgent?: string;
     trace?: (event: string, detail?: Record<string, unknown>) => void;
-  } = {},
-): Promise<string[]> {
-  const snapshot = await snapshotCatalog(ctx)
-  const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
-  const registered: string[] = []
+  },
+): Promise<Set<string>> {
+  const registered = new Set<string>()
 
   await ctx.agent.transform((draft) => {
+    const snapshot = options.catalog.current
+    const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
     for (const def of PRIMARIES) {
       const requirement = AGENT_MODEL_REQUIREMENTS[def.id]
       const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault)
@@ -163,7 +165,7 @@ export async function registerPrimaries(
           agent.request.body = { ...agent.request.body, ...body }
         }
       })
-      registered.push(def.id)
+      registered.add(def.id)
       options.trace?.("omo.agent.registered", {
         id: def.id,
         mode: PRIMARY,

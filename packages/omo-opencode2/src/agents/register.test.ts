@@ -5,7 +5,8 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { registerCategories } from "./register-categories"
 import { registerPrimaries } from "./register-primaries"
 import { registerSubagents } from "./register-subagents"
-import { resolveAgentModel } from "./model-resolution"
+import { resolveAgentModel, createCatalogSource } from "./model-resolution"
+import type { CatalogSource } from "./model-resolution"
 
 /**
  * Minimal structural stand-ins for the v2 catalog/agent drafts. The
@@ -55,21 +56,20 @@ function createMockContext(input: {
       ? { providerID: defaultParts[0], modelID: defaultParts.slice(1).join("/") }
       : undefined
 
-  const ctx = {
-    catalog: {
-      transform: async (cb: (draft: unknown) => void) => {
-        cb({
-          provider: { list: () => providerRecords, get: () => undefined, update: () => {}, remove: () => {} },
-          model: {
-            get: () => undefined,
-            update: () => {},
-            remove: () => {},
-            default: { get: () => defaultRef, set: () => {} },
-          },
-        })
-      },
-      reload: async () => {},
+  // Populate a live catalog source from the mock draft (the register functions
+  // resolve models against catalog.current inside the agent transform).
+  const catalog = createCatalogSource()
+  catalog.capture({
+    provider: { list: () => providerRecords, get: () => undefined, update: () => {}, remove: () => {} },
+    model: {
+      get: () => undefined,
+      update: () => {},
+      remove: () => {},
+      default: { get: () => defaultRef, set: () => {} },
     },
+  } as unknown as Parameters<CatalogSource["capture"]>[0])
+
+  const ctx = {
     agent: {
       transform: async (cb: (draft: unknown) => void) => {
         cb({
@@ -92,7 +92,7 @@ function createMockContext(input: {
     },
   } as unknown as Context
 
-  return { ctx, agents, getDefault: () => defaultAgent }
+  return { ctx, catalog, agents, getDefault: () => defaultAgent }
 }
 
 describe("resolveAgentModel", () => {
@@ -129,11 +129,11 @@ describe("resolveAgentModel", () => {
 
 describe("registerSubagents", () => {
   test("#given a catalog #when registering #then all seven subagents are upserted as subagents with a prompt", async () => {
-    const { ctx, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
+    const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    const registered = await registerSubagents(ctx)
+    const registered = await registerSubagents(ctx, { catalog })
 
-    expect(registered.sort()).toEqual(
+    expect([...registered].sort()).toEqual(
       ["oracle", "librarian", "explore", "multimodal-looker", "metis", "momus", "sisyphus-junior"].sort(),
     )
     for (const id of registered) {
@@ -145,9 +145,9 @@ describe("registerSubagents", () => {
   })
 
   test("#given a catalog #when registering oracle #then write/edit/task are denied", async () => {
-    const { ctx, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
+    const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    await registerSubagents(ctx)
+    await registerSubagents(ctx, { catalog })
 
     const oracle = agents.get("oracle")
     const effects = new Map(oracle?.permissions.map((rule) => [rule.action, rule.effect]))
@@ -157,9 +157,9 @@ describe("registerSubagents", () => {
   })
 
   test("#given an available chain model #when registering #then the agent model resolves from the catalog", async () => {
-    const { ctx, agents } = createMockContext({ availableModels: ["openai/gpt-5.6-sol"], defaultModel: "zhipuai/glm-4.7" })
+    const { ctx, catalog, agents } = createMockContext({ availableModels: ["openai/gpt-5.6-sol"], defaultModel: "zhipuai/glm-4.7" })
 
-    await registerSubagents(ctx)
+    await registerSubagents(ctx, { catalog })
 
     const oracle = agents.get("oracle")
     expect(oracle?.model?.providerID).toBe("openai")
@@ -169,14 +169,14 @@ describe("registerSubagents", () => {
 
 describe("registerPrimaries", () => {
   test("#given a catalog with a GPT model available #when registering #then all four primaries register and default becomes sisyphus", async () => {
-    const { ctx, agents, getDefault } = createMockContext({
+    const { ctx, catalog, agents, getDefault } = createMockContext({
       availableModels: ["openai/gpt-5.6-sol"],
       defaultModel: "zhipuai/glm-4.7",
     })
 
-    const registered = await registerPrimaries(ctx)
+    const registered = await registerPrimaries(ctx, { catalog })
 
-    expect(registered.sort()).toEqual(["atlas", "hephaestus", "prometheus", "sisyphus"].sort())
+    expect([...registered].sort()).toEqual(["atlas", "hephaestus", "prometheus", "sisyphus"].sort())
     for (const id of registered) {
       expect(agents.get(id)?.mode).toBe("primary")
       expect(agents.get(id)?.system?.length).toBeGreaterThan(0)
@@ -186,31 +186,31 @@ describe("registerPrimaries", () => {
   })
 
   test("#given a non-GPT system default on a cold catalog #when registering #then hephaestus is skipped but the other primaries register", async () => {
-    const { ctx, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
+    const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    const registered = await registerPrimaries(ctx)
+    const registered = await registerPrimaries(ctx, { catalog })
 
-    expect(registered.sort()).toEqual(["atlas", "prometheus", "sisyphus"].sort())
+    expect([...registered].sort()).toEqual(["atlas", "prometheus", "sisyphus"].sort())
     expect(agents.get("hephaestus")).toBeUndefined()
     expect(agents.get("sisyphus")?.system?.length).toBeGreaterThan(0)
   })
 
   test("#given a warm catalog without a required provider #when registering #then hephaestus is skipped via the requiresProvider gate", async () => {
-    const { ctx, agents } = createMockContext({
+    const { ctx, catalog, agents } = createMockContext({
       availableModels: ["zhipuai/glm-4.7"],
       defaultModel: "zhipuai/glm-4.7",
     })
 
-    const registered = await registerPrimaries(ctx)
+    const registered = await registerPrimaries(ctx, { catalog })
 
-    expect(registered).not.toContain("hephaestus")
+    expect(registered.has("hephaestus")).toBe(false)
     expect(agents.get("hephaestus")).toBeUndefined()
   })
 
   test("#given a catalog #when registering #then the built-in build agent is downgraded to a hidden subagent", async () => {
-    const { ctx, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
+    const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    await registerPrimaries(ctx)
+    await registerPrimaries(ctx, { catalog })
 
     expect(agents.get("build")?.mode).toBe("subagent")
     expect(agents.get("build")?.hidden).toBe(true)
@@ -219,11 +219,11 @@ describe("registerPrimaries", () => {
 
 describe("registerCategories", () => {
   test("#given a catalog #when registering #then all eight categories register as subagents with the executor prompt", async () => {
-    const { ctx, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
+    const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    const registered = await registerCategories(ctx)
+    const registered = await registerCategories(ctx, { catalog })
 
-    expect(registered.sort()).toEqual(
+    expect([...registered].sort()).toEqual(
       ["visual-engineering", "ultrabrain", "deep", "artistry", "quick", "unspecified-low", "unspecified-high", "writing"].sort(),
     )
     for (const name of registered) {

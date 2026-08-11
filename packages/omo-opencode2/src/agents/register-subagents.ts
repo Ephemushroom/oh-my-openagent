@@ -3,10 +3,13 @@ import { Agent, Model } from "@opencode-ai/plugin"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 
 import { SUBAGENT_DEFINITIONS } from "./agent-catalog"
-import { resolveAgentModel, snapshotCatalog } from "./model-resolution"
+import { resolveAgentModel } from "./model-resolution"
+import type { CatalogSource } from "./model-resolution"
 
-export interface RegisterAgentsOptions {
-  /** System default model applied when an agent's chain yields nothing. */
+export interface RegisterSubagentsOptions {
+  /** Live catalog source; models resolve against its freshest snapshot. */
+  catalog: CatalogSource;
+  /** System default model override (falls back to the catalog's default). */
   systemDefaultModel?: string;
   /** Optional per-agent trace hook (QA evidence; records resolved model/mode). */
   trace?: (event: string, detail?: Record<string, unknown>) => void;
@@ -15,23 +18,25 @@ export interface RegisterAgentsOptions {
 /**
  * Register the OMO subagent catalog with OpenCode 2.
  *
- * Captures the model catalog once (catalog transform) and upserts each agent in
- * a single agent.transform callback (update is an upsert in v2). Sisyphus,
- * Hephaestus, Prometheus, and Atlas are registered separately by callers that
- * can supply their richer runtime context.
+ * The v2 agent registry materializes lazily and the catalog populates
+ * asynchronously, so model resolution happens inside the agent.transform
+ * callback against the catalog source's freshest snapshot (not a setup-time
+ * capture). Sisyphus, Hephaestus, Prometheus, and Atlas are registered
+ * separately by callers that can supply their richer runtime context.
  *
- * Returns the list of agent ids actually registered (agents whose model
- * requirement could not be satisfied are skipped).
+ * Returns the live set of agent ids registered; it populates once the transform
+ * is applied (see ctx.agent.reload()).
  */
 export async function registerSubagents(
   ctx: Context,
-  options: RegisterAgentsOptions = {},
-): Promise<string[]> {
-  const snapshot = await snapshotCatalog(ctx)
-  const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
-  const registered: string[] = []
+  options: RegisterSubagentsOptions,
+): Promise<Set<string>> {
+  const registered = new Set<string>()
 
   await ctx.agent.transform((draft) => {
+    const snapshot = options.catalog.current
+    const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
+
     for (const def of SUBAGENT_DEFINITIONS) {
       const requirement = AGENT_MODEL_REQUIREMENTS[def.id]
       const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault)
@@ -69,7 +74,7 @@ export async function registerSubagents(
         }
       })
 
-      registered.push(def.id)
+      registered.add(def.id)
       options.trace?.("omo.agent.registered", {
         id: def.id,
         mode: def.mode,

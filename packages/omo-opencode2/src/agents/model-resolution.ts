@@ -1,44 +1,67 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { CatalogDraft } from "@opencode-ai/plugin/promise/catalog"
 import { resolveModelPipeline } from "@oh-my-opencode/model-core"
 import type { ModelRequirement } from "@oh-my-opencode/model-core"
 
-import type { ResolvedAgentDefinition } from "./agent-catalog"
-
 /**
- * A point-in-time view of the harness model catalog, captured inside a single
- * ctx.catalog.transform callback (synchronous draft access — no v1 config-phase
- * deadlock). Feeds model-core's pure resolution pipeline.
+ * A point-in-time view of the harness model catalog. Feeds model-core's pure
+ * resolution pipeline.
  */
 export interface CatalogSnapshot {
-  /** "<provider>/<model>" for every model known to the catalog. */
+  /** "<provider>/<model>" for every model the catalog lists. */
   availableModels: Set<string>;
-  /** Providers that have at least one model registered. */
+  /** Providers that have at least one model registered in the catalog. */
   connectedProviders: string[];
   /** The harness's configured default model ("<provider>/<model>"), if any. */
   systemDefaultModel?: string;
 }
 
-/**
- * Capture the catalog into a snapshot inside a catalog transform. Also reads
- * the harness's configured default model so agents whose dedicated fallback
- * chain has no available entry resolve onto the user's actual chosen model.
- */
-export async function snapshotCatalog(ctx: Context): Promise<CatalogSnapshot> {
-  const snapshot: CatalogSnapshot = { availableModels: new Set(), connectedProviders: [] }
-  await ctx.catalog.transform((draft) => {
-    for (const record of draft.provider.list()) {
-      const providerID = record.provider.id as unknown as string
-      snapshot.connectedProviders.push(providerID)
-      for (const modelID of record.models.keys()) {
-        snapshot.availableModels.add(`${providerID}/${modelID as unknown as string}`)
-      }
+function emptySnapshot(): CatalogSnapshot {
+  return { availableModels: new Set(), connectedProviders: [] }
+}
+
+/** Read a catalog transform draft into a snapshot (pure). */
+export function captureCatalogDraft(draft: CatalogDraft): CatalogSnapshot {
+  const snapshot = emptySnapshot()
+  for (const record of draft.provider.list()) {
+    const providerID = record.provider.id as unknown as string
+    snapshot.connectedProviders.push(providerID)
+    for (const modelID of record.models.keys()) {
+      snapshot.availableModels.add(`${providerID}/${modelID as unknown as string}`)
     }
-    const def = draft.model.default.get()
-    if (def) {
-      snapshot.systemDefaultModel = `${def.providerID as unknown as string}/${def.modelID as unknown as string}`
-    }
-  })
+  }
+  const def = draft.model.default.get()
+  if (def) {
+    snapshot.systemDefaultModel = `${def.providerID as unknown as string}/${def.modelID as unknown as string}`
+  }
   return snapshot
+}
+
+/**
+ * Live handle to the harness catalog. The v2 catalog is populated
+ * asynchronously (it is EMPTY at plugin setup; `catalog.updated` fires once
+ * providers/models have loaded) and agent registration runs lazily on registry
+ * materialization — so the catalog must be captured in a catalog.transform
+ * callback that re-fires on updates, and agent models resolved inside the
+ * agent.transform callback against the freshest snapshot held here.
+ */
+export interface CatalogSource {
+  /** The most recently captured catalog. Empty until the catalog populates. */
+  readonly current: CatalogSnapshot;
+  /** Capture from a catalog transform draft; called once per update. */
+  capture(draft: CatalogDraft): void;
+}
+
+/** Create an empty catalog source, to be fed by a catalog.transform callback. */
+export function createCatalogSource(): CatalogSource {
+  let snapshot = emptySnapshot()
+  return {
+    get current() {
+      return snapshot
+    },
+    capture(draft) {
+      snapshot = captureCatalogDraft(draft)
+    },
+  }
 }
 
 export interface ResolvedModel {

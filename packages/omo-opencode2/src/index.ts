@@ -6,6 +6,7 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { registerCategories } from "./agents/register-categories"
 import { registerPrimaries } from "./agents/register-primaries"
 import { registerSubagents } from "./agents/register-subagents"
+import { createCatalogSource } from "./agents/model-resolution"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
 const CONTEXT_MARKER = "OMO-SPIKE-CTX-22cc"
@@ -43,14 +44,37 @@ export default Plugin.define({
     const trace = createTrace()
     const probe = createEventPump(ctx, trace)
 
+    // The v2 catalog is empty at plugin setup and populates asynchronously
+    // (catalog.updated). Capture each update into a live source so agent model
+    // resolution reads the populated catalog — a setup-time snapshot would be
+    // empty and force every agent onto its first fallback.
+    const catalog = createCatalogSource()
+    await ctx.catalog.transform((draft) => {
+      catalog.capture(draft)
+      const snap = catalog.current
+      trace("omo.catalog.snapshot", {
+        availableModels: snap.availableModels.size,
+        providers: snap.connectedProviders,
+        defaultModel: snap.systemDefaultModel,
+      })
+    })
+
     // Phase 1: register the real OMO agent catalog — 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
-    // delegation categories as subagents, models resolved from the live v2
-    // catalog through model-core. Default agent: sisyphus.
-    const subagents = await registerSubagents(ctx, { trace })
-    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus" })
-    const categories = await registerCategories(ctx, { trace })
-    trace("omo.registration.complete", { primaries, subagents, categories })
+    // delegation categories as subagents. Default agent: sisyphus.
+    const subagents = await registerSubagents(ctx, { trace, catalog })
+    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus", catalog })
+    const categories = await registerCategories(ctx, { trace, catalog })
+
+    // v2 applies agent.transform callbacks lazily (on first registry
+    // materialization); force them now so the summary reflects what was actually
+    // upserted rather than resolving to an empty list.
+    await ctx.agent.reload()
+    trace("omo.registration.complete", {
+      primaries: [...primaries],
+      subagents: [...subagents],
+      categories: [...categories],
+    })
 
     // Phase 0 mechanics probe (echo/context/delegate/synthetic verification
     // tools + agents). Gated off in production; QA enables it explicitly.

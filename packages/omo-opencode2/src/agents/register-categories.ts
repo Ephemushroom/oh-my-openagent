@@ -3,7 +3,8 @@ import { Agent, Model } from "@opencode-ai/plugin"
 import { buildSisyphusJuniorPrompt } from "@oh-my-opencode/agents-core"
 import { CATEGORY_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 
-import { resolveAgentModel, snapshotCatalog } from "./model-resolution"
+import { resolveAgentModel } from "./model-resolution"
+import type { CatalogSource } from "./model-resolution"
 
 /**
  * Category descriptions. These are the v2-facing one-liners for each delegation
@@ -32,15 +33,16 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
 export async function registerCategories(
   ctx: Context,
   options: {
+    catalog: CatalogSource;
     systemDefaultModel?: string;
     trace?: (event: string, detail?: Record<string, unknown>) => void;
-  } = {},
-): Promise<string[]> {
-  const snapshot = await snapshotCatalog(ctx)
-  const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
-  const registered: string[] = []
+  },
+): Promise<Set<string>> {
+  const registered = new Set<string>()
 
   await ctx.agent.transform((draft) => {
+    const snapshot = options.catalog.current
+    const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
     for (const [name, requirement] of Object.entries(CATEGORY_MODEL_REQUIREMENTS)) {
       const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault)
       if (!resolved) continue
@@ -59,7 +61,7 @@ export async function registerCategories(
           }
         }
       })
-      registered.push(name)
+      registered.add(name)
       options.trace?.("omo.category.registered", {
         id: name,
         mode: "subagent",
