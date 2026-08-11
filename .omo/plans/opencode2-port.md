@@ -346,9 +346,11 @@ execute(input, toolCtx):
 
 完成要点: agents-core 抽取(7 个 prompt 家族纯移动 + re-export,v1 agents 套件 371/0,全包 typecheck 绿); omo-opencode2 注册 4 primaries + 7 subagents + 8 categories,default=sisyphus,build 降级,QA 26/0。修复了 catalog setup 时为空 + 注册摘要为空两个时序 bug(见 P1-F1)。遗留: catalog 是全量 models.dev 目录不分认证状态,子 agent 可能解析到未认证模型(见 R14)。
 
-### Phase 2 — 编排
+### Phase 2 — 编排(✅ 已完成 2026-08-11,证据 `.omo/evidence/20260811-opencode2-phase2/`)
 
 task 工具(6.3 全链路)+ 后台引擎 + 并发上限 + 续聊 + background_output/cancel。验收: sync/background/continuation 三条路径真实跑通,事件证据齐全。
+
+完成要点: `orchestration/` 新增 task-registry / concurrency(默认 5 FIFO)/ task-engine(事件泵 → 任务记录 → 后台完成 synthetic 通知)/ child-session(create→prompt→聚合;失败沿 fallback 链重试一次;task_id 续聊复用同一子会话)/ task-tool / background-tools。task 工具带显式 `model` 覆盖(缓解 R14)。真实 opencode2 QA 11/0:sync 返回子输出、background 返回 task_id + 完成通知 + background_output 可取、continuation 同子会话二次执行。单测 20/0。
 
 ### Phase 3 — 守卫 hooks + hashline
 
