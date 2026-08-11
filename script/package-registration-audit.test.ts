@@ -11,6 +11,7 @@ const corePackagePaths: readonly string[] = [
   "packages/delegate-core",
   "packages/prompts-core",
   "packages/rules-engine",
+  "packages/agents-core",
   "packages/agents-md-core",
   "packages/lsp-core",
   "packages/mcp-stdio-core",

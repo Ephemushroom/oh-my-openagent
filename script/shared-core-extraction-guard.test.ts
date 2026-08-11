@@ -9,6 +9,7 @@ const corePackages = [
   "packages/delegate-core",
   "packages/prompts-core",
   "packages/rules-engine",
+  "packages/agents-core",
   "packages/agents-md-core",
   "packages/lsp-core",
   "packages/mcp-stdio-core",
@@ -39,8 +40,16 @@ const forbiddenSourcePatterns: readonly ForbiddenSourcePattern[] = [
   { pattern: /@mariozechner\/pi-/ },
   { pattern: /plugin\/components/ },
   {
-    pattern: /\b(?:SessionStart|UserPromptSubmit|PreToolUse|PostToolUse|PostCompact|Stop|SubagentStop)\b/,
+    pattern: /\b(?:SessionStart|UserPromptSubmit|PreToolUse|PostToolUse|PostCompact|SubagentStop)\b/,
     allowPackagePaths: ["packages/claude-code-compat-core"],
+  },
+  // `Stop` alone is also a Codex hook name, but it is a common English word in
+  // agent prompt prose (e.g. "STOP after the first successful verification"),
+  // so packages that legitimately embed prompt text are exempt from this one
+  // token only. The six unambiguous Codex identifiers above stay forbidden.
+  {
+    pattern: /\bStop\b/,
+    allowPackagePaths: ["packages/claude-code-compat-core", "packages/agents-core"],
   },
   { pattern: /\bsession\.prompt(?:Async)?\s*\(/ },
 ] as const
