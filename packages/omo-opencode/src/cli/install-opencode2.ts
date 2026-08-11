@@ -1,5 +1,5 @@
 import { createRequire } from "node:module"
-import { resolveCodegraphCommand, buildCodegraphEnv } from "@oh-my-opencode/utils"
+import { resolveCodegraphCommand, buildCodegraphEnv, bunWhich } from "@oh-my-opencode/utils"
 
 import type { OpenCode2McpEntry } from "./config-manager/update-opencode2-mcp-config"
 import { updateOpenCode2McpConfig } from "./config-manager/update-opencode2-mcp-config"
@@ -131,8 +131,7 @@ export function resolveLspDaemonCli(): string {
   }
 }
 
-/** Resolves a runnable node executable (via bun's which). */
+/** Resolves a runnable node executable (via the node-safe bunWhich helper). */
 export async function resolveNodeRuntime(): Promise<string> {
-  const { which } = await import("bun")
-  return which("node") ?? ""
+  return bunWhich("node") ?? ""
 }
