@@ -325,6 +325,7 @@ execute(input, toolCtx):
 | R11 | Windows 上 npm 安装的 `opencode2` 启动器 exe 不可运行;需要后台服务的子命令(plugin list / debug agents / mcp list)在本机超时 | spike 证据 F1/F2 | 直接调用平台包内二进制;QA 统一走 `run --standalone`;`api --standalone` 的 location 状态为空,不能用作注册证明 |
 | R12 | `execute.after` 的 `result.content` 到达时是 `Content[]` 数组而非字符串 | spike 证据 F4 | 工具结果改写统一按数组形态处理(hashline read-enhancer 移植时注意) |
 | R13 | v2 文档与实现漂移(如文档 `tools.add(name, def)` vs 实际 `draft.add({name,...})`) | spike 证据 F6 | 签名一律以 `@opencode-ai/plugin` 发布的 .d.ts 为准,不照抄文档 |
+| R14 | v2 catalog 是全量 models.dev 目录(实测 6215 models / ~200 providers),不区分已认证可用 provider;model-core 据此把 agent 解析到链上首选但本机未认证的模型,子 agent 运行期 `Model unavailable`。v1 只解析 connected providers,无此问题 | Phase 1 证据 `20260811-opencode2-phase1`(trace `omo.catalog.snapshot` availableModels=6215;run-subagent `Model unavailable: openai/gpt-5.6-sol`) | 已发布的 `@opencode-ai/plugin@0.0.0-next-17055` Promise API 在 catalog/provider/client 上无 per-provider 认证信号(仅 `integration.connection.active`,按 integration id 而非 provider)。在 v2 暴露 connectivity API 前,auth-aware 过滤后置;完整配置的机器上解析正确。另一发现: catalog 在 setup 时为空、`catalog.updated` 后才填充 —— 解析必须在 `agent.transform` 回调内读最新 snapshot(已在 P1 修复) |
 
 ## 9. 分阶段实施计划
 
@@ -339,9 +340,11 @@ execute(input, toolCtx):
 5. `session.synthetic({delivery:"queue"})` 注入父会话被消费;
 6. 安装器手写一份 `opencode.json` 的 `mcp.servers`(codegraph stdio + `codemode:false`)→ 工具出现在模型可用工具里。
 
-### Phase 1 — agents-core 抽取 + 11 agents + categories
+### Phase 1 — agents-core 抽取 + 11 agents + categories(✅ 已完成 2026-08-11,证据 `.omo/evidence/20260811-opencode2-phase1/`)
 
 纯移动抽取(v1 测试守绿)→ v2 注册全部 agents/categories → model-core 接 catalog 快照。验收: 各 agent 在真实会话中以其模型/权限/prompt 运行。
+
+完成要点: agents-core 抽取(7 个 prompt 家族纯移动 + re-export,v1 agents 套件 371/0,全包 typecheck 绿); omo-opencode2 注册 4 primaries + 7 subagents + 8 categories,default=sisyphus,build 降级,QA 26/0。修复了 catalog setup 时为空 + 注册摘要为空两个时序 bug(见 P1-F1)。遗留: catalog 是全量 models.dev 目录不分认证状态,子 agent 可能解析到未认证模型(见 R14)。
 
 ### Phase 2 — 编排
 

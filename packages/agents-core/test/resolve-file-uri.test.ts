@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
 import { homedir, tmpdir } from "node:os"
 import { join } from "node:path"
-import { resolvePromptAppend } from "./resolve-file-uri"
+import { resolvePromptAppend } from "../src/builtin-agents/resolve-file-uri"
 
 describe("resolvePromptAppend", () => {
   const fixtureRoot = join(tmpdir(), `resolve-file-uri-${Date.now()}`)

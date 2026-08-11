@@ -1,0 +1,6 @@
+[0m
+> sisyphus · glm-4.7
+[0m$ [0mecho "ready"
+ready
+> sisyphus · glm-4.7
+ready

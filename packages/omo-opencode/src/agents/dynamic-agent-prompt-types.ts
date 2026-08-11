@@ -1,24 +1,2 @@
-import type { AgentPromptMetadata } from "./types"
-
-export interface AvailableAgent {
-  name: string
-  description: string
-  metadata: AgentPromptMetadata
-}
-
-export interface AvailableTool {
-  name: string
-  category: "lsp" | "search" | "session" | "command" | "other"
-}
-
-export interface AvailableSkill {
-  name: string
-  description: string
-  location: "user" | "project" | "plugin"
-}
-
-export interface AvailableCategory {
-  name: string
-  description: string
-  model?: string
-}
+// Re-export shim: moved to @oh-my-opencode/agents-core during the OpenCode2 port (Phase 1).
+export * from "@oh-my-opencode/agents-core/dynamic-agent-prompt-types"
