@@ -1,33 +1,12 @@
 import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { Agent, Model } from "@opencode-ai/plugin"
 import {
-  buildFallbackSisyphusPrompt,
-  buildClaudeFable5SisyphusPrompt,
-  buildClaudeOpus47SisyphusPrompt,
-  buildClaudeOpus48SisyphusPrompt,
-  buildClaudeOpus5SisyphusPrompt,
-  buildGlm52SisyphusPrompt,
-  buildGpt54SisyphusPrompt,
-  buildGpt55SisyphusPrompt,
-  buildKimiK26SisyphusPrompt,
-  buildKimiK27SisyphusPrompt,
-  buildKimiK3SisyphusPrompt,
   buildDynamicHephaestusPrompt,
   isHephaestusSupportedModel,
-  isClaudeFable5Model,
-  isClaudeOpus47Model,
-  isClaudeOpus48Model,
-  isClaudeOpus5Model,
-  isGlmModel,
-  isGpt5_5Model,
-  isGpt5_6Model,
-  isGptNativeSisyphusModel,
-  isKimiK2Model,
-  isKimiK27Model,
-  isKimiK3Model,
 } from "@oh-my-opencode/agents-core"
 import { atlasPromptVariants, loadPromptSync, resolveVariant } from "@oh-my-opencode/prompts-core"
 import { getPrometheusPrompt } from "./prometheus"
+import { buildSisyphusPromptForModel } from "./sisyphus-prompt"
 
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
@@ -47,23 +26,13 @@ interface PrimaryDefinition {
 }
 
 /**
- * Sisyphus prompt for a resolved model, with empty runtime catalogs. Routes to
- * the model-family prompt exactly like v1's resolveSisyphusPromptFamily; the
- * dynamic agent/skill/category sections degrade to empty strings (full dynamic
- * injection arrives with the Phase 2 orchestration layer).
+ * Sisyphus prompt for a resolved model, with empty runtime catalogs at
+ * registration time. The model-family routing lives in sisyphus-prompt.ts; the
+ * live agent/skill/category/tool lists are injected at request time by the
+ * sisyphus context hook.
  */
 function buildSisyphusBase(model: string): string {
-  if (isKimiK3Model(model)) return buildKimiK3SisyphusPrompt(model, [], [], [], [], false)
-  if (isKimiK27Model(model)) return buildKimiK27SisyphusPrompt(model, [], [], [], [], false)
-  if (isKimiK2Model(model)) return buildKimiK26SisyphusPrompt(model, [], [], [], [], false)
-  if (isGpt5_5Model(model) || isGpt5_6Model(model)) return buildGpt55SisyphusPrompt(model, [], [], [], [], false)
-  if (isGptNativeSisyphusModel(model)) return buildGpt54SisyphusPrompt(model, [], [], [], [], false)
-  if (isClaudeFable5Model(model)) return buildClaudeFable5SisyphusPrompt(model, [], [], [], [], false)
-  if (isClaudeOpus5Model(model)) return buildClaudeOpus5SisyphusPrompt(model, [], [], [], [], false)
-  if (isClaudeOpus48Model(model)) return buildClaudeOpus48SisyphusPrompt(model, [], [], [], [], false)
-  if (isClaudeOpus47Model(model)) return buildClaudeOpus47SisyphusPrompt(model, [], [], [], [], false)
-  if (isGlmModel(model)) return buildGlm52SisyphusPrompt(model, [], [], [], [], false)
-  return buildFallbackSisyphusPrompt(model, [], [], [], [], false)
+  return buildSisyphusPromptForModel(model, [], [], [], [], false)
 }
 
 function buildAtlasBase(model: string): string {
