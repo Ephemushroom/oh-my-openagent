@@ -1,0 +1,7 @@
+[0m
+> sisyphus · glm-4.7
+I detect an implementation intent - delegating a simple math question to the oracle agent. My approach: fire the oracle subagent with the question and report the result.
+[0m✗ [0mAsk math question failed
+[91m[1mError: [0mModel unavailable: openai/gpt-5.6-sol
+> sisyphus · glm-4.7
+The oracle agent is unavailable due to a model error (openai/gpt-5.6-sol). Could not retrieve an answer.
