@@ -88,6 +88,8 @@ export async function registerPrimaries(
     systemDefaultModel?: string;
     defaultAgent?: string;
     trace?: (event: string, detail?: Record<string, unknown>) => void;
+    /** Called with the exact static Sisyphus prompt baked at registration time. */
+    onSisyphusPrompt?: (prompt: string) => void;
   },
 ): Promise<Set<string>> {
   const registered = new Set<string>()
@@ -113,6 +115,9 @@ export async function registerPrimaries(
       }
 
       const systemPrompt = def.buildPrompt(resolved.model)
+      if (def.id === "sisyphus") {
+        options.onSisyphusPrompt?.(systemPrompt)
+      }
       draft.update(def.id, (agent) => {
         agent.name = Agent.Name.make(def.id)
         agent.description = def.description

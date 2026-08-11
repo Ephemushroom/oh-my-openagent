@@ -15,6 +15,7 @@ import type { TaskEngine } from "./orchestration/task-engine"
 import type { ChildResult } from "./orchestration/task-engine"
 import { createTaskTool } from "./orchestration/task-tool"
 import { createBackgroundOutputTool, createBackgroundCancelTool } from "./orchestration/background-tools"
+import { registerContextHooks } from "./hooks/register-context-hooks"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
 const CONTEXT_MARKER = "OMO-SPIKE-CTX-22cc"
@@ -85,8 +86,12 @@ export default Plugin.define({
     // Phase 1: register the real OMO agent catalog — 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
     // delegation categories as subagents. Default agent: sisyphus.
+    let capturedStaticSisyphusPrompt: string | undefined
+    const onSisyphusPrompt = (prompt: string): void => {
+      capturedStaticSisyphusPrompt = prompt
+    }
     const subagents = await registerSubagents(ctx, { trace, catalog })
-    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus", catalog })
+    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus", catalog, onSisyphusPrompt })
     const categories = await registerCategories(ctx, { trace, catalog })
 
     // v2 applies agent.transform callbacks lazily (on first registry
@@ -180,6 +185,17 @@ export default Plugin.define({
       })
     })
     trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel"] })
+
+    // Phase 3 (context experience): dynamic Sisyphus prompt rebake + ultrawork
+    // injection. The static Sisyphus prompt captured by onSisyphusPrompt is the
+    // exact text baked at registration; the context hook locates and replaces
+    // that system part per request.
+    await registerContextHooks({
+      ctx,
+      staticSisyphusPrompt: capturedStaticSisyphusPrompt ?? "",
+      trace,
+    })
+    trace("omo.context-hooks.registered", { staticPromptLength: capturedStaticSisyphusPrompt?.length ?? 0 })
 
     // Phase 0 mechanics probe (echo/context/delegate/synthetic verification
     // tools + agents). Gated off in production; QA enables it explicitly.
