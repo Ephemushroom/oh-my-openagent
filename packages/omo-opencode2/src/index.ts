@@ -6,7 +6,15 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { registerCategories } from "./agents/register-categories"
 import { registerPrimaries } from "./agents/register-primaries"
 import { registerSubagents } from "./agents/register-subagents"
-import { createCatalogSource } from "./agents/model-resolution"
+import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
+import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+import { TaskRegistry } from "./orchestration/task-registry"
+import { ConcurrencyLimiter } from "./orchestration/concurrency"
+import { createTaskEngine } from "./orchestration/task-engine"
+import type { TaskEngine } from "./orchestration/task-engine"
+import type { ChildResult } from "./orchestration/task-engine"
+import { createTaskTool } from "./orchestration/task-tool"
+import { createBackgroundOutputTool, createBackgroundCancelTool } from "./orchestration/background-tools"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
 const CONTEXT_MARKER = "OMO-SPIKE-CTX-22cc"
@@ -29,7 +37,6 @@ function createTrace(): Trace {
   }
 }
 
-type ChildResult = { ok: boolean; text: string }
 type ChildWaiter = { texts: string[]; resolve: (result: ChildResult) => void }
 
 function readPrompt(input: unknown, key: string): string {
@@ -42,7 +49,23 @@ export default Plugin.define({
   id: "omo",
   setup: async (ctx) => {
     const trace = createTrace()
-    const probe = createEventPump(ctx, trace)
+    const registry = new TaskRegistry()
+    const limiter = new ConcurrencyLimiter()
+    const engine = createTaskEngine({
+      ctx,
+      registry,
+      trace,
+      onBackgroundTerminal: ({ taskID, parentSessionID, ok, text }) => {
+        trace("omo.task.background-completed", { taskID, parentSessionID, ok, length: text.length })
+        void ctx.session
+          .synthetic({
+            sessionID: parentSessionID,
+            text: `<omo-task> background task ${taskID} finished ok=${ok}: ${text.slice(0, 200)} </omo-task>`,
+            delivery: "queue",
+          })
+          .catch(() => undefined)
+      },
+    })
 
     // The v2 catalog is empty at plugin setup and populates asynchronously
     // (catalog.updated). Capture each update into a live source so agent model
@@ -76,75 +99,100 @@ export default Plugin.define({
       categories: [...categories],
     })
 
+    // Phase 2: orchestration. Task tool + background tools, wired to the task
+    // engine. waitChild registers a waiter on the engine's pump; the pump
+    // aggregates child text and settles on terminal execution events.
+    const deps = {
+      waitChild: (options: { sessionID: string; timeoutMs: number }): Promise<ChildResult> =>
+        new Promise<ChildResult>((resolve) => {
+          let settled = false
+          const done = (result: ChildResult) => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeout)
+            resolve(result)
+          }
+          engine.waiters.set(options.sessionID, { texts: [], resolve: done })
+          const timeout = setTimeout(() => {
+            if (!engine.waiters.delete(options.sessionID)) return
+            void ctx.session.interrupt({ sessionID: options.sessionID }).catch(() => undefined)
+            done({ ok: false, text: "timeout waiting for child session" })
+          }, options.timeoutMs)
+        }),
+      interrupt: async (sessionID: string) => {
+        await ctx.session.interrupt({ sessionID }).catch(() => undefined)
+      },
+    }
+
+    const categoryModels = new Map<string, string>()
+    const availableSubagents = [...subagents]
+    const availableCategories = [...categories]
+    for (const id of availableSubagents) {
+      const requirement = AGENT_MODEL_REQUIREMENTS[id]
+      const resolved = resolveAgentModel(requirement, catalog.current)
+      if (resolved) categoryModels.set(id, resolved.model)
+    }
+
+    const resolveCategory = (category: string): { agent: string; model: string } | undefined => {
+      if (!availableCategories.includes(category)) return undefined
+      const requirement = AGENT_MODEL_REQUIREMENTS[category]
+      const resolved = resolveAgentModel(requirement, catalog.current)
+      if (!resolved) return undefined
+      return { agent: category, model: resolved.model }
+    }
+
+    await ctx.tool.transform((draft) => {
+      const taskTool = createTaskTool({
+        ctx,
+        registry,
+        limiter,
+        deps,
+        availableSubagents,
+        availableCategories,
+        categoryModels,
+        resolveCategory,
+        trace,
+      })
+      draft.add({
+        name: taskTool.name,
+        description: taskTool.description,
+        input: taskTool.input,
+        options: { codemode: false },
+        execute: taskTool.execute,
+      })
+
+      const outputTool = createBackgroundOutputTool({ ctx, registry })
+      draft.add({
+        name: outputTool.name,
+        description: outputTool.description,
+        input: outputTool.input,
+        options: { codemode: false },
+        execute: outputTool.execute,
+      })
+
+      const cancelTool = createBackgroundCancelTool({ ctx, registry })
+      draft.add({
+        name: cancelTool.name,
+        description: cancelTool.description,
+        input: cancelTool.input,
+        options: { codemode: false },
+        execute: cancelTool.execute,
+      })
+    })
+    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel"] })
+
     // Phase 0 mechanics probe (echo/context/delegate/synthetic verification
     // tools + agents). Gated off in production; QA enables it explicitly.
     if (process.env.OMO_SPIKE_MECHANICS === "1") {
-      await setupMechanicsProbe(ctx, trace, probe)
+      await setupMechanicsProbe(ctx, trace, engine)
     }
 
-    return () => probe.dispose()
+    return () => engine.dispose()
   },
 })
 
-interface EventPump {
-  waiters: Map<string, ChildWaiter>
-  dispose: () => void
-}
-
-/**
- * Always-on session-event pump. When OMO_SPIKE_TRACE is set it records every
- * event for QA; it also fulfils the delegate tool's child-session waiters.
- * Independent of the gated mechanics probe so production registration can be
- * observed without enabling omo-spike.
- */
-function createEventPump(ctx: Context, trace: Trace): EventPump {
-  const waiters = new Map<string, ChildWaiter>()
-  let disposed = false
-
-  const pump = (async () => {
-    for await (const event of ctx.event.subscribe()) {
-      if (disposed) return
-      const data = (event as { data?: Record<string, unknown> }).data ?? {}
-      const sessionID = typeof data.sessionID === "string" ? data.sessionID : undefined
-      trace("event", { type: event.type, sessionID })
-      if (!sessionID) continue
-      const waiter = waiters.get(sessionID)
-      if (!waiter) continue
-      if (event.type === "session.text.ended" || event.type === "session.reasoning.ended") {
-        if (typeof data.text === "string") waiter.texts.push(data.text)
-        continue
-      }
-      if (event.type === "session.execution.failed") {
-        waiters.delete(sessionID)
-        waiter.resolve({ ok: false, text: `execution failed: ${JSON.stringify(data.error ?? null)}` })
-        continue
-      }
-      if (
-        event.type === "session.execution.succeeded" ||
-        event.type === "session.execution.interrupted" ||
-        event.type === "session.idle"
-      ) {
-        waiters.delete(sessionID)
-        waiter.resolve({ ok: event.type !== "session.execution.interrupted", text: waiter.texts.join("\n") })
-      }
-    }
-  })()
-  pump.catch((error: unknown) => trace("event-pump.error", { message: String(error) }))
-
-  return {
-    waiters,
-    dispose: () => {
-      disposed = true
-      for (const [sessionID, waiter] of waiters) {
-        waiters.delete(sessionID)
-        waiter.resolve({ ok: false, text: "plugin disposed" })
-      }
-    },
-  }
-}
-
-async function setupMechanicsProbe(ctx: Context, trace: Trace, probe: EventPump): Promise<void> {
-  const waiters = probe.waiters
+async function setupMechanicsProbe(ctx: Context, trace: Trace, engine: TaskEngine): Promise<void> {
+  const waiters = engine.waiters
 
   // Registered after registerPrimaries, so in mechanics mode the spike default
   // (omo-spike) intentionally wins over sisyphus for the probe runs.
