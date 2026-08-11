@@ -260,6 +260,9 @@
       "name": "@oh-my-opencode/omo-opencode2",
       "version": "0.0.0",
       "dependencies": {
+        "@oh-my-opencode/agents-core": "workspace:*",
+        "@oh-my-opencode/model-core": "workspace:*",
+        "@oh-my-opencode/prompts-core": "workspace:*",
         "@opencode-ai/plugin": "0.0.0-next-17055",
       },
     },
