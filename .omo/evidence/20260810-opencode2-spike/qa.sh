@@ -35,6 +35,10 @@ export XDG_DATA_HOME="$SANDBOX/data" XDG_CONFIG_HOME="$SANDBOX/config" XDG_CACHE
 export HOME="$SANDBOX/home" USERPROFILE="$SANDBOX/home" OPENCODE_TEST_HOME="$SANDBOX/home"
 export OPENCODE_DISABLE_AUTOUPDATE=1 ZHIPU_API_KEY
 export OMO_SPIKE_TRACE="$SANDBOX/trace.ndjson"
+# Phase 1 gated the mechanics probe (omo-spike agents + echo/delegate tools) behind
+# this flag so the production agent registration owns the default. Re-enabling it
+# keeps this Phase 0 driver exercising exactly the probe it was written against.
+export OMO_SPIKE_MECHANICS=1
 ISOMARK="$SANDBOX/iso.mark"; touch "$ISOMARK"
 
 FIX="$SANDBOX/proj"

@@ -41,6 +41,7 @@ export default Plugin.define({
   id: "omo",
   setup: async (ctx) => {
     const trace = createTrace()
+    const probe = createEventPump(ctx, trace)
 
     // Phase 1: register the real OMO agent catalog — 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
@@ -54,13 +55,25 @@ export default Plugin.define({
     // Phase 0 mechanics probe (echo/context/delegate/synthetic verification
     // tools + agents). Gated off in production; QA enables it explicitly.
     if (process.env.OMO_SPIKE_MECHANICS === "1") {
-      return setupMechanicsProbe(ctx, trace)
+      await setupMechanicsProbe(ctx, trace, probe)
     }
-    return undefined
+
+    return () => probe.dispose()
   },
 })
 
-async function setupMechanicsProbe(ctx: Context, trace: Trace): Promise<() => void> {
+interface EventPump {
+  waiters: Map<string, ChildWaiter>
+  dispose: () => void
+}
+
+/**
+ * Always-on session-event pump. When OMO_SPIKE_TRACE is set it records every
+ * event for QA; it also fulfils the delegate tool's child-session waiters.
+ * Independent of the gated mechanics probe so production registration can be
+ * observed without enabling omo-spike.
+ */
+function createEventPump(ctx: Context, trace: Trace): EventPump {
   const waiters = new Map<string, ChildWaiter>()
   let disposed = false
 
@@ -93,6 +106,21 @@ async function setupMechanicsProbe(ctx: Context, trace: Trace): Promise<() => vo
     }
   })()
   pump.catch((error: unknown) => trace("event-pump.error", { message: String(error) }))
+
+  return {
+    waiters,
+    dispose: () => {
+      disposed = true
+      for (const [sessionID, waiter] of waiters) {
+        waiters.delete(sessionID)
+        waiter.resolve({ ok: false, text: "plugin disposed" })
+      }
+    },
+  }
+}
+
+async function setupMechanicsProbe(ctx: Context, trace: Trace, probe: EventPump): Promise<void> {
+  const waiters = probe.waiters
 
   // Registered after registerPrimaries, so in mechanics mode the spike default
   // (omo-spike) intentionally wins over sisyphus for the probe runs.
@@ -245,12 +273,4 @@ async function setupMechanicsProbe(ctx: Context, trace: Trace): Promise<() => vo
     })
   })
   trace("tools.registered", { tools: [ECHO_TOOL, DELEGATE_TOOL] })
-
-  return () => {
-    disposed = true
-    for (const [sessionID, waiter] of waiters) {
-      waiters.delete(sessionID)
-      waiter.resolve({ ok: false, text: "plugin disposed" })
-    }
-  }
 }
