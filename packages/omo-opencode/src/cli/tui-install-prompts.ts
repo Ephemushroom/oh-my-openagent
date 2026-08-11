@@ -56,6 +56,7 @@ export async function promptInstallConfig(
   const hasOpenCode = platform === "opencode" || platform === "both"
   const hasCodex = platform === "codex" || platform === "both"
   const hasSenpi = platform === "senpi"
+  const hasOpenCode2 = platform === "opencode2"
   const codexAutonomous = await resolveCodexAutonomous(hasCodex, codexAutonomousOverride)
   if (codexAutonomous === null) return null
 
@@ -70,6 +71,7 @@ export async function promptInstallConfig(
       hasCopilot: false,
       hasCodex,
       hasSenpi,
+      hasOpenCode2,
       hasOpencodeZen: false,
       hasZaiCodingPlan: false,
       hasKimiForCoding: false,
@@ -215,6 +217,7 @@ export async function promptInstallConfig(
     hasCopilot: copilot === "yes",
     hasCodex,
     hasSenpi,
+    hasOpenCode2: false,
     hasOpencodeZen: opencodeZen === "yes",
     hasZaiCodingPlan: zaiCodingPlan === "yes",
     hasKimiForCoding: kimiForCoding === "yes",

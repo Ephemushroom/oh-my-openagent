@@ -38,7 +38,7 @@ describe("availableInstallPlatforms", () => {
     const platforms = availableInstallPlatforms(env)
 
     // then
-    expect(platforms).toEqual(["opencode", "codex", "both"])
+    expect(platforms).toEqual(["opencode", "codex", "both", "opencode2"])
   })
 
   test("#given flag enabled #when platforms are listed #then senpi is offered last", () => {
@@ -49,6 +49,6 @@ describe("availableInstallPlatforms", () => {
     const platforms = availableInstallPlatforms(env)
 
     // then
-    expect(platforms).toEqual(["opencode", "codex", "both", "senpi"])
+    expect(platforms).toEqual(["opencode", "codex", "both", "senpi", "opencode2"])
   })
 })
