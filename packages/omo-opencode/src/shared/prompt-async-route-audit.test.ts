@@ -51,6 +51,10 @@ const RAW_PROMPT_ALLOWLIST = new Map<string, string>([
     path.join(WORKSPACE_ROOT, "packages", "omo-opencode2", "src", "index.ts"),
     "opencode2 spike adapter: ctx.session.prompt/synthetic are the OpenCode2 plugin API with durable admission (queue/steer delivery), not the v1 fire-and-forget client.session.promptAsync this gate guards",
   ],
+  [
+    path.join(WORKSPACE_ROOT, "packages", "omo-opencode2", "src", "orchestration", "child-session.ts"),
+    "opencode2 orchestration: ctx.session.prompt on a freshly created child session is the OpenCode2 plugin API with durable admission, not the v1 fire-and-forget client.session.promptAsync this gate guards; child sessions are plugin-owned, never the main session",
+  ],
 ])
 
 async function listSourceFiles(directory: string): Promise<string[]> {
