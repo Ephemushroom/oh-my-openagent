@@ -131,6 +131,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
 
     const output = await composer(event as unknown as HookEvent)
     trace?.("omo.context.composed", {
+      sessionID: (event as unknown as { sessionID?: string }).sessionID,
       systemParts: output.system.length,
       modeTagged: output.messages.some(
         (message) => message.role === "user" && (message.content ?? []).some((part) => part.type === "text" && part.text?.includes("<ultrawork-mode>")),
