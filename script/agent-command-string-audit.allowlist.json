@@ -14,11 +14,6 @@
     "packages/omo-codex/src/install/lazycodex-routing.test.ts:77: omo install",
     "packages/omo-opencode/src/cli/install-platform-resolution.test.ts:234: omo cleanup",
     "packages/omo-opencode/src/cli/install-platform-resolution.test.ts:7: omo install",
-    "script/lazycodex-published-smoke-workflow.test.ts:37: omo install",
-    "script/lazycodex-published-smoke-workflow.test.ts:43: omo install",
-    "script/lazycodex-published-smoke-workflow.test.ts:46: omo doctor",
-    "script/lazycodex-published-smoke-workflow.test.ts:47: omo doctor",
-    "script/lazycodex-published-smoke-workflow.test.ts:64: omo install",
     "script/publish-lazycodex-workflow.test.ts:330: omo install"
   ],
   "docs": [
