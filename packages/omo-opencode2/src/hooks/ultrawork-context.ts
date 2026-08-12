@@ -71,21 +71,42 @@ ${ULTRAWORK_PLANNER_PROMPT}
 }
 
 export interface UltraworkInjectionResult {
-  system: Array<{ type: string; text?: string; [key: string]: unknown }>
   injected: boolean
 }
 
+interface UserMessageLike {
+  role?: string
+  content?: Array<{ type: string; text?: string; [key: string]: unknown }>
+}
+
 /**
- * Appends one <ultrawork-mode> system part if (and only if) no system part
- * already carries the tag. Idempotent across repeated context calls.
+ * Appends the <ultrawork-mode> directive inline to the LAST real user turn's
+ * final text part (v1 parity: the directive sits at the end of the user's own
+ * message, so the model treats "first response" literally and says the banner
+ * before its thinking block). Mutates the message in place — the v2 context
+ * hook runtime reads the mutated draft back after hooks.
+ *
+ * Idempotent across same-turn follow-up dispatches (tool results etc.): if the
+ * last user message already carries the tag, nothing is appended.
  */
-export function injectUltraworkSystemPart(
-  system: Array<{ type: string; text?: string; [key: string]: unknown }>,
+export function injectUltraworkIntoUserTurn(
+  messages: UserMessageLike[],
   input: { agent?: string; model?: string },
 ): UltraworkInjectionResult {
-  if (system.some((part) => typeof part.text === "string" && part.text.includes(ULTRAWORK_MODE_TAG))) {
-    return { system, injected: false }
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+    if (message.role !== "user") continue
+    const content = message.content ?? []
+    for (let partIndex = content.length - 1; partIndex >= 0; partIndex -= 1) {
+      const part = content[partIndex]
+      if (part.type !== "text" || typeof part.text !== "string") continue
+      if (part.text.includes(ULTRAWORK_MODE_TAG)) return { injected: false }
+      const selection = selectUltraworkPrompt(input)
+      part.text = `${part.text}\n\n---\n\n${selection.text}`
+      return { injected: true }
+    }
+    // The last user turn has no text part — do not reach into older turns.
+    return { injected: false }
   }
-  const selection = selectUltraworkPrompt(input)
-  return { system: [...system, { type: "text", text: selection.text }], injected: true }
+  return { injected: false }
 }

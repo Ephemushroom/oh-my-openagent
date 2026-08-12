@@ -2,7 +2,7 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 
 import { rebakeSisyphusSystemPart } from "./sisyphus-context"
 import type { LiveAgent, LiveSkill } from "./sisyphus-context"
-import { detectUltraworkIntent, injectUltraworkSystemPart } from "./ultrawork-context"
+import { detectUltraworkIntent, injectUltraworkIntoUserTurn } from "./ultrawork-context"
 
 export interface ContextHookDeps {
   ctx: Context
@@ -63,6 +63,8 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
     event.system = rebaked.system
 
     // Step 2: ultrawork injection (second; only on the final real user turn).
+    // v1 parity: the directive is appended inline to the user's own message so
+    // the model says the banner before its thinking block.
     let userText = ""
     try {
       userText = await options.lastUserText(event.messages)
@@ -70,8 +72,7 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
       userText = ""
     }
     if (detectUltraworkIntent(userText)) {
-      const injected = injectUltraworkSystemPart(event.system, { agent: event.agent, model: `${event.model.providerID}/${event.model.id}` })
-      event.system = injected.system
+      injectUltraworkIntoUserTurn(event.messages, { agent: event.agent, model: `${event.model.providerID}/${event.model.id}` })
     }
 
     return event
@@ -131,7 +132,9 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
     const output = await composer(event as unknown as HookEvent)
     trace?.("omo.context.composed", {
       systemParts: output.system.length,
-      modeTagged: output.system.some((part) => part.text?.includes("<ultrawork-mode>")),
+      modeTagged: output.messages.some(
+        (message) => message.role === "user" && (message.content ?? []).some((part) => part.type === "text" && part.text?.includes("<ultrawork-mode>")),
+      ),
     })
   })
 }

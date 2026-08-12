@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { detectUltraworkIntent, selectUltraworkPrompt, injectUltraworkSystemPart } from "./ultrawork-context"
+import { detectUltraworkIntent, selectUltraworkPrompt, injectUltraworkIntoUserTurn } from "./ultrawork-context"
 
 describe("detectUltraworkIntent", () => {
   test("#given a message containing whole-word ulw #when detected #then true", () => {
@@ -96,47 +96,105 @@ describe("selectUltraworkPrompt", () => {
   })
 })
 
-describe("injectUltraworkSystemPart", () => {
-  test("#given a system array without the tag #when injecting #then one tagged part is appended", () => {
+describe("injectUltraworkIntoUserTurn", () => {
+  test("#given a last user text part without the tag #when injecting #then the directive is appended inline to that part", () => {
     // given
-    const system = [{ type: "text", text: "[existing]" }]
-
-    // when
-    const result = injectUltraworkSystemPart(system, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
-
-    // then
-    expect(result.injected).toBe(true)
-    expect(result.system).toHaveLength(2)
-    expect(result.system[0]).toEqual({ type: "text", text: "[existing]" })
-    expect(result.system[1]?.text).toContain("<ultrawork-mode>")
-  })
-
-  test("#given a system array already containing the tag #when injecting #then nothing is appended", () => {
-    // given
-    const system = [
-      { type: "text", text: "[existing]" },
-      { type: "text", text: "<ultrawork-mode>already here" },
+    const messages = [
+      { role: "user", content: [{ type: "text", text: "please ulw this" }] },
     ]
 
     // when
-    const result = injectUltraworkSystemPart(system, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+    const result = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+
+    // then: the same message object is mutated in place (v1 parity)
+    expect(result.injected).toBe(true)
+    expect(messages[0]?.content[0]?.text).toContain("please ulw this")
+    expect(messages[0]?.content[0]?.text).toContain("<ultrawork-mode>")
+    expect(messages[0]?.content[0]?.text).toMatch(/please ulw this[\s\S]*<ultrawork-mode>/)
+  })
+
+  test("#given the last user turn already carries the tag #when injecting #then nothing is appended", () => {
+    // given
+    const original = "please ulw this\n\n---\n\n<ultrawork-mode>already here"
+    const messages = [
+      { role: "user", content: [{ type: "text", text: original }] },
+    ]
+
+    // when
+    const result = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
 
     // then
     expect(result.injected).toBe(false)
-    expect(result.system).toHaveLength(2)
+    expect(messages[0]?.content[0]?.text).toBe(original)
   })
 
-  test("#given repeated injections #when invoking twice #then only one tagged part exists", () => {
-    // given
-    let system: Array<{ type: string; text?: string }> = [{ type: "text", text: "[existing]" }]
+  test("#given a same-turn follow-up dispatch #when injecting twice #then only one directive exists in the user message", () => {
+    // given: first dispatch mutates the message; a tool-result follow-up dispatch
+    // sees the same (already-mutated) last user message.
+    const messages = [
+      { role: "user", content: [{ type: "text", text: "ulw" }] },
+    ]
 
     // when
-    const first = injectUltraworkSystemPart(system, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
-    system = first.system
-    const second = injectUltraworkSystemPart(system, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+    const first = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+    const second = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
 
     // then
+    expect(first.injected).toBe(true)
     expect(second.injected).toBe(false)
-    expect(second.system.filter((part) => part.text?.includes("<ultrawork-mode>"))).toHaveLength(1)
+    const text = messages[0]?.content[0]?.text ?? ""
+    expect(text.split("<ultrawork-mode>").length - 1).toBe(1)
+  })
+
+  test("#given the last user turn has no text part #when injecting #then nothing happens", () => {
+    // given
+    const messages = [
+      { role: "user", content: [{ type: "image", url: "data:..." }] },
+    ]
+
+    // when
+    const result = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+
+    // then
+    expect(result.injected).toBe(false)
+  })
+
+  test("#given assistant and tool messages after the keyword turn #when injecting #then the last real user turn is the one mutated", () => {
+    // given: tool follow-up dispatch — assistant/tool messages sit after the user turn
+    const messages = [
+      { role: "user", content: [{ type: "text", text: "ulw fix this" }] },
+      { role: "assistant", content: [{ type: "text", text: "working" }] },
+      { role: "tool", content: [{ type: "text", text: "tool result" }] },
+    ]
+
+    // when
+    const result = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+
+    // then: only the user message is mutated; assistant/tool untouched
+    expect(result.injected).toBe(true)
+    expect(messages[0]?.content[0]?.text).toContain("<ultrawork-mode>")
+    expect(messages[1]?.content[0]?.text).toBe("working")
+    expect(messages[2]?.content[0]?.text).toBe("tool result")
+  })
+
+  test("#given a multi-part user message #when injecting #then the directive lands on the last text part", () => {
+    // given
+    const messages = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "first part" },
+          { type: "text", text: "second part ulw" },
+        ],
+      },
+    ]
+
+    // when
+    const result = injectUltraworkIntoUserTurn(messages, { agent: "sisyphus", model: "anthropic/claude-sonnet-5" })
+
+    // then
+    expect(result.injected).toBe(true)
+    expect(messages[0]?.content[0]?.text).toBe("first part")
+    expect(messages[0]?.content[1]?.text).toContain("<ultrawork-mode>")
   })
 })
