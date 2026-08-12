@@ -222,6 +222,7 @@ export function argsToConfig(args: InstallArgs): InstallConfig {
   const hasOpenCode = platform === "opencode" || platform === "both"
   const hasCodex = platform === "codex" || platform === "both"
   const hasSenpi = platform === "senpi"
+  const hasOpenCode2 = platform === "opencode2"
 
   return {
     platform,
@@ -233,6 +234,7 @@ export function argsToConfig(args: InstallArgs): InstallConfig {
     hasCopilot: hasOpenCode && args.copilot === "yes",
     hasCodex,
     hasSenpi,
+    hasOpenCode2,
     hasOpencodeZen: hasOpenCode && args.opencodeZen === "yes",
     hasZaiCodingPlan: hasOpenCode && args.zaiCodingPlan === "yes",
     hasKimiForCoding: hasOpenCode && args.kimiForCoding === "yes",

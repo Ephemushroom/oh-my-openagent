@@ -10,5 +10,6 @@ export function isSenpiPlatformEnabled(env: NodeJS.ProcessEnv = process.env): bo
 export function availableInstallPlatforms(env: NodeJS.ProcessEnv = process.env): InstallPlatform[] {
   const platforms: InstallPlatform[] = ["opencode", "codex", "both"]
   if (isSenpiPlatformEnabled(env)) platforms.push("senpi")
+  platforms.push("opencode2")
   return platforms
 }

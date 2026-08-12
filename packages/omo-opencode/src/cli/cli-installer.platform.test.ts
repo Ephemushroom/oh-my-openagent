@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from "bun:test"
 import { runCliInstaller } from "./cli-installer"
+import * as openCode2Installer from "./install-opencode2"
 import * as configManager from "./config-manager"
 import * as astGrepInstall from "./install-ast-grep-sg"
 import * as codexInstaller from "./install-codex"
@@ -122,6 +123,39 @@ describe("runCliInstaller platform branching", () => {
     expect(versionSpy).not.toHaveBeenCalled()
     expect(writeSpy).not.toHaveBeenCalled()
     expect(codexSpy).toHaveBeenCalledWith({ autonomousPermissions: true })
+  })
+
+  test("runs only OpenCode2 installation for platform=opencode2", async () => {
+    // #given
+    const openCodeSpy = spyOn(configManager, "addPluginToOpenCodeConfig").mockImplementation(() => {
+      throw new Error("must not run v1 OpenCode path")
+    })
+    const codexSpy = spyOn(codexInstaller, "runCodexInstaller").mockImplementation(() => {
+      throw new Error("must not run Codex path")
+    })
+    const senpiSpy = spyOn(senpiInstaller, "runSenpiInstaller").mockImplementation(() => {
+      throw new Error("must not run Senpi path")
+    })
+    const openCode2Spy = spyOn(openCode2Installer, "runOpenCode2Installer").mockResolvedValue({
+      changed: true,
+      configPath: "/tmp/opencode2.json",
+      backupPath: undefined,
+      added: ["codegraph", "lsp"],
+    })
+
+    // #when
+    const result = await runCliInstaller({ ...createOpenCodeArgs("opencode"), platform: "opencode2" })
+
+    // #then: the OpenCode2 branch must run, and no other harness path may run
+    expect(result).toBe(0)
+    expect(openCode2Spy).toHaveBeenCalledTimes(1)
+    expect(openCodeSpy).not.toHaveBeenCalled()
+    expect(codexSpy).not.toHaveBeenCalled()
+    expect(senpiSpy).not.toHaveBeenCalled()
+    openCode2Spy.mockRestore()
+    openCodeSpy.mockRestore()
+    codexSpy.mockRestore()
+    senpiSpy.mockRestore()
   })
 
   test("runs only Senpi installation and skips OpenCode provider checks for platform=senpi", async () => {
