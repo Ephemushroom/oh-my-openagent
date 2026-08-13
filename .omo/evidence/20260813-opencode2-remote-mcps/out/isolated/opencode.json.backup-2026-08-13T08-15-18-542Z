@@ -1,0 +1,4 @@
+{
+  "plugins": ["oh-my-opencode2"],
+  "mcp": { "servers": {} }
+}

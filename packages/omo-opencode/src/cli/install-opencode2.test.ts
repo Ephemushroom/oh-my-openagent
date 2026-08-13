@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test"
 
-import { buildCodegraphMcpEntry, buildLspMcpEntry, buildOpenCode2Entries } from "./install-opencode2"
+import {
+  buildCodegraphMcpEntry,
+  buildLspMcpEntry,
+  buildOpenCode2Entries,
+  buildRemoteMcpEntries,
+} from "./install-opencode2"
 
 const resolvedCodegraph = {
   command: "node",
@@ -60,8 +65,29 @@ describe("buildLspMcpEntry", () => {
   })
 })
 
+describe("buildRemoteMcpEntries", () => {
+  test("#given the v1 remote trio #when building #then each entry is remote with url and codemode false and no headers", () => {
+    // when
+    const remotes = buildRemoteMcpEntries()
+
+    // then
+    expect(remotes.map((entry) => entry.name)).toEqual(["websearch", "context7", "grep_app"])
+    for (const entry of remotes) {
+      expect(entry.type).toBe("remote")
+      expect(entry.codemode).toBe(false)
+      expect(entry.url).toBeDefined()
+      expect(entry.environment).toBeUndefined()
+    }
+    expect(remotes.find((entry) => entry.name === "websearch")?.url).toBe(
+      "https://mcp.exa.ai/mcp?tools=web_search_exa",
+    )
+    expect(remotes.find((entry) => entry.name === "context7")?.url).toBe("https://mcp.context7.com/mcp")
+    expect(remotes.find((entry) => entry.name === "grep_app")?.url).toBe("https://mcp.grep.app")
+  })
+})
+
 describe("buildOpenCode2Entries", () => {
-  test("#given codegraph + node + daemon #when assembling #then both entries are returned", () => {
+  test("#given codegraph + node + daemon #when assembling #then locals then remotes are returned", () => {
     // when
     const entries = buildOpenCode2Entries({
       codegraph: resolvedCodegraph,
@@ -70,10 +96,10 @@ describe("buildOpenCode2Entries", () => {
     })
 
     // then
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "lsp"])
+    expect(entries.map((e) => e.name)).toEqual(["codegraph", "lsp", "websearch", "context7", "grep_app"])
   })
 
-  test("#given a missing node runtime #when assembling #then lsp is skipped without throwing", () => {
+  test("#given a missing node runtime #when assembling #then lsp is skipped and remotes remain", () => {
     // when
     const entries = buildOpenCode2Entries({
       codegraph: resolvedCodegraph,
@@ -81,11 +107,11 @@ describe("buildOpenCode2Entries", () => {
       daemonCliPath: "C:/lsp/dist/cli.js",
     })
 
-    // then: codegraph survives, lsp degrades to a skip
-    expect(entries.map((e) => e.name)).toEqual(["codegraph"])
+    // then: codegraph survives, lsp degrades to a skip, remotes stay
+    expect(entries.map((e) => e.name)).toEqual(["codegraph", "websearch", "context7", "grep_app"])
   })
 
-  test("#given a missing daemon cli #when assembling #then lsp is skipped without throwing", () => {
+  test("#given a missing daemon cli #when assembling #then lsp is skipped and remotes remain", () => {
     // when
     const entries = buildOpenCode2Entries({
       codegraph: resolvedCodegraph,
@@ -94,7 +120,7 @@ describe("buildOpenCode2Entries", () => {
     })
 
     // then
-    expect(entries.map((e) => e.name)).toEqual(["codegraph"])
+    expect(entries.map((e) => e.name)).toEqual(["codegraph", "websearch", "context7", "grep_app"])
   })
 
   test("#given a missing codegraph #when assembling #then it fails closed", () => {
