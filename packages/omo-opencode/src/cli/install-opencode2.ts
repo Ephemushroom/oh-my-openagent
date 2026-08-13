@@ -34,11 +34,41 @@ export interface OpenCode2EntriesInput {
   daemonCliPath: string
 }
 
+const REMOTE_MCP_ENTRIES = [
+  {
+    name: "websearch",
+    type: "remote",
+    url: "https://mcp.exa.ai/mcp?tools=web_search_exa",
+    codemode: false,
+  },
+  {
+    name: "context7",
+    type: "remote",
+    url: "https://mcp.context7.com/mcp",
+    codemode: false,
+  },
+  {
+    name: "grep_app",
+    type: "remote",
+    url: "https://mcp.grep.app",
+    codemode: false,
+  },
+] as const satisfies readonly OpenCode2McpEntry[]
+
+/**
+ * Returns the three remote HTTP MCPs that v1 injects at plugin load
+ * (websearch / context7 / grep_app). No API keys or headers are written:
+ * secrets must not land in the user's opencode.json.
+ */
+export function buildRemoteMcpEntries(): OpenCode2McpEntry[] {
+  return REMOTE_MCP_ENTRIES.map((entry) => ({ ...entry }))
+}
+
 /**
  * Builds the full managed MCP entry list. codegraph is the core value; a
  * missing command is a hard failure. lsp is best-effort: it is skipped when
  * the node runtime or daemon cli is unavailable rather than failing the
- * whole install.
+ * whole install. Remote HTTP MCPs are always appended after the local entries.
  */
 export function buildOpenCode2Entries(input: OpenCode2EntriesInput): OpenCode2McpEntry[] {
   const entries: OpenCode2McpEntry[] = [buildCodegraphMcpEntry(input.codegraph)]
@@ -51,6 +81,7 @@ export function buildOpenCode2Entries(input: OpenCode2EntriesInput): OpenCode2Mc
       }),
     )
   }
+  entries.push(...buildRemoteMcpEntries())
   return entries
 }
 
