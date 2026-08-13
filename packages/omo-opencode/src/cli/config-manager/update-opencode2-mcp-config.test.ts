@@ -94,6 +94,52 @@ describe("updateOpenCode2McpConfig", () => {
     expect(second.changed).toBe(false)
   })
 
+  test("#given a config missing remotes #when adding a remote entry #then the url and codemode false are persisted", () => {
+    // given
+    const path = writeConfig(
+      "add-remote.jsonc",
+      `{
+  "mcp": { "servers": {} }
+}`,
+    )
+
+    // when
+    const result = updateOpenCode2McpConfig({
+      configPath: path,
+      entries: [{ name: "websearch", type: "remote", url: "https://mcp.exa.ai/mcp?tools=web_search_exa", codemode: false }],
+    })
+
+    // then
+    expect(result.changed).toBe(true)
+    expect(result.added).toEqual(["websearch"])
+    const text = readFileSync(path, "utf8")
+    expect(text).toContain('"websearch"')
+    expect(text).toContain("https://mcp.exa.ai/mcp?tools=web_search_exa")
+    expect(text).toContain('"codemode": false')
+  })
+
+  test("#given a user-owned remote of the same name #when adding the managed remote #then the user entry is left alone", () => {
+    // given
+    const path = writeConfig(
+      "keep-user-remote.jsonc",
+      `{
+  "mcp": { "servers": { "websearch": { "type": "remote", "url": "https://user.example/mcp", "codemode": false } } }
+}`,
+    )
+
+    // when
+    const result = updateOpenCode2McpConfig({
+      configPath: path,
+      entries: [{ name: "websearch", type: "remote", url: "https://mcp.exa.ai/mcp?tools=web_search_exa", codemode: false }],
+    })
+
+    // then
+    expect(result.changed).toBe(false)
+    const text = readFileSync(path, "utf8")
+    expect(text).toContain("https://user.example/mcp")
+    expect(text).not.toContain("mcp.exa.ai")
+  })
+
   test("#given a malformed config #when updating #then the file is untouched and an error is thrown", () => {
     // given
     const path = writeConfig("malformed.jsonc", `{ "mcp": { "servers": { "codegraph": 42 } } }`)
