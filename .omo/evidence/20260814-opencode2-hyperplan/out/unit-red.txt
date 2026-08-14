@@ -1,0 +1,67 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:
+[test-setup] vendored lsp-daemon dist missing; building once via `npm ci && npm run build`...
+npm notice run @code-yeongyu/lsp-daemon@0.1.0 build
+npm notice run node scripts/clean-dist.mjs && tsc -p tsconfig.build.json && bun build src/cli.ts src/index.ts src/client.ts --outdir dist --target node --format esm && node scripts/stamp-dist-version.mjs
+32 | 
+33 |     // when
+34 |     const output = await composer(input)
+35 | 
+36 |     // then
+37 |     expect(output.system.filter((part) => part.text?.includes("<hyperplan-mode>"))).toHaveLength(1)
+                                                                                         ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-hyper\packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:37:85)
+(fail) createContextHookComposer > #given a standalone hyperplan turn #when composed #then only the hyperplan mode tag is appended [7.89ms]
+51 | 
+52 |     // when
+53 |     const output = await composer(input)
+54 | 
+55 |     // then
+56 |     expect(output.system.filter((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toHaveLength(1)
+                                                                                                   ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-hyper\packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:56:95)
+(fail) createContextHookComposer > #given adjacent hyperplan and ultrawork triggers #when composed #then the combo suppresses both standalone modes [2.46ms]
+70 | 
+71 |     // when
+72 |     const output = await composer(input)
+73 | 
+74 |     // then
+75 |     expect(output.system.filter((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toHaveLength(1)
+                                                                                                   ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-hyper\packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:75:95)
+(fail) createContextHookComposer > #given reverse adjacent combo triggers #when composed #then the same combo mode is appended [2.58ms]
+89 |     // when
+90 |     const output = await composer(input)
+91 | 
+92 |     // then
+93 |     expect(output.system.some((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toBe(false)
+94 |     expect(output.system.filter((part) => part.text?.includes("<hyperplan-mode>"))).toHaveLength(1)
+                                                                                         ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-hyper\packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:94:85)
+(fail) createContextHookComposer > #given non-adjacent hyperplan and ultrawork triggers #when composed #then both standalone modes are appended [1.94ms]
+
+ 5 pass
+ 4 fail
+ 15 expect() calls
+Ran 9 tests across 1 file. [4.82s]
