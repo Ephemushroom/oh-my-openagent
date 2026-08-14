@@ -4,7 +4,7 @@ packages\omo-opencode2\src\hooks\comment-checker\register.test.ts:
 176 |     try {
 177 |       // when
 178 |       await handle(event)
-179 | 
+179 |
 180 |       // then
 181 |       expect(calls).toHaveLength(0)
                           ^
