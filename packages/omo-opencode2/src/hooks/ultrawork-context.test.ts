@@ -1,6 +1,48 @@
 import { describe, expect, test } from "bun:test"
 
-import { detectUltraworkIntent, selectUltraworkPrompt, injectUltraworkSystemPart } from "./ultrawork-context"
+import {
+  detectKeywordModes,
+  detectUltraworkIntent,
+  injectKeywordSystemParts,
+  injectUltraworkSystemPart,
+  selectUltraworkPrompt,
+} from "./ultrawork-context"
+
+describe("detectKeywordModes", () => {
+  test("#given a standalone hyperplan keyword #when detected #then only hyperplan resolves", () => {
+    // when
+    const result = detectKeywordModes("hyperplan this migration")
+
+    // then
+    expect(result).toEqual(["hyperplan"])
+  })
+
+  test("#given adjacent combo keywords in either order #when detected #then each resolves only the combo", () => {
+    // when
+    const forward = detectKeywordModes("hyperplan ultrawork this migration")
+    const reverse = detectKeywordModes("ulw hpp this migration")
+
+    // then
+    expect(forward).toEqual(["hyperplan-ultrawork"])
+    expect(reverse).toEqual(["hyperplan-ultrawork"])
+  })
+
+  test("#given non-adjacent hyperplan and ultrawork keywords #when detected #then both standalone modes resolve", () => {
+    // when
+    const result = detectKeywordModes("hyperplan then use ultrawork")
+
+    // then
+    expect(result).toEqual(["ultrawork", "hyperplan"])
+  })
+
+  test("#given hpp only as a C++ extension #when detected #then no mode resolves", () => {
+    // when
+    const result = detectKeywordModes("inspect src/include/interface.hpp")
+
+    // then
+    expect(result).toEqual([])
+  })
+})
 
 describe("detectUltraworkIntent", () => {
   test("#given a message containing whole-word ulw #when detected #then true", () => {
@@ -148,5 +190,46 @@ describe("injectUltraworkSystemPart", () => {
     expect(result.injected).toBe(true)
     expect(result.system).toHaveLength(1)
     expect(result.system[0]?.text).toContain("<ultrawork-mode>")
+  })
+})
+
+describe("injectKeywordSystemParts", () => {
+  test("#given standalone hyperplan mode #when injected #then one hyperplan part is appended", () => {
+    // given
+    const system = [{ type: "text", text: "[existing]" }]
+
+    // when
+    const result = injectKeywordSystemParts(system, ["hyperplan"], { agent: "sisyphus" })
+
+    // then
+    expect(result.filter((part) => part.text?.includes("<hyperplan-mode>"))).toHaveLength(1)
+    expect(result.some((part) => part.text?.includes("<ultrawork-mode>"))).toBe(false)
+  })
+
+  test("#given combo mode #when injected #then one combo part embeds one ultrawork tag", () => {
+    // given
+    const system = [{ type: "text", text: "[existing]" }]
+
+    // when
+    const result = injectKeywordSystemParts(system, ["hyperplan-ultrawork"], {
+      agent: "sisyphus",
+      model: "zhipuai/glm-4.7",
+    })
+
+    // then
+    expect(result.filter((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toHaveLength(1)
+    expect(result.filter((part) => part.text?.includes("<ultrawork-mode>"))).toHaveLength(1)
+    expect(result.some((part) => part.text?.includes("<hyperplan-mode>"))).toBe(false)
+  })
+
+  test("#given no resolved mode #when injected #then the system array is unchanged", () => {
+    // given
+    const system = [{ type: "text", text: "[existing]" }]
+
+    // when
+    const result = injectKeywordSystemParts(system, [], { agent: "sisyphus" })
+
+    // then
+    expect(result).toEqual(system)
   })
 })
