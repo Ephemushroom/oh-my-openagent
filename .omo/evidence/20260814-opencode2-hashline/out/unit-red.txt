@@ -1,0 +1,30 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\hashline-read-enhancer\register.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './register' from 'D:\Programme\AI\oh-my-openagent-wt\feat\opencode2-hashline\packages\omo-opencode2\src\hooks\hashline-read-enhancer\register.test.ts'
+-------------------------------
+
+
+packages\omo-opencode2\src\hooks\hashline-read-enhancer\tag-read-output.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './tag-read-output' from 'D:\Programme\AI\oh-my-openagent-wt\feat\opencode2-hashline\packages\omo-opencode2\src\hooks\hashline-read-enhancer\tag-read-output.test.ts'
+-------------------------------
+
+
+packages\omo-opencode2\src\tools\hashline-edit\execute-hashline-edit.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './execute-hashline-edit' from 'D:\Programme\AI\oh-my-openagent-wt\feat\opencode2-hashline\packages\omo-opencode2\src\tools\hashline-edit\execute-hashline-edit.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 3 fail
+ 3 errors
+Ran 3 tests across 3 files. [395.00ms]
