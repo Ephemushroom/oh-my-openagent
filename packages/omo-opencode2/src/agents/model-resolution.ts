@@ -1,6 +1,7 @@
 import type { CatalogDraft } from "@opencode-ai/plugin/promise/catalog"
 import { resolveModelPipeline } from "@oh-my-opencode/model-core"
 import type { ModelRequirement } from "@oh-my-opencode/model-core"
+import type { OpenCode2AgentOverride } from "../config"
 
 /**
  * A point-in-time view of the harness model catalog. Feeds model-core's pure
@@ -78,7 +79,12 @@ export function resolveAgentModel(
   requirement: ModelRequirement | undefined,
   snapshot: CatalogSnapshot,
   systemDefaultModel?: string,
+  override?: OpenCode2AgentOverride,
 ): ResolvedModel | undefined {
+  if (override?.model !== undefined && override.model.includes("/")) {
+    return { model: override.model, variant: override.variant }
+  }
+
   // Mirror the v1 adapter's requiresProvider gate: on a warm catalog, an agent
   // whose required providers are all disconnected is skipped (not registered).
   // A cold catalog (first run, no provider data) proceeds to the chain so the

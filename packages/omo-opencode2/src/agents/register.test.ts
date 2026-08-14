@@ -8,6 +8,8 @@ import { registerSubagents } from "./register-subagents"
 import { resolveAgentModel, createCatalogSource } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
 
+import type { OpenCode2AgentOverride } from "../config"
+
 /**
  * Minimal structural stand-ins for the v2 catalog/agent drafts. The
  * registration code only reads provider ids + model keys and mutates agent
@@ -96,6 +98,19 @@ function createMockContext(input: {
 }
 
 describe("resolveAgentModel", () => {
+  test("#given a per-agent model override #when resolving #then the override overrides the catalog and requirement", () => {
+    const override: OpenCode2AgentOverride = { model: "anthropic/claude-3-5-sonnet", variant: "latest" }
+    const result = resolveAgentModel(
+      { fallbackChain: [{ providers: ["openai"], model: "gpt-5.6-sol" }] },
+      { availableModels: new Set(["openai/gpt-5.6-sol"]), connectedProviders: ["openai"] },
+      undefined,
+      override,
+    )
+
+    expect(result?.model).toBe("anthropic/claude-3-5-sonnet")
+    expect(result?.variant).toBe("latest")
+  })
+
   test("#given a chain model available in the catalog #when resolving #then it uses the chain entry", () => {
     const result = resolveAgentModel(
       { fallbackChain: [{ providers: ["openai"], model: "gpt-5.6-sol", variant: "xhigh" }] },
@@ -165,6 +180,20 @@ describe("registerSubagents", () => {
     expect(oracle?.model?.providerID).toBe("openai")
     expect(oracle?.model?.id).toBe("gpt-5.6-sol")
   })
+
+  test("#given a per-agent model override #when registering #then the override overrides the catalog", async () => {
+    const { ctx, catalog, agents } = createMockContext({ availableModels: ["openai/gpt-5.6-sol"], defaultModel: "zhipuai/glm-4.7" })
+
+    await registerSubagents(ctx, {
+      catalog,
+      agentOverrides: { oracle: { model: "anthropic/claude-3-5-sonnet", variant: "latest" } },
+    })
+
+    const oracle = agents.get("oracle")
+    expect(oracle?.model?.providerID).toBe("anthropic")
+    expect(oracle?.model?.id).toBe("claude-3-5-sonnet")
+    expect(oracle?.model?.variant).toBe("latest")
+  })
 })
 
 describe("registerPrimaries", () => {
@@ -214,6 +243,14 @@ describe("registerPrimaries", () => {
 
     expect(agents.get("build")?.mode).toBe("subagent")
     expect(agents.get("build")?.hidden).toBe(true)
+  })
+
+  test("#given a defaultAgent option #when registering #then it applies that as the default agent", async () => {
+    const { ctx, catalog, getDefault } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
+
+    await registerPrimaries(ctx, { catalog, defaultAgent: "atlas" })
+
+    expect(getDefault()).toBe("atlas")
   })
 })
 

@@ -2,6 +2,7 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { Agent, Model } from "@opencode-ai/plugin"
 import { buildSisyphusJuniorPrompt } from "@oh-my-opencode/agents-core"
 import { CATEGORY_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+import type { OpenCode2AgentOverride } from "../config"
 
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
@@ -35,6 +36,7 @@ export async function registerCategories(
   options: {
     catalog: CatalogSource;
     systemDefaultModel?: string;
+    agentOverrides?: Record<string, OpenCode2AgentOverride>;
     trace?: (event: string, detail?: Record<string, unknown>) => void;
   },
 ): Promise<Set<string>> {
@@ -44,7 +46,7 @@ export async function registerCategories(
     const snapshot = options.catalog.current
     const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
     for (const [name, requirement] of Object.entries(CATEGORY_MODEL_REQUIREMENTS)) {
-      const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault)
+      const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault, options.agentOverrides?.[name])
       if (!resolved) continue
 
       const systemPrompt = buildSisyphusJuniorPrompt(resolved.model, false)

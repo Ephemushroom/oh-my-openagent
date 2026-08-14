@@ -8,6 +8,7 @@ import { registerPrimaries } from "./agents/register-primaries"
 import { registerSubagents } from "./agents/register-subagents"
 import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+import { loadOpenCode2Config } from "./config"
 import { TaskRegistry } from "./orchestration/task-registry"
 import { ConcurrencyLimiter } from "./orchestration/concurrency"
 import { createTaskEngine } from "./orchestration/task-engine"
@@ -52,6 +53,33 @@ export default Plugin.define({
   id: "omo",
   setup: async (ctx) => {
     const trace = createTrace()
+
+    let configResult: ReturnType<typeof loadOpenCode2Config>
+    try {
+      configResult = loadOpenCode2Config({
+        directory: process.cwd(),
+        options: (ctx.options as Record<string, unknown>) ?? {},
+      })
+    } catch (e) {
+      // Fail-soft: Should never throw internally, but wrapping just in case.
+      configResult = {
+        config: {},
+        rawConfig: {},
+        diagnostics: [{ message: String(e), path: "(loader boundary)", kind: "fatal" }],
+        sources: [],
+      }
+    }
+
+    trace("omo.config.loaded", {
+      defaultAgent: configResult.config.default_agent ?? null,
+      agentModelOverrides: Object.keys(configResult.config.agents ?? {}),
+      goalEnabled: configResult.config.goal?.enabled ?? false,
+      disabledHooks: configResult.config.disabled_hooks ?? [],
+      diagnostics: configResult.diagnostics.length,
+      optionsApplied: Object.keys(ctx.options ?? {}).length > 0,
+    })
+    trace("omo.config.effective", configResult.config as Record<string, unknown>)
+
     const registry = new TaskRegistry()
     const limiter = new ConcurrencyLimiter()
     const engine = createTaskEngine({
@@ -87,14 +115,28 @@ export default Plugin.define({
 
     // Phase 1: register the real OMO agent catalog — 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
-    // delegation categories as subagents. Default agent: sisyphus.
+    // delegation categories as subagents. Default agent reads from config.
     let capturedStaticSisyphusPrompt: string | undefined
     const onSisyphusPrompt = (prompt: string): void => {
       capturedStaticSisyphusPrompt = prompt
     }
-    const subagents = await registerSubagents(ctx, { trace, catalog })
-    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus", catalog, onSisyphusPrompt })
-    const categories = await registerCategories(ctx, { trace, catalog })
+    const subagents = await registerSubagents(ctx, {
+      trace,
+      catalog,
+      agentOverrides: configResult.config.agents,
+    })
+    const primaries = await registerPrimaries(ctx, {
+      trace,
+      catalog,
+      defaultAgent: configResult.config.default_agent ?? "sisyphus",
+      agentOverrides: configResult.config.agents,
+      onSisyphusPrompt,
+    })
+    const categories = await registerCategories(ctx, {
+      trace,
+      catalog,
+      agentOverrides: configResult.config.agents,
+    })
 
     // v2 applies agent.transform callbacks lazily (on first registry
     // materialization); force them now so the summary reflects what was actually

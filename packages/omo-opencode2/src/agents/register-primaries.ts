@@ -11,6 +11,7 @@ import { buildSisyphusPromptForModel } from "./sisyphus-prompt"
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+import type { OpenCode2AgentOverride } from "../config"
 
 const PRIMARY = "primary"
 
@@ -87,6 +88,7 @@ export async function registerPrimaries(
     catalog: CatalogSource;
     systemDefaultModel?: string;
     defaultAgent?: string;
+    agentOverrides?: Record<string, OpenCode2AgentOverride>;
     trace?: (event: string, detail?: Record<string, unknown>) => void;
     /** Called with the exact static Sisyphus prompt baked at registration time. */
     onSisyphusPrompt?: (prompt: string) => void;
@@ -99,7 +101,7 @@ export async function registerPrimaries(
     const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
     for (const def of PRIMARIES) {
       const requirement = AGENT_MODEL_REQUIREMENTS[def.id]
-      const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault)
+      const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault, options.agentOverrides?.[def.id])
       if (!resolved) continue
 
       // v1 parity: an agent with a model-support predicate is skipped (not
