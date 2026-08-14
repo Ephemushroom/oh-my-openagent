@@ -1,0 +1,19 @@
+{
+  "eventName": "omo.comment-checker.detected",
+  "outcome": null,
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786724805801,
+      "event": "omo.comment-checker.detected",
+      "sessionID": "ses_ffee740d3ffeL726kjDX31PKWd",
+      "agent": "sisyphus",
+      "tool": "write",
+      "filePath": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.DQ1b5lcQ6i\\proj\\slop.ts",
+      "outcome": "detected",
+      "messageLength": 2370
+    }
+  ]
+}
