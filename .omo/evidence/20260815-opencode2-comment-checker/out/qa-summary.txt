@@ -1,4 +1,4 @@
-sandbox: /tmp/tmp.DQ1b5lcQ6i
+sandbox: /tmp/tmp.Fu4EXINuwr
 opencode2: opencode2 v0.0.0-next-17055
 model: zhipuai/glm-4.7
 ## clean write fires the hook without false-positive detection
