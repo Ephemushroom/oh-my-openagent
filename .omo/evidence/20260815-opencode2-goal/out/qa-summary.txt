@@ -1,0 +1,21 @@
+sandbox: /tmp/tmp.nqRzy8bKyi
+opencode2: opencode2 v0.0.0-next-17055
+model: zhipuai/glm-4.7
+## goal disabled by default-facing config
+PASS  disabled.run  (real session completed)
+PASS  disabled.trace  (goal feature reported disabled)
+PASS  disabled.no-registration  (no goal tools or lifecycle pump registered)
+## enabled goal tools persist and complete a session goal
+PASS  enabled.run  (real session completed)
+PASS  enabled.registered  (three goal tools registered in the live plugin)
+PASS  enabled.created  (create_goal executed in the live session)
+PASS  enabled.completed  (update_goal completed the persisted goal)
+PASS  enabled.persisted  (versioned goal JSON retained the objective and completed status)
+## active goal resumes from a real idle edge
+PASS  lifecycle.run  (real session completed)
+PASS  lifecycle.created  (an active goal existed before the idle edge)
+PASS  lifecycle.continued  (the lifecycle pump injected a duplicate-safe continuation)
+## host-store isolation
+PASS  isolation.clean  (newer-than-marker sweep found no host-store writes)
+
+summary: PASS=12 FAIL=0
