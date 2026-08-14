@@ -211,6 +211,7 @@ export default Plugin.define({
     await registerContextHooks({
       ctx,
       staticSisyphusPrompt: capturedStaticSisyphusPrompt ?? "",
+      workspaceDirectory: process.cwd(),
       trace,
     })
     trace("omo.context-hooks.registered", { staticPromptLength: capturedStaticSisyphusPrompt?.length ?? 0 })

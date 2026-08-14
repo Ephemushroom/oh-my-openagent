@@ -233,4 +233,57 @@ describe("createContextHookComposer", () => {
     const tagged = second.system.filter((part) => part.text?.includes("<ultrawork-mode>"))
     expect(tagged).toHaveLength(1)
   })
+
+  test("#given project rule context and a keyword turn #when composed #then rules join the same pipeline before the mode part", async () => {
+    // given
+    const projectPart = { type: "text", text: "PROJECT_RULE_CONTEXT_SENTINEL" }
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      commandList: async () => [],
+      projectContext: async () => ({
+        systemParts: [projectPart],
+        ruleFiles: 1,
+        agentsFiles: 0,
+        diagnostics: 0,
+      }),
+      lastUserText: async () => "ulw",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    const projectIndex = output.system.findIndex((part) => part.text === projectPart.text)
+    const modeIndex = output.system.findIndex((part) => part.text?.includes("<ultrawork-mode>"))
+    expect(projectIndex).toBeGreaterThanOrEqual(0)
+    expect(modeIndex).toBeGreaterThan(projectIndex)
+  })
+
+  test("#given empty project rule context #when composed #then no placeholder system part is appended", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      commandList: async () => [],
+      projectContext: async () => ({
+        systemParts: [],
+        ruleFiles: 0,
+        agentsFiles: 0,
+        diagnostics: 0,
+      }),
+      lastUserText: async () => "ordinary turn",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+    const before = input.system.length
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system).toHaveLength(before)
+  })
 })
