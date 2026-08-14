@@ -1,0 +1,15 @@
+{
+  "event": "omo.write-existing-file-guard.block",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786719625798,
+      "event": "omo.write-existing-file-guard.block",
+      "sessionID": "ses_fff366553ffexRqi71jx6eREqG",
+      "filePath": "existing.txt",
+      "resolvedPath": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.vg1N23cN8R\\proj\\existing.txt"
+    }
+  ]
+}

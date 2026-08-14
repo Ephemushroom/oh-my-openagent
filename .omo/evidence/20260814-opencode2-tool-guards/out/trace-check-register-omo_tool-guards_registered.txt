@@ -1,0 +1,16 @@
+{
+  "event": "omo.tool-guards.registered",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786719598902,
+      "event": "omo.tool-guards.registered",
+      "hooks": [
+        "write_existing_file_guard",
+        "prometheus_md_only"
+      ]
+    }
+  ]
+}

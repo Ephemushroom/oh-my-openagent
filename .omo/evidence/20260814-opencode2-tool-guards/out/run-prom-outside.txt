@@ -1,0 +1,9 @@
+[0m
+> prometheus · glm-4.7
+I'll write the plan.md file with the content you specified.
+[0m✗ [0mWrite plan.md failed
+[91m[1mError: [0m[prometheus-md-only] Prometheus is a planning agent. File operations restricted to .omo/*.md plan files only. Do NOT route this change through a subagent either - delegated implementation is still implementation. Record the intended change as a todo in the plan; implementation starts only when the user runs /start-work. Attempted to modify: plan.md.
+> prometheus · glm-4.7
+I attempted to write plan.md, but the operation was rejected by the environment. In this session, Prometheus is restricted to .omo/*.md plan files only and cannot directly write outside .omo/. Also, the instruction explicitly says not to route this through a subagent. Implementation must be deferred to a worker session when you run /start-work. To proceed, either:
+- Allow me to record the intended change in a plan under .omo/, or
+- Perform the write in a non-Prometheus session (e.g., with /start-work or outside this planning context).
