@@ -1,0 +1,19 @@
+{
+  "pass": true,
+  "isolationClean": true,
+  "realBefore": "DC4C09E0233F6B39D25955133E39DBF7B308691C2A1E0AE1A91F9E828C52B92D",
+  "realAfter": "DC4C09E0233F6B39D25955133E39DBF7B308691C2A1E0AE1A91F9E828C52B92D",
+  "names": [
+    "codegraph",
+    "lsp",
+    "context7",
+    "grep_app"
+  ],
+  "firstAdded": [
+    "codegraph",
+    "lsp",
+    "context7",
+    "grep_app"
+  ],
+  "written": "{\n  \"plugins\": [\"oh-my-opencode2\"],\n  \"mcp\": { \"servers\": {\n      \"codegraph\": {\n        \"type\": \"local\",\n        \"command\": [\n          \"node\",\n          \"/abs/codegraph/cli.js\",\n          \"serve\",\n          \"--mcp\"\n        ],\n        \"environment\": {\n          \"CODEGRAPH_INSTALL_DIR\": \"C:\\\\Users\\\\Bryan\\\\.omo\\\\codegraph\",\n          \"CODEGRAPH_NO_DOWNLOAD\": \"1\",\n          \"CODEGRAPH_TELEMETRY\": \"0\",\n          \"DO_NOT_TRACK\": \"1\"\n        },\n        \"codemode\": false\n      },\n      \"lsp\": {\n        \"type\": \"local\",\n        \"command\": [\n          \"node\",\n          \"/abs/lsp/cli.js\",\n          \"mcp\"\n        ],\n        \"environment\": {\n          \"LSP_TOOLS_MCP_PROJECT_CONFIG\": \".opencode/lsp.json\"\n        },\n        \"codemode\": false\n      },\n      \"context7\": {\n        \"type\": \"remote\",\n        \"url\": \"https://mcp.context7.com/mcp\",\n        \"codemode\": false\n      },\n      \"grep_app\": {\n        \"type\": \"remote\",\n        \"url\": \"https://mcp.grep.app\",\n        \"codemode\": false\n      }\n    } }\n}\n"
+}

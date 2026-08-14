@@ -36,12 +36,6 @@ export interface OpenCode2EntriesInput {
 
 const REMOTE_MCP_ENTRIES = [
   {
-    name: "websearch",
-    type: "remote",
-    url: "https://mcp.exa.ai/mcp?tools=web_search_exa",
-    codemode: false,
-  },
-  {
     name: "context7",
     type: "remote",
     url: "https://mcp.context7.com/mcp",
@@ -56,9 +50,9 @@ const REMOTE_MCP_ENTRIES = [
 ] as const satisfies readonly OpenCode2McpEntry[]
 
 /**
- * Returns the three remote HTTP MCPs that v1 injects at plugin load
- * (websearch / context7 / grep_app). No API keys or headers are written:
- * secrets must not land in the user's opencode.json.
+ * Returns the remote HTTP MCPs that OpenCode2 does not already ship
+ * (context7 / grep_app). websearch is omitted: v2 has a native Exa-backed
+ * websearch tool. No API keys or headers are written.
  */
 export function buildRemoteMcpEntries(): OpenCode2McpEntry[] {
   return REMOTE_MCP_ENTRIES.map((entry) => ({ ...entry }))
