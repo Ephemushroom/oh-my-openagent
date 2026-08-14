@@ -1,0 +1,5 @@
+[0m
+> sisyphus · glm-4.7
+[0m← [0mWrite clean.ts
+Created file successfully: clean.ts
+> sisyphus · glm-4.7
