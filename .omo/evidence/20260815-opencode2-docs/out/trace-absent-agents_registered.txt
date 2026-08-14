@@ -1,0 +1,5 @@
+{
+  "event": "agents.registered",
+  "observed": 0,
+  "ok": true
+}

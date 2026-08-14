@@ -1,0 +1,12 @@
+{
+  "event": "omo.skills.registered",
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786733218506,
+      "event": "omo.skills.registered",
+      "path": "D:\\Programme\\AI\\oh-my-openagent-wt\\oc2docs\\packages\\shared-skills\\skills\\"
+    }
+  ]
+}

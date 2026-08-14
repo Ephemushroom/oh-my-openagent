@@ -1,0 +1,17 @@
+{
+  "event": "omo.orchestration.registered",
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786733218532,
+      "event": "omo.orchestration.registered",
+      "tools": [
+        "task",
+        "background_output",
+        "background_cancel",
+        "hashline_edit"
+      ]
+    }
+  ]
+}
