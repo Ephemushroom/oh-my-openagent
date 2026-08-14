@@ -1,0 +1,5 @@
+packages/omo-opencode2/src/orchestration/task-result-guidance.ts 47
+packages/omo-opencode2/src/orchestration/task-result-guidance.test.ts 40
+packages/omo-opencode2/src/orchestration/task-engine-guidance.test.ts 55
+packages/omo-opencode2/src/orchestration/task-engine.ts 124
+packages/omo-opencode2/src/orchestration/task-tool.ts 242

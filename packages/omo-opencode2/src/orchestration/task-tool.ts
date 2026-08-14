@@ -4,6 +4,7 @@ import type { TaskRegistry } from "./task-registry"
 import type { ConcurrencyLimiter } from "./concurrency"
 import type { ChildSessionDeps } from "./child-session"
 import { runChildSession } from "./child-session"
+import { guideTaskResult } from "./task-result-guidance"
 
 /** Structural stand-in for effect's JsonSchema (kept dependency-free). */
 export interface JsonSchemaLike {
@@ -127,6 +128,9 @@ export function createTaskTool(options: CreateTaskToolOptions): {
   execute: (input: unknown, toolCtx: { sessionID: string }) => Promise<{ content: string }>
 } {
   const { ctx, registry, limiter, deps, availableSubagents, availableCategories, categoryModels, trace } = options
+  const respond = (content: string): { content: string } => ({
+    content: guideTaskResult(content, trace).content,
+  })
 
   return {
     name: "task",
@@ -149,13 +153,17 @@ export function createTaskTool(options: CreateTaskToolOptions): {
       const command = readString(input, "command")
 
       if (!prompt && !command) {
-        return { content: "Invalid arguments: prompt (or command) is required." }
+        return respond("Invalid arguments: prompt (or command) is required.")
       }
       if (category !== undefined && subagentType !== undefined) {
-        return { content: "Invalid arguments: provide ONLY one of category or subagent_type, not both." }
+        return respond(
+          "[ERROR] Invalid arguments: category OR subagent_type are mutually exclusive. Provide ONLY one.",
+        )
       }
       if (taskId !== undefined && (category !== undefined || subagentType !== undefined)) {
-        return { content: "Invalid arguments: task_id continuation cannot be combined with category/subagent_type." }
+        return respond(
+          "Invalid arguments: task_id continuation cannot be combined with category/subagent_type.",
+        )
       }
 
       // Continuation path: append a prompt to an existing child session.
@@ -173,7 +181,7 @@ export function createTaskTool(options: CreateTaskToolOptions): {
           background: false,
           continuationTaskID: taskId,
         })
-        return { content: formatResult(result.ok, result.text, result.taskID) }
+        return respond(formatResult(result.ok, result.text, result.taskID))
       }
 
       // Route: subagent_type direct, or category via model-core.
@@ -181,30 +189,29 @@ export function createTaskTool(options: CreateTaskToolOptions): {
       let model: string
       if (subagentType !== undefined) {
         if (!availableSubagents.includes(subagentType)) {
-          return {
-            content: `Unknown agent: ${subagentType}. Available subagents: ${availableSubagents.join(", ")}.`,
-          }
+          return respond(
+            `[ERROR] Unknown agent: ${subagentType}. Available subagents: ${availableSubagents.join(", ")}.`,
+          )
         }
         agent = subagentType
         model = modelOverride ?? categoryModels.get(subagentType) ?? ""
       } else if (category !== undefined) {
         const resolved = options.resolveCategory(category)
         if (!resolved) {
-          return {
-            content: `Unknown category: ${category}. Available categories: ${availableCategories.join(", ")}.`,
-          }
+          return respond(
+            `[ERROR] Unknown category: ${category}. Available categories: ${availableCategories.join(", ")}.`,
+          )
         }
         agent = resolved.agent
         model = modelOverride ?? resolved.model
       } else {
-        return {
-          content:
-            "Invalid arguments: must provide either category or subagent_type. Available subagents: " +
+        return respond(
+          "[ERROR] Invalid arguments: Must provide either category or subagent_type. Available subagents: " +
             availableSubagents.join(", ") +
             ". Available categories: " +
             availableCategories.join(", ") +
             ".",
-        }
+        )
       }
 
       const promptWithSkills = loadSkills.length > 0
@@ -240,21 +247,17 @@ export function createTaskTool(options: CreateTaskToolOptions): {
       })
 
       if (runInBackground) {
-        return {
-          content: `Background task ${result.taskID} started (agent=${agent}). Use background_output with task_id="${result.taskID}" to retrieve the result.`,
-        }
+        return respond(
+          `Background task ${result.taskID} started (agent=${agent}). Use background_output with task_id="${result.taskID}" to retrieve the result.`,
+        )
       }
-      return { content: formatResult(result.ok, result.text, result.taskID) }
+      return respond(formatResult(result.ok, result.text, result.taskID))
     },
   }
 }
 
 function formatResult(ok: boolean, text: string, taskID: string): string {
-  if (text.length === 0) {
-    return ok
-      ? `Task ${taskID} completed but produced no text output.`
-      : `Task ${taskID} failed with no output.`
-  }
+  if (text.trim() === "") return ""
   return ok
     ? `Task ${taskID} result:\n${text}`
     : `Task ${taskID} failed:\n${text}`

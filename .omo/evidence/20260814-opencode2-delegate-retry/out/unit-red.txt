@@ -1,0 +1,36 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\orchestration\task-result-guidance.test.ts:
+ 9 | 
+10 |     // when
+11 |     const result = guideTaskResult(output)
+12 | 
+13 |     // then
+14 |     expect(result.kind).toBe("empty_response")
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: "empty_response"
+Received: "usable"
+
+      at <anonymous> (D:\Programme\AI\oc2task\packages\omo-opencode2\src\orchestration\task-result-guidance.test.ts:14:25)
+(fail) guideTaskResult > #given whitespace-only child output #when guided #then it becomes an actionable empty-response result [15.34ms]
+21 | 
+22 |     // when
+23 |     const result = guideTaskResult(output)
+24 | 
+25 |     // then
+26 |     expect(result.kind).toBe("retryable_error")
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: "retryable_error"
+Received: "usable"
+
+      at <anonymous> (D:\Programme\AI\oc2task\packages\omo-opencode2\src\orchestration\task-result-guidance.test.ts:26:25)
+(fail) guideTaskResult > #given a recognized task invocation error #when guided #then retry metadata and guidance are appended [2.99ms]
+
+ 1 pass
+ 2 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [479.00ms]

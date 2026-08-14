@@ -1,6 +1,7 @@
 import type { Context } from "@opencode-ai/plugin/promise/plugin"
 
 import type { TaskRegistry } from "./task-registry"
+import { guideTaskResult } from "./task-result-guidance"
 
 export interface ChildResult {
   ok: boolean
@@ -72,11 +73,15 @@ export function createTaskEngine(options: TaskEngineOptions): TaskEngine {
         if (task && task.status === "running") {
           registry.fail(task.id, message)
           if (task.background) {
+            const guided = guideTaskResult(message, trace)
+            if (guided.kind !== "usable") {
+              registry.update(task.id, { texts: [guided.content] })
+            }
             onBackgroundTerminal?.({
               taskID: task.id,
               parentSessionID: task.parentSessionID,
               ok: false,
-              text: message,
+              text: guided.content,
             })
           }
         }
@@ -98,11 +103,15 @@ export function createTaskEngine(options: TaskEngineOptions): TaskEngine {
           if (ok) registry.complete(task.id)
           else registry.fail(task.id, "interrupted")
           if (task.background) {
+            const guided = guideTaskResult(text, trace)
+            if (guided.kind !== "usable") {
+              registry.update(task.id, { texts: [guided.content] })
+            }
             onBackgroundTerminal?.({
               taskID: task.id,
               parentSessionID: task.parentSessionID,
               ok,
-              text,
+              text: guided.content,
             })
           }
         }
