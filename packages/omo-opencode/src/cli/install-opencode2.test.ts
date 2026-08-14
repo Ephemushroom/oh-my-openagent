@@ -66,21 +66,19 @@ describe("buildLspMcpEntry", () => {
 })
 
 describe("buildRemoteMcpEntries", () => {
-  test("#given the v1 remote trio #when building #then each entry is remote with url and codemode false and no headers", () => {
+  test("#given the managed remotes #when building #then context7 and grep_app are remote with url and codemode false and websearch is omitted", () => {
     // when
     const remotes = buildRemoteMcpEntries()
 
     // then
-    expect(remotes.map((entry) => entry.name)).toEqual(["websearch", "context7", "grep_app"])
+    expect(remotes.map((entry) => entry.name)).toEqual(["context7", "grep_app"])
     for (const entry of remotes) {
       expect(entry.type).toBe("remote")
       expect(entry.codemode).toBe(false)
       expect(entry.url).toBeDefined()
       expect(entry.environment).toBeUndefined()
     }
-    expect(remotes.find((entry) => entry.name === "websearch")?.url).toBe(
-      "https://mcp.exa.ai/mcp?tools=web_search_exa",
-    )
+    expect(remotes.find((entry) => entry.name === "websearch")).toBeUndefined()
     expect(remotes.find((entry) => entry.name === "context7")?.url).toBe("https://mcp.context7.com/mcp")
     expect(remotes.find((entry) => entry.name === "grep_app")?.url).toBe("https://mcp.grep.app")
   })
@@ -96,7 +94,7 @@ describe("buildOpenCode2Entries", () => {
     })
 
     // then
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "lsp", "websearch", "context7", "grep_app"])
+    expect(entries.map((e) => e.name)).toEqual(["codegraph", "lsp", "context7", "grep_app"])
   })
 
   test("#given a missing node runtime #when assembling #then lsp is skipped and remotes remain", () => {
@@ -108,7 +106,7 @@ describe("buildOpenCode2Entries", () => {
     })
 
     // then: codegraph survives, lsp degrades to a skip, remotes stay
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "websearch", "context7", "grep_app"])
+    expect(entries.map((e) => e.name)).toEqual(["codegraph", "context7", "grep_app"])
   })
 
   test("#given a missing daemon cli #when assembling #then lsp is skipped and remotes remain", () => {
@@ -120,7 +118,7 @@ describe("buildOpenCode2Entries", () => {
     })
 
     // then
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "websearch", "context7", "grep_app"])
+    expect(entries.map((e) => e.name)).toEqual(["codegraph", "context7", "grep_app"])
   })
 
   test("#given a missing codegraph #when assembling #then it fails closed", () => {
