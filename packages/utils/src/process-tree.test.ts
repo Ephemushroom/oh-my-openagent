@@ -90,6 +90,6 @@ describe("runProcessWithTreeTimeout output decoding", () => {
     expect(pids.some(isProcessAlive)).toBe(false)
     expect(result.termination?.survivorPids).toEqual([])
     expect(result.termination?.attempts.some((attempt) => attempt.signal === "SIGKILL")).toBe(true)
-    expect(reports).toEqual([result.termination])
+    expect(reports as any).toEqual([result.termination])
   })
 })

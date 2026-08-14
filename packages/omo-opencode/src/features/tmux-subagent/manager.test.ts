@@ -1,4 +1,4 @@
-/// <reference path="../../../../../bun-test.d.ts" />
+
 import { describe, test, expect, mock, beforeEach, spyOn, afterAll, afterEach } from 'bun:test'
 import type { TmuxConfig } from '../../config/schema'
 import type { WindowState, PaneAction } from './types'

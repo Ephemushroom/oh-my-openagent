@@ -70,6 +70,6 @@ describe("rule frontmatter corpus", () => {
       { globs: ["*.md", "*.ts", "*.js"] },
       { globs: [] },
     ]);
-    expect(parsed.map((entry) => entry.utils.data)).toEqual(parsed.map((entry) => entry.rule.metadata));
+    expect(parsed.map((entry) => entry.utils.data)).toEqual(parsed.map((entry) => entry.rule.metadata) as any);
   });
 });

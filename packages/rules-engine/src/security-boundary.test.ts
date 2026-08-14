@@ -1,5 +1,3 @@
-/// <reference path="../../../bun-test.d.ts" />
-
 import { mkdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

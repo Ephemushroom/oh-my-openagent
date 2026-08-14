@@ -1,4 +1,4 @@
-/// <reference path="../../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 import { describe, expect, it, spyOn } from "bun:test"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"

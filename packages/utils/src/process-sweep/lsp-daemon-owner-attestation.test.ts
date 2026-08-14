@@ -64,7 +64,7 @@ describe("owner-bound lsp-daemon attestation", () => {
     }
     writeFileSync(join(versionDir, "daemon.owner"), JSON.stringify(owner))
 
-    expect(readLspDaemonOwnerTarget(versionDir)).toEqual({
+    expect(readLspDaemonOwnerTarget(versionDir) as any).toEqual({
       authPath: join(versionDir, "daemon.auth"),
       owner,
       ownerPath: join(versionDir, "daemon.owner"),

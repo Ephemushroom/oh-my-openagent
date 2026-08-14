@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 
 import { mkdtemp, readFile } from "node:fs/promises"

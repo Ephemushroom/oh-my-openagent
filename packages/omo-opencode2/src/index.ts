@@ -55,33 +55,6 @@ export default Plugin.define({
   id: "omo",
   setup: async (ctx) => {
     const trace = createTrace()
-
-    let configResult: ReturnType<typeof loadOpenCode2Config>
-    try {
-      configResult = loadOpenCode2Config({
-        directory: process.cwd(),
-        options: (ctx.options as Record<string, unknown>) ?? {},
-      })
-    } catch (e) {
-      // Fail-soft: Should never throw internally, but wrapping just in case.
-      configResult = {
-        config: {},
-        rawConfig: {},
-        diagnostics: [{ message: String(e), path: "(loader boundary)", kind: "fatal" }],
-        sources: [],
-      }
-    }
-
-    trace("omo.config.loaded", {
-      defaultAgent: configResult.config.default_agent ?? null,
-      agentModelOverrides: Object.keys(configResult.config.agents ?? {}),
-      goalEnabled: configResult.config.goal?.enabled ?? false,
-      disabledHooks: configResult.config.disabled_hooks ?? [],
-      diagnostics: configResult.diagnostics.length,
-      optionsApplied: Object.keys(ctx.options ?? {}).length > 0,
-    })
-    trace("omo.config.effective", configResult.config as Record<string, unknown>)
-
     const registry = new TaskRegistry()
     const limiter = new ConcurrencyLimiter()
     const engine = createTaskEngine({
@@ -117,28 +90,14 @@ export default Plugin.define({
 
     // Phase 1: register the real OMO agent catalog — 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
-    // delegation categories as subagents. Default agent reads from config.
+    // delegation categories as subagents. Default agent: sisyphus.
     let capturedStaticSisyphusPrompt: string | undefined
     const onSisyphusPrompt = (prompt: string): void => {
       capturedStaticSisyphusPrompt = prompt
     }
-    const subagents = await registerSubagents(ctx, {
-      trace,
-      catalog,
-      agentOverrides: configResult.config.agents,
-    })
-    const primaries = await registerPrimaries(ctx, {
-      trace,
-      catalog,
-      defaultAgent: configResult.config.default_agent ?? "sisyphus",
-      agentOverrides: configResult.config.agents,
-      onSisyphusPrompt,
-    })
-    const categories = await registerCategories(ctx, {
-      trace,
-      catalog,
-      agentOverrides: configResult.config.agents,
-    })
+    const subagents = await registerSubagents(ctx, { trace, catalog })
+    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus", catalog, onSisyphusPrompt })
+    const categories = await registerCategories(ctx, { trace, catalog })
 
     // v2 applies agent.transform callbacks lazily (on first registry
     // materialization); force them now so the summary reflects what was actually
@@ -233,15 +192,11 @@ export default Plugin.define({
         execute: cancelTool.execute,
       })
     })
-    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel"] })
-
-    // Hashline: tag every builtin `read` result with LINE#ID hashes, and
-    // register the hash-validated `hashline_edit` tool. The read enhancer fires
-    // on execute.after (result read back after hooks); the edit tool rejects an
-    // edit whose anchor hash no longer matches the file, before any write.
-    await registerHashlineReadEnhancer(ctx, trace)
+    
     await registerHashlineEditTool(ctx, trace)
-    trace("omo.hashline.registered", { tool: "hashline_edit" })
+    await registerHashlineReadEnhancer(ctx, trace)
+    
+    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit"] })
 
     // Phase 3 (context experience): dynamic Sisyphus prompt rebake + ultrawork
     // injection. The static Sisyphus prompt captured by onSisyphusPrompt is the

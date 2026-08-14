@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test"
 import { initI18n, getLocale, setLocale, t } from "./i18n"

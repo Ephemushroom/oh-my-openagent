@@ -1,4 +1,4 @@
-/// <reference path="../../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 
 import { describe, expect, test } from "bun:test"

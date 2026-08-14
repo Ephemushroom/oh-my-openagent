@@ -1,4 +1,4 @@
-/// <reference path="../../../bun-test.d.ts" />
+
 
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"

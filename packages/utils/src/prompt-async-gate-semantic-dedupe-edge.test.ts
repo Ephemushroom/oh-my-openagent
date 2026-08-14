@@ -1,4 +1,3 @@
-/// <reference path="../../../bun-test.d.ts" />
 import { afterEach, describe, expect, test } from "bun:test"
 
 import { createSemanticPromptDedupeKey } from "./prompt-async-gate/semantic-dedupe"

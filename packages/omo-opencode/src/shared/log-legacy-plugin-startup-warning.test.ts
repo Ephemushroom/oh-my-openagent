@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
 import type { LegacyPluginCheckResult } from "./legacy-plugin-warning"
