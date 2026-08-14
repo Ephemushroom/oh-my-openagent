@@ -1,9 +1,15 @@
 [0m
 > sisyphus · glm-4.7
-HYPERPLAN MODE ENABLED!
 [0m✗ [0mSkill "hyperplan" failed
-[91m[1mError: [0mUnable to load skill hyperplan
+[91m[1mError: [0mundefined is not an object (evaluating 'event.result.content')
 > sisyphus · glm-4.7
-Hyperplan skill not available in this environment. 
+HYPERPLAN MODE ENABLED!
 
-What placeholder would you like me to assess? Please share the content, file, or code you're referring to.
+The hyperplan skill failed to load and team-mode tools (`team_*`) are not available in this session.
+
+To enable hyperplan mode, you need to:
+
+1. Set `team_mode.enabled: true` in `~/.config/opencode/oh-my-opencode.jsonc`
+2. Restart opencode
+
+Would you like me to proceed with standard adversarial planning using the available agents instead, or would you prefer to configure team-mode first?

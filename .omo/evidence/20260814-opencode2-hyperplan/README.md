@@ -1,7 +1,13 @@
 # OpenCode2 Hyperplan Keyword QA Evidence
 
-Date: 2026-08-14 | Branch: `feat/opencode2-hyperplan` | Base:
-`dev` at `31799213b`
+Date: 2026-08-14 | Branch: `feat/opencode2-hyperplan` | Base: `dev` at `78860ea29`
+
+> Rebased onto `78860ea29` after the skills and commands (#16) and hashline
+> port (#17) PRs merged. #16 also edits `register-context-hooks.ts`, so the
+> rebase conflicted there; the resolution keeps BOTH the skill and command
+> catalog injection from #16 and the keyword mode injection from this branch,
+> with keyword injection running last. The live QA below was RE-RUN against the
+> rebased tree (PASS=7 FAIL=0), not carried over from before the rebase.
 
 ## WHAT WAS TESTED
 

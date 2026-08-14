@@ -1,5 +1,11 @@
 [0m
 > sisyphus · glm-4.7
 HYPERPLAN ULTRAWORK MODE ENABLED!
+[0m✗ [0mSkill "hyperplan" failed
+[91m[1mError: [0mundefined is not an object (evaluating 'event.result.content')
+> sisyphus · glm-4.7
+HYPERPLAN ULTRAWORK MODE ENABLED!
 
-**Assessment**: Empty project directory `C:\Users\Bryan\AppData\Local\Temp\tmp.fYaThghc1Q\proj` with no files. This is a placeholder. No valid assessment target exists—no code to evaluate, no tests to run, no artifacts to inspect.
+Skill load failed (undefined error in skill resolution).
+
+No placeholder provided in your message. What should I assess?

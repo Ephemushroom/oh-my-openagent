@@ -4,6 +4,6 @@
     "hyperplanParts": 0,
     "hyperplanUltraworkParts": 1
   },
-  "composedEvents": 1,
+  "composedEvents": 2,
   "matched": true
 }
