@@ -1,0 +1,11 @@
+sandbox: /tmp/tmp.O93GbwRShd
+opencode2: opencode2 v0.0.0-next-17055
+model: zhipuai/glm-4.7
+PASS  normal.run  (real task delegation session completed)
+PASS  task.registered  (live plugin registration trace includes task)
+PASS  normal.started  (task routed to explore on the explicit live model)
+PASS  normal.non-empty  (task finished successfully with non-empty child output)
+PASS  normal.not-detected  (normal output emitted no unusable-output trace)
+PASS  isolation.clean  (newer-than-marker sweep found no host-store writes)
+
+summary: PASS=6 FAIL=0
