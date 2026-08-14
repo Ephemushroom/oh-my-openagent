@@ -5,17 +5,27 @@ import type { OpenCode2McpEntry } from "./config-manager/update-opencode2-mcp-co
 import { updateOpenCode2McpConfig } from "./config-manager/update-opencode2-mcp-config"
 import { detectConfigFormat } from "./config-manager/opencode-config-format"
 import type { UpdateOpenCode2McpResult } from "./config-manager/update-opencode2-mcp-config"
+import { updateOpenCode2PluginConfig } from "./config-manager/update-opencode2-plugin-config"
+import { resolveOpenCode2PluginEntry } from "./resolve-opencode2-plugin-entry"
 
 export interface OpenCode2InstallResult extends UpdateOpenCode2McpResult {
   configPath: string
   added: string[]
+  pluginEntry: string
+  pluginAdded: boolean
 }
 
+export const MISSING_PLUGIN_ENTRY_MESSAGE =
+  "omo-opencode2 plugin source not found. The v2 adapter is an unpublished workspace package, so it installs only from a source checkout of this repository."
+
 /**
- * Top-level installer entry: locates the opencode config, builds the managed
- * MCP entries (codegraph + lsp), and writes only the missing ones. Fails
- * closed on a missing codegraph; lsp degrades to a skip when the node
- * runtime or daemon cli is unavailable.
+ * Top-level installer entry: locates the opencode config, then writes both the
+ * managed MCP entries (codegraph + lsp + remote HTTP) and the OMO plugin entry.
+ *
+ * Every input is resolved before the first write so a missing dependency cannot
+ * leave the config half-updated. Fails closed on a missing codegraph or a
+ * missing v2 plugin source; lsp degrades to a skip when the node runtime or
+ * daemon cli is unavailable.
  */
 export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
   const { path } = detectConfigFormat()
@@ -24,8 +34,20 @@ export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
     nodeCommand: await resolveNodeRuntime(),
     daemonCliPath: resolveLspDaemonCli(),
   })
+  const plugin = resolveOpenCode2PluginEntry()
+  if (!plugin.exists) {
+    throw new Error(MISSING_PLUGIN_ENTRY_MESSAGE)
+  }
+
   const result = updateOpenCode2McpConfig({ configPath: path, entries })
-  return { ...result, configPath: path }
+  const pluginResult = updateOpenCode2PluginConfig({ configPath: path, pluginEntry: plugin.entry })
+
+  return {
+    ...result,
+    configPath: path,
+    pluginEntry: plugin.entry,
+    pluginAdded: pluginResult.changed,
+  }
 }
 
 export interface OpenCode2EntriesInput {

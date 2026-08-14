@@ -178,12 +178,16 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
   }
 
   if (config.hasOpenCode2) {
-    printInfo("Installing OpenCode2 MCP servers (codegraph / lsp)...")
+    printInfo("Installing OpenCode2 plugin entry and MCP servers (codegraph / lsp)...")
     try {
       const openCode2Result = await runOpenCode2Installer()
       printSuccess(
         `OpenCode2 MCP config ${SYMBOLS.arrow} ${color.dim(openCode2Result.configPath)}` +
           (openCode2Result.added.length > 0 ? ` added: ${openCode2Result.added.join(", ")}` : " (nothing to add)"),
+      )
+      printSuccess(
+        `OpenCode2 plugin entry ${SYMBOLS.arrow} ${color.dim(openCode2Result.pluginEntry)}` +
+          (openCode2Result.pluginAdded ? " (registered)" : " (already registered)"),
       )
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
