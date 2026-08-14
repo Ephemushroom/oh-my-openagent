@@ -1,0 +1,34 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:
+[test-setup] vendored lsp-daemon dist missing; building once via `npm ci && npm run build`...
+npm notice run @code-yeongyu/lsp-daemon@0.1.0 build
+npm notice run node scripts/clean-dist.mjs && tsc -p tsconfig.build.json && bun build src/cli.ts src/index.ts src/client.ts --outdir dist --target node --format esm && node scripts/stamp-dist-version.mjs
+256 |     const output = await composer(input)
+257 | 
+258 |     // then
+259 |     const projectIndex = output.system.indexOf(projectPart)
+260 |     const modeIndex = output.system.findIndex((part) => part.text?.includes("<ultrawork-mode>"))
+261 |     expect(projectIndex).toBeGreaterThanOrEqual(0)
+                               ^
+error: expect(received).toBeGreaterThanOrEqual(expected)
+
+Expected: >= 0
+Received: -1
+
+      at <anonymous> (D:\Programme\AI\oc2rules\packages\omo-opencode2\src\hooks\register-context-hooks.test.ts:261:26)
+(fail) createContextHookComposer > #given project rule context and a keyword turn #when composed #then rules join the same pipeline before the mode part [3.59ms]
+
+packages\omo-opencode2\src\hooks\rules-context\index.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '.' from 'D:\Programme\AI\oc2rules\packages\omo-opencode2\src\hooks\rules-context\index.test.ts'
+-------------------------------
+
+
+ 12 pass
+ 2 fail
+ 1 error
+ 27 expect() calls
+Ran 14 tests across 2 files. [5.19s]
