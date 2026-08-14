@@ -18,7 +18,7 @@ Verification:
 
 - TDD RED: `out/tdd-red.txt` records the initial missing-module failure.
 - Focused goal suite: `16 pass`, `0 fail`.
-- Full OpenCode2 adapter suite: `130 pass`, `0 fail`, `366 expect()` calls.
+- Full OpenCode2 adapter suite: `139 pass`, `0 fail`, `388 expect()` calls.
 - Full workspace typecheck: `bun run typecheck` exited `0`.
 - Strict TypeScript audit: no violations across the 14 goal files.
 - Real surface: `qa.sh` drove pinned `opencode2 v0.0.0-next-17055` with

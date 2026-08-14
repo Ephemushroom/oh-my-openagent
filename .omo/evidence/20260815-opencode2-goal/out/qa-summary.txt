@@ -1,4 +1,4 @@
-sandbox: /tmp/tmp.nqRzy8bKyi
+sandbox: /tmp/tmp.XjJLBUBd4e
 opencode2: opencode2 v0.0.0-next-17055
 model: zhipuai/glm-4.7
 ## goal disabled by default-facing config

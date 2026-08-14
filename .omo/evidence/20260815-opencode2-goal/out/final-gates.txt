@@ -4,7 +4,7 @@ PASS  bun test packages/omo-opencode2/src/hooks/goal
       16 pass, 0 fail, 37 expect() calls
 
 PASS  bun test packages/omo-opencode2/src
-      130 pass, 0 fail, 366 expect() calls
+      139 pass, 0 fail, 388 expect() calls
 
 PASS  bun run typecheck
       root tsgo, script tsgo, and every workspace package tsgo exited 0

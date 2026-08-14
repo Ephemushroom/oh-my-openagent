@@ -5,11 +5,11 @@
   "ok": true,
   "samples": [
     {
-      "t": 1786727650787,
+      "t": 1786729016489,
       "event": "omo.goal.continuation-injected",
-      "sessionID": "ses_ffebbdaa5ffe3xsg3gV726LK4m",
-      "goalID": "3216622b-2524-453d-8692-cf63b0c7e5e2",
-      "objectiveUpdatedAt": 1786727648
+      "sessionID": "ses_ffea70313ffeGx4iXRIQlBx3dK",
+      "goalID": "0c277417-3932-4506-b4f9-e1dc2d6fa2ff",
+      "objectiveUpdatedAt": 1786729014
     }
   ]
 }
