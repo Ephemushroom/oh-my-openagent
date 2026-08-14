@@ -1,0 +1,12 @@
+{
+  "commentPreserved": true,
+  "userPluginPreserved": true,
+  "pluginEntryWritten": true,
+  "pluginEntryValue": "D:\\Programme\\AI\\oh-my-openagent-wt\\feat-opencode2-installer-plugin-entry\\packages\\omo-opencode2\\src\\index.ts",
+  "mcpServers": [
+    "codegraph",
+    "context7",
+    "grep_app"
+  ],
+  "modelPreserved": "zhipuai/glm-4.7"
+}

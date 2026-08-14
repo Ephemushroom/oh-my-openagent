@@ -1,0 +1,12 @@
+{
+  "changed": true,
+  "configPath": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.iwgf2TOjN5\\config\\opencode\\opencode.json",
+  "backupPath": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.iwgf2TOjN5\\config\\opencode\\opencode.json.backup-2026-08-14T10-59-51-659Z",
+  "added": [
+    "codegraph",
+    "context7",
+    "grep_app"
+  ],
+  "pluginEntry": "D:\\Programme\\AI\\oh-my-openagent-wt\\feat-opencode2-installer-plugin-entry\\packages\\omo-opencode2\\src\\index.ts",
+  "pluginAdded": true
+}
