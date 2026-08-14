@@ -20,6 +20,8 @@ import { createBackgroundOutputTool, createBackgroundCancelTool } from "./orches
 import { registerContextHooks } from "./hooks/register-context-hooks"
 import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
 import { registerHashlineEditTool } from "./tools/hashline-edit"
+import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
+import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerSharedSkills } from "./skills"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
@@ -197,6 +199,10 @@ export default Plugin.define({
     await registerHashlineReadEnhancer(ctx, trace)
     
     trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit"] })
+
+    await registerWriteExistingFileGuard(ctx, trace)
+    await registerPrometheusMdOnly(ctx, trace)
+    trace("omo.tool-guards.registered", { hooks: ["write_existing_file_guard", "prometheus_md_only"] })
 
     // Phase 3 (context experience): dynamic Sisyphus prompt rebake + ultrawork
     // injection. The static Sisyphus prompt captured by onSisyphusPrompt is the
