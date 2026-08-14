@@ -1,0 +1,46 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\goal\controller.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './index' from 'D:\Programme\AI\oc2goal\packages\omo-opencode2\src\hooks\goal\controller.test.ts'
+-------------------------------
+
+
+packages\omo-opencode2\src\hooks\goal\prompt.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './index' from 'D:\Programme\AI\oc2goal\packages\omo-opencode2\src\hooks\goal\prompt.test.ts'
+-------------------------------
+
+
+packages\omo-opencode2\src\hooks\goal\register.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './index' from 'D:\Programme\AI\oc2goal\packages\omo-opencode2\src\hooks\goal\register.test.ts'
+-------------------------------
+
+
+packages\omo-opencode2\src\hooks\goal\runtime.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './index' from 'D:\Programme\AI\oc2goal\packages\omo-opencode2\src\hooks\goal\runtime.test.ts'
+-------------------------------
+
+
+packages\omo-opencode2\src\hooks\goal\tools.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './index' from 'D:\Programme\AI\oc2goal\packages\omo-opencode2\src\hooks\goal\tools.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 5 fail
+ 5 errors
+Ran 5 tests across 5 files. [343.00ms]
