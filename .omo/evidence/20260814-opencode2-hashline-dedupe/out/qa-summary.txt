@@ -1,0 +1,15 @@
+sandbox: /tmp/tmp.nwgCTjUBf4
+opencode2: opencode2 v0.0.0-next-17055
+model: zhipuai/glm-4.7
+## read then edit round trip (the crash repro)
+PASS  edit.run  (real session completed)
+PASS  edit.no-crash  (no 'undefined is not an object' crash in the transcript)
+PASS  edit.hashline-tagged  (read result was tagged (omo.hashline.tag-applied on tool read))
+PASS  edit.model-saw-tags  (model cited a real LINE#ID position in hashline_edit)
+PASS  edit.applied  (the edit actually landed in target.ts)
+## single resolved implementation
+PASS  dedupe.single-impl  (no flat duplicate shadows the directory module)
+## host-store isolation
+PASS  isolation.clean  (newer-than-marker sweep found no host-store writes)
+
+summary: PASS=7 FAIL=0

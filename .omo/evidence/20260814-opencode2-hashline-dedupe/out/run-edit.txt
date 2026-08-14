@@ -1,0 +1,9 @@
+[0m
+> sisyphus · glm-4.7
+[0m→ [0mRead target.ts 
+> sisyphus · glm-4.7
+[0m⚙ [0mhashline_edit {"filePath":"C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.nwgCTjUBf4\\proj\\target.ts","edits":[{"end":"LINE#QQ","lines":"export const value = 3","op":"replace","pos":"LINE#QQ"}]} 
+> sisyphus · glm-4.7
+[0m⚙ [0mhashline_edit {"edits":[{"end":"1#QQ","lines":"export const value = 3","op":"replace","pos":"1#QQ"}],"filePath":"C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.nwgCTjUBf4\\proj\\target.ts"} 
+> sisyphus · glm-4.7
+Changed `export const value = 1` to `export const value = 3` in target.ts.
