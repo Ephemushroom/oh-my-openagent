@@ -33,7 +33,7 @@ ZHIPU_API_KEY="$(node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileS
 [ -n "$ZHIPU_API_KEY" ] || { echo "no zhipuai key in v1 auth store"; exit 2; }
 
 SANDBOX="$(mktemp -d)"
-mkdir -p "$SANDBOX"/{data,config,cache,state,home,disabled,enabled,lifecycle}
+mkdir -p "$SANDBOX"/{data,config,cache,state,home,disabled,enabled,autostart,lifecycle}
 export XDG_DATA_HOME="$SANDBOX/data"
 export XDG_CONFIG_HOME="$SANDBOX/config"
 export XDG_CACHE_HOME="$SANDBOX/cache"
@@ -54,6 +54,7 @@ PLUGIN_JSON="$(printf '%s' "$PLUGIN_ENTRY" | sed 's/\\/\\\\/g')"
 write_project() {
   local project="$1"
   local goal_enabled="$2"
+  local goal_auto_start="${3:-false}"
   mkdir -p "$project/.omo"
   cat > "$project/opencode.jsonc" <<EOF
 {
@@ -72,7 +73,8 @@ EOF
 {
   "[opencode2]": {
     "goal": {
-      "enabled": $goal_enabled
+      "enabled": $goal_enabled,
+      "auto_start": $goal_auto_start
     }
   }
 }
@@ -82,8 +84,9 @@ EOF
 }
 
 write_project "$SANDBOX/disabled" unset
-write_project "$SANDBOX/enabled" true
-write_project "$SANDBOX/lifecycle" true
+write_project "$SANDBOX/enabled" true false
+write_project "$SANDBOX/autostart" true true
+write_project "$SANDBOX/lifecycle" true false
 
 "$OC2" --version > "$OUT/version.txt" 2>&1
 echo "sandbox: $SANDBOX"
@@ -140,7 +143,8 @@ check_persisted_goal() {
   local project="$1"
   local expected_objective="$2"
   local expected_status="$3"
-  node - "$project/.omo/goal" "$expected_objective" "$expected_status" > "$OUT/persisted-goal-check.txt" 2>&1 <<'NODE'
+  local output="${4:-$OUT/persisted-goal-check.txt}"
+  node - "$project/.omo/goal" "$expected_objective" "$expected_status" > "$output" 2>&1 <<'NODE'
 const fs = require("fs")
 const path = require("path")
 const [directory, expectedObjective, expectedStatus] = process.argv.slice(2)
@@ -151,6 +155,26 @@ const goals = files.map((name) => JSON.parse(fs.readFileSync(path.join(directory
 const matches = goals.filter((goal) => goal.objective === expectedObjective && goal.status === expectedStatus)
 const ok = files.length > 0 && matches.length > 0
 console.log(JSON.stringify({ files, expectedObjective, expectedStatus, matches: matches.length, ok }, null, 2))
+process.exit(ok ? 0 : 1)
+NODE
+}
+
+check_persisted_goal_contains() {
+  local project="$1"
+  local expected_fragment="$2"
+  local expected_status="$3"
+  local output="$4"
+  node - "$project/.omo/goal" "$expected_fragment" "$expected_status" > "$output" 2>&1 <<'NODE'
+const fs = require("fs")
+const path = require("path")
+const [directory, expectedFragment, expectedStatus] = process.argv.slice(2)
+const files = fs.existsSync(directory)
+  ? fs.readdirSync(directory).filter((name) => name.endsWith(".json"))
+  : []
+const goals = files.map((name) => JSON.parse(fs.readFileSync(path.join(directory, name), "utf8")).goal)
+const matches = goals.filter((goal) => goal.objective.includes(expectedFragment) && goal.status === expectedStatus)
+const ok = files.length > 0 && matches.length > 0
+console.log(JSON.stringify({ files, expectedFragment, expectedStatus, matches: matches.length, ok }, null, 2))
 process.exit(ok ? 0 : 1)
 NODE
 }
@@ -168,12 +192,25 @@ run_case "enabled" "$SANDBOX/enabled" "Use create_goal exactly once with objecti
 check "enabled.run" "$?" "real session completed"
 trace_event_count "enabled" "omo.goal.registered" 1
 check "enabled.registered" "$?" "three goal tools registered in the live plugin"
+trace_event_absent "enabled" "omo.goal.auto-start-registered"
+check "enabled.no-auto-start" "$?" "auto-start context hook stayed disabled by default"
 trace_event_count "enabled" "omo.goal.created" 1
 check "enabled.created" "$?" "create_goal executed in the live session"
 trace_event_count "enabled" "omo.goal.completed" 1
 check "enabled.completed" "$?" "update_goal completed the persisted goal"
 check_persisted_goal "$SANDBOX/enabled" "GOAL_QA_TOOL_MARKER" "complete"
 check "enabled.persisted" "$?" "versioned goal JSON retained the objective and completed status"
+
+echo "## configured auto-start creates the first main-session goal"
+AUTO_START_OBJECTIVE="Call update_goal exactly once with status complete, then reply with the single word done. Marker: GOAL_QA_AUTO_START_MARKER."
+run_case "autostart" "$SANDBOX/autostart" "$AUTO_START_OBJECTIVE"
+check "autostart.run" "$?" "real main session completed"
+trace_event_count "autostart" "omo.goal.auto-start-registered" 1
+check "autostart.registered" "$?" "configured auto-start context hook registered"
+trace_event_count "autostart" "omo.goal.auto-started" 1
+check "autostart.created" "$?" "first real main-session message created the goal"
+check_persisted_goal_contains "$SANDBOX/autostart" "GOAL_QA_AUTO_START_MARKER" "complete" "$OUT/persisted-goal-auto-start-check.txt"
+check "autostart.persisted" "$?" "auto-started objective persisted and completed"
 
 echo "## active goal resumes from a real idle edge"
 run_case "lifecycle" "$SANDBOX/lifecycle" 'Immediately call create_goal exactly once with this exact input: {"objective":"GOAL_QA_LIFECYCLE_MARKER"}. After the tool succeeds, reply with the single word created and do not call update_goal.'

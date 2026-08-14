@@ -1,0 +1,15 @@
+bun test packages/omo-opencode2/src/hooks/goal/auto-start.test.ts
+
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\goal\auto-start.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'createGoalAutoStartHandler' not found in module 'D:\Programme\AI\oc2goal\packages\omo-opencode2\src\hooks\goal\index.ts'.
+-------------------------------
+
+0 pass
+1 fail
+1 error
+Ran 1 test across 1 file. [656.00ms]

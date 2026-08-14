@@ -1,0 +1,12 @@
+{
+  "event": "omo.goal.auto-start-registered",
+  "minimum": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786731640183,
+      "event": "omo.goal.auto-start-registered"
+    }
+  ]
+}

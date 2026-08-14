@@ -5,10 +5,10 @@
   "ok": true,
   "samples": [
     {
-      "t": 1786728994366,
+      "t": 1786731624438,
       "event": "omo.goal.created",
-      "sessionID": "ses_ffea7562fffey7nu9F6J721ii7",
-      "goalID": "60298cc8-c844-40b2-8b72-bebc54c7bcc1",
+      "sessionID": "ses_ffe7f301fffegD7ur0e1vzvhCe",
+      "goalID": "e0d58c35-b513-4738-a403-3a39e27b2064",
       "status": "active"
     }
   ]

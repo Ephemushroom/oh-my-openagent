@@ -1,19 +1,19 @@
 FINAL LOCAL GATES - 2026-08-15
 
 PASS  bun test packages/omo-opencode2/src/hooks/goal
-      16 pass, 0 fail, 37 expect() calls
+      21 pass, 0 fail, 46 expect() calls
 
 PASS  bun test packages/omo-opencode2/src
-      139 pass, 0 fail, 388 expect() calls
+      144 pass, 0 fail, 397 expect() calls
 
 PASS  bun run typecheck
       root tsgo, script tsgo, and every workspace package tsgo exited 0
 
 PASS  TypeScript no-excuse audit on packages/omo-opencode2/src/hooks/goal
-      no violations in 14 files
+      no violations in 16 files
 
 PASS  bash .omo/evidence/20260815-opencode2-goal/qa.sh
-      real opencode2 v0.0.0-next-17055: PASS=12 FAIL=0
+      real opencode2 v0.0.0-next-17055: PASS=17 FAIL=0
 
 UNAVAILABLE  bun test
       Attempted for 900 seconds on Windows. Unrelated failures included missing

@@ -1,4 +1,7 @@
 [0m
 > sisyphus · glm-4.7
+I read this as: implementation - create goal with marker.
+
+Creating goal now.
 [0m⚙ [0mcreate_goal {"objective":"GOAL_QA_LIFECYCLE_MARKER"}
 > sisyphus · glm-4.7
