@@ -1,4 +1,4 @@
 [0m
 > sisyphus · glm-4.7
-[0m⚙ [0mcreate_goal {"objective":"GOAL_QA_LIFECYCLE_MARKER"} 
+[0m⚙ [0mcreate_goal {"objective":"GOAL_QA_LIFECYCLE_MARKER"}
 > sisyphus · glm-4.7

@@ -1,9 +1,9 @@
 [0m
 > sisyphus · glm-4.7
 I read this as: Simple execution - run three goal tools in sequence.
-[0m⚙ [0mcreate_goal {"objective":"GOAL_QA_TOOL_MARKER"} 
+[0m⚙ [0mcreate_goal {"objective":"GOAL_QA_TOOL_MARKER"}
 > sisyphus · glm-4.7
-[0m⚙ [0mget_goal Unknown 
+[0m⚙ [0mget_goal Unknown
 > sisyphus · glm-4.7
-[0m⚙ [0mupdate_goal {"status":"complete"} 
+[0m⚙ [0mupdate_goal {"status":"complete"}
 > sisyphus · glm-4.7
