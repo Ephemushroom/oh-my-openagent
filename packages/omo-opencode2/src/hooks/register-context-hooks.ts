@@ -1,5 +1,8 @@
 import type { Context } from "@opencode-ai/plugin/promise/plugin"
 
+import { injectCommandCatalogSystemPart } from "./command-catalog-context"
+import type { LiveCommand } from "./command-catalog-context"
+import { injectSkillCatalogSystemPart } from "./skill-catalog-context"
 import { rebakeSisyphusSystemPart } from "./sisyphus-context"
 import type { LiveAgent, LiveSkill } from "./sisyphus-context"
 import { detectUltraworkIntent, injectUltraworkSystemPart } from "./ultrawork-context"
@@ -29,6 +32,7 @@ interface ComposerOptions {
   staticSisyphusPrompt: string
   agentList: () => Promise<LiveAgent[]>
   skillList: () => Promise<LiveSkill[]>
+  commandList: () => Promise<LiveCommand[]>
   lastUserText: (messages: HookEvent["messages"]) => Promise<string>
 }
 
@@ -62,7 +66,15 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
     })
     event.system = rebaked.system
 
-    // Step 2: ultrawork injection (second; only on the final real user turn).
+    // Step 2: expose concise registered skill and command catalogs.
+    event.system = injectSkillCatalogSystemPart(event.system, skillList ?? [])
+    try {
+      event.system = injectCommandCatalogSystemPart(event.system, await options.commandList())
+    } catch {
+      event.system = injectCommandCatalogSystemPart(event.system, [])
+    }
+
+    // Step 3: ultrawork injection (last; only on the final real user turn).
     // Appended as a system part (background context for the model).
     let userText = ""
     try {
@@ -124,6 +136,14 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
           name: skill.name,
           description: skill.description ?? "",
           location: skill.location,
+        }))
+      },
+      commandList: async () => {
+        const commands = await ctx.command.list()
+        trace?.("omo.context.commands", { count: commands.data.length })
+        return commands.data.map((command) => ({
+          name: command.name,
+          description: command.description,
         }))
       },
       lastUserText: lastRealUserText,

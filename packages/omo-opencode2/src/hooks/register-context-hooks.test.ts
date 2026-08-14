@@ -29,6 +29,7 @@ describe("createContextHookComposer", () => {
         { id: "deep", name: "deep", description: "Deep", mode: "subagent" },
       ],
       skillList: async () => [{ name: "git-master", description: "Git", location: "project" }],
+      commandList: async () => [{ name: "goal", description: "Goal" }],
       lastUserText: async () => "run ulw now",
     })
     const input = makeHookInput() as Parameters<typeof composer>[0]
@@ -39,6 +40,7 @@ describe("createContextHookComposer", () => {
     // then: project part preserved; sisyphus part rebaked with oracle; mode tag appended once
     expect(output.system[0]).toEqual({ type: "text", text: "[project] keep" })
     expect(output.system[1]?.text).toContain("oracle")
+    expect(output.system.some((part) => part.text?.includes("/goal"))).toBe(true)
     const tagged = output.system.filter((part) => part.text?.includes("<ultrawork-mode>"))
     expect(tagged).toHaveLength(1)
   })
@@ -49,6 +51,7 @@ describe("createContextHookComposer", () => {
       staticSisyphusPrompt: STATIC_SISYPHUS,
       agentList: async () => [{ id: "oracle", name: "oracle", description: "Oracle", mode: "subagent" }],
       skillList: async () => [],
+      commandList: async () => [],
       lastUserText: async () => "just help me",
     })
     const input = makeHookInput() as Parameters<typeof composer>[0]
@@ -69,6 +72,7 @@ describe("createContextHookComposer", () => {
         throw new Error("catalog down")
       },
       skillList: async () => [],
+      commandList: async () => [],
       lastUserText: async () => "ulw",
     })
     const input = makeHookInput() as Parameters<typeof composer>[0]
@@ -87,6 +91,7 @@ describe("createContextHookComposer", () => {
       staticSisyphusPrompt: STATIC_SISYPHUS,
       agentList: async () => [{ id: "oracle", name: "oracle", description: "Oracle", mode: "subagent" }],
       skillList: async () => [],
+      commandList: async () => [],
       lastUserText: async () => "ulw",
     })
 
