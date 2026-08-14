@@ -1,0 +1,37 @@
+{
+  // user comment that must survive the installer
+  "model": "zhipuai/glm-4.7",
+  "plugins": [
+    "some-user-plugin",
+    "D:\\Programme\\AI\\oh-my-openagent-wt\\feat-opencode2-installer-plugin-entry\\packages\\omo-opencode2\\src\\index.ts"
+  ],
+  "mcp": {
+    "servers": {
+      "codegraph": {
+        "type": "local",
+        "command": [
+          "C:\\Users\\Bryan\\.bun\\bin\\codegraph.exe",
+          "serve",
+          "--mcp"
+        ],
+        "environment": {
+          "CODEGRAPH_INSTALL_DIR": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.iwgf2TOjN5\\home\\.omo\\codegraph",
+          "CODEGRAPH_NO_DOWNLOAD": "1",
+          "CODEGRAPH_TELEMETRY": "0",
+          "DO_NOT_TRACK": "1"
+        },
+        "codemode": false
+      },
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp",
+        "codemode": false
+      },
+      "grep_app": {
+        "type": "remote",
+        "url": "https://mcp.grep.app",
+        "codemode": false
+      }
+    }
+  }
+}

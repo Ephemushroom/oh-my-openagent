@@ -1,0 +1,2 @@
+opencode.json  before=\dc4c09e0233f6b39d25955133e39dbf7b308691c2a1e0ae1a91f9e828c52b92d after=\dc4c09e0233f6b39d25955133e39dbf7b308691c2a1e0ae1a91f9e828c52b92d
+opencode.jsonc before=ABSENT after=ABSENT

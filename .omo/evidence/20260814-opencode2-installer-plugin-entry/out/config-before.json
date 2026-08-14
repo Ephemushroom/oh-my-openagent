@@ -1,0 +1,7 @@
+{
+  // user comment that must survive the installer
+  "model": "zhipuai/glm-4.7",
+  "plugins": [
+    "some-user-plugin"
+  ]
+}
