@@ -20,6 +20,135 @@ function makeHookInput() {
 }
 
 describe("createContextHookComposer", () => {
+  test("#given a standalone hyperplan turn #when composed #then only the hyperplan mode tag is appended", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "hyperplan this migration",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system.filter((part) => part.text?.includes("<hyperplan-mode>"))).toHaveLength(1)
+    expect(output.system.some((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toBe(false)
+    expect(output.system.some((part) => part.text?.includes("<ultrawork-mode>"))).toBe(false)
+  })
+
+  test("#given the standalone hpp shorthand #when composed #then the hyperplan mode tag is appended", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "hpp this migration",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system.filter((part) => part.text?.includes("<hyperplan-mode>"))).toHaveLength(1)
+  })
+
+  test("#given adjacent hyperplan and ultrawork triggers #when composed #then the combo suppresses both standalone modes", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "hyperplan ultrawork this migration",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system.filter((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toHaveLength(1)
+    expect(output.system.some((part) => part.text?.includes("<hyperplan-mode>"))).toBe(false)
+    expect(output.system.filter((part) => part.text?.includes("<ultrawork-mode>"))).toHaveLength(1)
+  })
+
+  test("#given reverse adjacent combo triggers #when composed #then the same combo mode is appended", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "ulw hpp this migration",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system.filter((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toHaveLength(1)
+    expect(output.system.filter((part) => part.text?.includes("<ultrawork-mode>"))).toHaveLength(1)
+  })
+
+  test("#given repeated combo composition #when the same turn is processed twice #then one combo part persists", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "hpp ulw this migration",
+    })
+    let input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    input = await composer(input)
+    const output = await composer(input)
+
+    // then
+    expect(output.system.filter((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toHaveLength(1)
+    expect(output.system.filter((part) => part.text?.includes("<ultrawork-mode>"))).toHaveLength(1)
+  })
+
+  test("#given non-adjacent hyperplan and ultrawork triggers #when composed #then both standalone modes are appended", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "hyperplan then use ultrawork for this migration",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system.some((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toBe(false)
+    expect(output.system.filter((part) => part.text?.includes("<hyperplan-mode>"))).toHaveLength(1)
+    expect(output.system.filter((part) => part.text?.includes("<ultrawork-mode>"))).toHaveLength(1)
+  })
+
+  test("#given a C++ header path ending in hpp #when composed #then no hyperplan mode is appended", async () => {
+    // given
+    const composer = createContextHookComposer({
+      staticSisyphusPrompt: STATIC_SISYPHUS,
+      agentList: async () => [],
+      skillList: async () => [],
+      lastUserText: async () => "inspect src/include/interface.hpp",
+    })
+    const input = makeHookInput() as Parameters<typeof composer>[0]
+
+    // when
+    const output = await composer(input)
+
+    // then
+    expect(output.system.some((part) => part.text?.includes("<hyperplan-mode>"))).toBe(false)
+    expect(output.system.some((part) => part.text?.includes("<hyperplan-ultrawork-mode>"))).toBe(false)
+  })
+
   test("#given a sisyphus session with live catalogs and a matching user turn #when composed #then dynamic rebake and one mode tag coexist", async () => {
     // given
     const composer = createContextHookComposer({

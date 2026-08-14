@@ -5,7 +5,7 @@ import type { LiveCommand } from "./command-catalog-context"
 import { injectSkillCatalogSystemPart } from "./skill-catalog-context"
 import { rebakeSisyphusSystemPart } from "./sisyphus-context"
 import type { LiveAgent, LiveSkill } from "./sisyphus-context"
-import { detectUltraworkIntent, injectUltraworkSystemPart } from "./ultrawork-context"
+import { detectKeywordModes, injectKeywordSystemParts } from "./ultrawork-context"
 
 export interface ContextHookDeps {
   ctx: Context
@@ -74,18 +74,19 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
       event.system = injectCommandCatalogSystemPart(event.system, [])
     }
 
-    // Step 3: ultrawork injection (last; only on the final real user turn).
-    // Appended as a system part (background context for the model).
+    // Step 3: keyword mode injection (last; only on the final real user turn).
+    // Mode directives are appended as system parts for model context.
     let userText = ""
     try {
       userText = await options.lastUserText(event.messages)
     } catch {
       userText = ""
     }
-    if (detectUltraworkIntent(userText)) {
-      const injected = injectUltraworkSystemPart(event.system, { agent: event.agent, model: `${event.model.providerID}/${event.model.id}` })
-      event.system = injected.system
-    }
+    const modes = detectKeywordModes(userText)
+    event.system = injectKeywordSystemParts(event.system, modes, {
+      agent: event.agent,
+      model: `${event.model.providerID}/${event.model.id}`,
+    })
 
     return event
   }
@@ -108,8 +109,8 @@ export async function lastRealUserText(messages: HookEvent["messages"]): Promise
 }
 
 /**
- * Registers the production context hooks (dynamic sisyphus rebake + ultrawork
- * injection) on the session context hook. Non-fatal on live catalog failure.
+ * Registers dynamic Sisyphus rebaking and keyword-mode injection on the
+ * session context hook. Non-fatal on live catalog failure.
  */
 export async function registerContextHooks(deps: ContextHookDeps): Promise<void> {
   const { ctx, staticSisyphusPrompt, trace } = deps
@@ -150,10 +151,18 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
     })
 
     const output = await composer(event as unknown as HookEvent)
+    const ultraworkParts = output.system.filter((part) => part.text?.includes("<ultrawork-mode>")).length
+    const hyperplanParts = output.system.filter((part) => part.text?.includes("<hyperplan-mode>")).length
+    const hyperplanUltraworkParts = output.system.filter((part) =>
+      part.text?.includes("<hyperplan-ultrawork-mode>"),
+    ).length
     trace?.("omo.context.composed", {
       sessionID: (event as unknown as { sessionID?: string }).sessionID,
       systemParts: output.system.length,
-      modeTagged: output.system.some((part) => part.text?.includes("<ultrawork-mode>")),
+      modeTagged: ultraworkParts + hyperplanParts + hyperplanUltraworkParts > 0,
+      ultraworkParts,
+      hyperplanParts,
+      hyperplanUltraworkParts,
     })
   })
 }
