@@ -1,0 +1,22 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\command-catalog-context.test.ts:
+14 |     // when
+15 |     const output = injectCommandCatalogSystemPart(system, commands)
+16 |
+17 |     // then
+18 |     const catalogs = output.filter((part) => part.text?.includes("<available-slash-commands>"))
+19 |     expect(catalogs).toHaveLength(1)
+                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-skills\packages\omo-opencode2\src\hooks\command-catalog-context.test.ts:19:22)
+(fail) injectCommandCatalogSystemPart > #given live commands #when injecting #then one structural catalog exposes every slash name [7.54ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [385.00ms]

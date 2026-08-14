@@ -1,0 +1,22 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\skill-catalog-context.test.ts:
+14 |     // when
+15 |     const output = injectSkillCatalogSystemPart(system, skills)
+16 |
+17 |     // then
+18 |     const catalogs = output.filter((part) => part.text?.includes("<available-skills>"))
+19 |     expect(catalogs).toHaveLength(1)
+                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-skills\packages\omo-opencode2\src\hooks\skill-catalog-context.test.ts:19:22)
+(fail) injectSkillCatalogSystemPart > #given live skills #when injecting #then one structural catalog exposes every skill name [3.43ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [369.00ms]
