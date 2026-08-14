@@ -1,0 +1,17 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\comment-checker\register.test.ts:
+[test-setup] vendored lsp-daemon dist missing; building once via `npm ci && npm run build`...
+npm notice run @code-yeongyu/lsp-daemon@0.1.0 build
+npm notice run node scripts/clean-dist.mjs && tsc -p tsconfig.build.json && bun build src/cli.ts src/index.ts src/client.ts --outdir dist --target node --format esm && node scripts/stamp-dist-version.mjs
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './register' from 'D:\Programme\AI\oc2cc\packages\omo-opencode2\src\hooks\comment-checker\register.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [5.49s]

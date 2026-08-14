@@ -1,0 +1,15 @@
+sandbox: /tmp/tmp.Fu4EXINuwr
+opencode2: opencode2 v0.0.0-next-17055
+model: zhipuai/glm-4.7
+## clean write fires the hook without false-positive detection
+PASS  clean.run  (real session completed)
+PASS  clean.registered  (comment-checker registered on the live plugin)
+PASS  clean.checked  (completed write traversed the post-tool checker path)
+PASS  clean.not-detected  (clean code produced no detection event)
+## one live slop-write attempt
+PASS  slop.run  (single real-session attempt completed)
+PASS  slop.detected  (written slop produced the distinct detection trace)
+## host-store isolation
+PASS  isolation.clean  (newer-than-marker sweep found no host-store writes)
+
+summary: PASS=7 FAIL=0

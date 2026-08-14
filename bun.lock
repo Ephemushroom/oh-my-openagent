@@ -261,6 +261,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@oh-my-opencode/agents-core": "workspace:*",
+        "@oh-my-opencode/comment-checker-core": "workspace:*",
         "@oh-my-opencode/delegate-core": "workspace:*",
         "@oh-my-opencode/hashline-core": "workspace:*",
         "@oh-my-opencode/model-core": "workspace:*",

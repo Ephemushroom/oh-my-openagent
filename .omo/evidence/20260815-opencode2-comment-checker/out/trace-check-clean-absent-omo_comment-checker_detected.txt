@@ -1,0 +1,5 @@
+{
+  "eventName": "omo.comment-checker.detected",
+  "observed": 0,
+  "ok": true
+}
