@@ -1,0 +1,5 @@
+{
+  "event": "omo.goal.auto-start-registered",
+  "observed": 0,
+  "ok": true
+}

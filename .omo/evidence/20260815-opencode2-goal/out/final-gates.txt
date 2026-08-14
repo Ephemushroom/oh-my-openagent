@@ -1,0 +1,26 @@
+FINAL LOCAL GATES - 2026-08-15
+
+PASS  bun test packages/omo-opencode2/src/hooks/goal
+      21 pass, 0 fail, 46 expect() calls
+
+PASS  bun test packages/omo-opencode2/src
+      144 pass, 0 fail, 397 expect() calls
+
+PASS  bun run typecheck
+      root tsgo, script tsgo, and every workspace package tsgo exited 0
+
+PASS  TypeScript no-excuse audit on packages/omo-opencode2/src/hooks/goal
+      no violations in 16 files
+
+PASS  bash .omo/evidence/20260815-opencode2-goal/qa.sh
+      real opencode2 v0.0.0-next-17055: PASS=17 FAIL=0
+
+UNAVAILABLE  bun test
+      Attempted for 900 seconds on Windows. Unrelated failures included missing
+      Unix chmod, missing generated Codex/Senpi runtime artifacts, and cleanup
+      timeouts in memory and Senpi suites. The scoped adapter suite is green.
+
+UNAVAILABLE  bun run build
+      Reached packages/lsp-tools-mcp, where npm executed `rm` through Windows
+      cmd.exe and failed because `rm` is unavailable. Generated schema churn
+      from the attempt was restored and is not part of this change.

@@ -1,0 +1,15 @@
+{
+  "event": "omo.goal.created",
+  "minimum": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786731624438,
+      "event": "omo.goal.created",
+      "sessionID": "ses_ffe7f301fffegD7ur0e1vzvhCe",
+      "goalID": "e0d58c35-b513-4738-a403-3a39e27b2064",
+      "status": "active"
+    }
+  ]
+}

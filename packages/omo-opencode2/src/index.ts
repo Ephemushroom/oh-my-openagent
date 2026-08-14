@@ -8,7 +8,6 @@ import { registerPrimaries } from "./agents/register-primaries"
 import { registerSubagents } from "./agents/register-subagents"
 import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
-import { loadOpenCode2Config } from "./config"
 import { registerBuiltinCommands } from "./commands"
 import { TaskRegistry } from "./orchestration/task-registry"
 import { ConcurrencyLimiter } from "./orchestration/concurrency"
@@ -23,6 +22,7 @@ import { registerHashlineEditTool } from "./tools/hashline-edit"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
+import { registerConfiguredGoalFeature } from "./hooks/goal"
 import { registerSharedSkills } from "./skills"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
@@ -58,6 +58,7 @@ export default Plugin.define({
   id: "omo",
   setup: async (ctx) => {
     const trace = createTrace()
+    const workspaceDirectory = process.cwd()
     const registry = new TaskRegistry()
     const limiter = new ConcurrencyLimiter()
     const engine = createTaskEngine({
@@ -114,6 +115,10 @@ export default Plugin.define({
 
     await registerSharedSkills(ctx, trace)
     await registerBuiltinCommands(ctx, trace)
+    const goalFeature = await registerConfiguredGoalFeature(ctx, {
+      directory: workspaceDirectory,
+      trace,
+    })
 
     // Phase 2: orchestration. Task tool + background tools, wired to the task
     // engine. waitChild registers a waiter on the engine's pump; the pump
@@ -213,7 +218,7 @@ export default Plugin.define({
     await registerContextHooks({
       ctx,
       staticSisyphusPrompt: capturedStaticSisyphusPrompt ?? "",
-      workspaceDirectory: process.cwd(),
+      workspaceDirectory,
       trace,
     })
     trace("omo.context-hooks.registered", { staticPromptLength: capturedStaticSisyphusPrompt?.length ?? 0 })
@@ -224,7 +229,10 @@ export default Plugin.define({
       await setupMechanicsProbe(ctx, trace, engine)
     }
 
-    return () => engine.dispose()
+    return () => {
+      goalFeature.dispose()
+      engine.dispose()
+    }
   },
 })
 

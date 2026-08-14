@@ -1,0 +1,9 @@
+{
+  "files": [
+    "ses_ffe7ed050ffebhlkfG4tq6kaOf.json"
+  ],
+  "expectedFragment": "GOAL_QA_AUTO_START_MARKER",
+  "expectedStatus": "complete",
+  "matches": 1,
+  "ok": true
+}

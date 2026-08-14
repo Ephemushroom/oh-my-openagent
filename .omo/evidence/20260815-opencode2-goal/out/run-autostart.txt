@@ -1,0 +1,4 @@
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0mupdate_goal {"status":"complete"}
+> sisyphus · glm-4.7

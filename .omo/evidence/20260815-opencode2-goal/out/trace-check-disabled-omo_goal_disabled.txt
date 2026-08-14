@@ -1,0 +1,13 @@
+{
+  "event": "omo.goal.disabled",
+  "minimum": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786731604700,
+      "event": "omo.goal.disabled",
+      "tools": []
+    }
+  ]
+}
