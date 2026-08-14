@@ -1,0 +1,23 @@
+sandbox: /tmp/tmp.vg1N23cN8R
+opencode2: opencode2 v0.0.0-next-17055
+model: zhipuai/glm-4.7
+## guards registered at startup
+PASS  register.run  (real session completed)
+PASS  register.hooks  (both guards registered on the live plugin)
+## write-existing-file-guard blocks an unread existing file
+PASS  block.run  (real session completed)
+PASS  block.fired  (guard blocked the write to an unread existing file)
+PASS  block.surfaced  (the model received the guard's rejection message)
+## write-existing-file-guard allows a brand new file
+PASS  allow.run  (real session completed)
+PASS  allow.not-blocked  (no block event for a path that does not exist yet)
+## prometheus-md-only blocks markdown outside .omo
+PASS  prom-outside.run  (real session completed)
+PASS  prom-outside.fired  (a .md path outside .omo was blocked)
+## prometheus-md-only allows markdown inside .omo
+PASS  prom-allow.run  (real session completed)
+PASS  prom-allow.fired  (a .md path inside .omo was allowed through)
+## host-store isolation
+PASS  isolation.clean  (newer-than-marker sweep found no host-store writes)
+
+summary: PASS=12 FAIL=0

@@ -1,0 +1,5 @@
+{
+  "event": "omo.write-existing-file-guard.block",
+  "observed": 0,
+  "ok": true
+}

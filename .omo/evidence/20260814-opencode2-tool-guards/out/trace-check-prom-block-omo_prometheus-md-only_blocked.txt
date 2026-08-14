@@ -1,0 +1,7 @@
+{
+  "event": "omo.prometheus-md-only.blocked",
+  "minCount": 1,
+  "observed": 0,
+  "ok": false,
+  "samples": []
+}

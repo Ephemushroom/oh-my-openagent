@@ -1,0 +1,16 @@
+{
+  "event": "omo.prometheus-md-only.allowed",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786719689074,
+      "event": "omo.prometheus-md-only.allowed",
+      "sessionID": "ses_fff355a9fffe7h02GVQREGa231",
+      "tool": "write",
+      "filePath": ".omo/plan.md",
+      "agent": "prometheus"
+    }
+  ]
+}
