@@ -1,0 +1,11 @@
+Review-fix live QA rerun
+
+First rerun: summary: PASS=6 FAIL=1
+The only isolation hit was the active parent harness transient:
+/c/Users/Bryan/.local/share/opencode/tool-output/tool_0013292410010jB0y4s2BvV7nw
+
+The harness now excludes only */tool-output/* alongside the existing parent/runtime transient exclusions.
+
+Final rerun: summary: PASS=7 FAIL=0
+Behavior: clean checked without detection; slop produced one distinct detection trace.
+Isolation: no non-excluded host-store writes newer than the marker.

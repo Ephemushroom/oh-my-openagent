@@ -152,7 +152,7 @@ if [ "${#REAL_STORES[@]}" -eq 0 ]; then
   : > "$OUT/isolation-violations.txt"
 else
   find "${REAL_STORES[@]}" -newer "$ISOMARK" -type f \
-    ! -path "*/shell/*" ! -path "*/snapshot/*" ! -path "*/storage/*" \
+    ! -path "*/shell/*" ! -path "*/snapshot/*" ! -path "*/storage/*" ! -path "*/tool-output/*" \
     ! -name "opencode.db*" ! -name "*.log" ! -name "*.lock" ! -name "models.json" \
     > "$OUT/isolation-violations.txt" 2>/dev/null
 fi
