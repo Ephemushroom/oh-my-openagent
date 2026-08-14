@@ -1,0 +1,9 @@
+[0m
+> sisyphus · glm-4.7
+HYPERPLAN MODE ENABLED!
+[0m✗ [0mSkill "hyperplan" failed
+[91m[1mError: [0mUnable to load skill hyperplan
+> sisyphus · glm-4.7
+Hyperplan skill not available in this environment. 
+
+What placeholder would you like me to assess? Please share the content, file, or code you're referring to.
