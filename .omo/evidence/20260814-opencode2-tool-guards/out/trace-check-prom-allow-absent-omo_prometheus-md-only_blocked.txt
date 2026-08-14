@@ -1,5 +1,0 @@
-{
-  "event": "omo.prometheus-md-only.blocked",
-  "observed": 1,
-  "ok": false
-}

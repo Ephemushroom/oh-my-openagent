@@ -1,6 +1,0 @@
-[21:19:10.424] ERROR (#1): Error: Timed out waiting for the background service to start
-    at <anonymous> (../client/src/effect/service.ts:132:35)
-    at service.ensure (src/services/server-connection.ts:67:52)
-    at service.ensure (definition) (../client/src/effect/service.ts:54:30)
-    at cli.server-connection.resolve (src/commands/handlers/run.ts:10:44)
-    at cli.server-connection.resolve (definition) (src/services/server-connection.ts:21:34)

@@ -1,3 +1,5 @@
-bun test v1.3.14 (0d9b296a)
-packages/omo-opencode2/src/test-type.ts(4,9): error TS2322: Type 'keyof Context' is not assignable to type '"foo"'.
-  Type '"agent"' is not assignable to type '"foo"'.
+
+ 106 pass
+ 0 fail
+ 305 expect() calls
+Ran 106 tests across 20 files. [924.00ms]
