@@ -1,0 +1,36 @@
+{
+  "event": "omo.registration.complete",
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786733218505,
+      "event": "omo.registration.complete",
+      "primaries": [
+        "sisyphus",
+        "hephaestus",
+        "prometheus",
+        "atlas"
+      ],
+      "subagents": [
+        "oracle",
+        "librarian",
+        "explore",
+        "multimodal-looker",
+        "metis",
+        "momus",
+        "sisyphus-junior"
+      ],
+      "categories": [
+        "visual-engineering",
+        "ultrabrain",
+        "deep",
+        "artistry",
+        "quick",
+        "unspecified-low",
+        "unspecified-high",
+        "writing"
+      ]
+    }
+  ]
+}

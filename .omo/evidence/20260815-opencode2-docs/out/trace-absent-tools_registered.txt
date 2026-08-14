@@ -1,0 +1,5 @@
+{
+  "event": "tools.registered",
+  "observed": 0,
+  "ok": true
+}

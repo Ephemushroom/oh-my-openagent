@@ -1,0 +1,12 @@
+{
+  "event": "omo.context-hooks.registered",
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786733218534,
+      "event": "omo.context-hooks.registered",
+      "staticPromptLength": 26549
+    }
+  ]
+}

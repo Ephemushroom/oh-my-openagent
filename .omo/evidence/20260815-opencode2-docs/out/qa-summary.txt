@@ -1,0 +1,14 @@
+opencode2: opencode2 v0.0.0-next-17055  model: zhipuai/glm-4.7
+probe flag intentionally NOT set: OMO_SPIKE_MECHANICS=<unset>
+PASS  load.run  (real session completed with probe removed)
+PASS  load.agents  (11-agent catalog registered)
+PASS  load.orchestration  (task/background/hashline tools registered)
+PASS  load.guards  (tool guards registered)
+PASS  load.context  (context composer registered)
+PASS  load.skills  (shared skills registered)
+PASS  probe.agents-absent  (spike probe agent registration did not fire)
+PASS  probe.tools-absent  (spike probe tool registration did not fire)
+## host-store isolation
+PASS  isolation.clean  (no host-store writes)
+
+summary: PASS=9 FAIL=0
