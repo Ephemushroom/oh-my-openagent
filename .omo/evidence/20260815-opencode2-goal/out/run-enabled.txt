@@ -1,0 +1,9 @@
+[0m
+> sisyphus · glm-4.7
+I'll execute these three tools in the specified order.
+[0m⚙ [0mcreate_goal {"objective":"GOAL_QA_TOOL_MARKER"} 
+> sisyphus · glm-4.7
+[0m⚙ [0mget_goal Unknown 
+> sisyphus · glm-4.7
+[0m⚙ [0mupdate_goal {"status":"complete"} 
+> sisyphus · glm-4.7
