@@ -16,6 +16,8 @@ import type { ChildResult } from "./orchestration/task-engine"
 import { createTaskTool } from "./orchestration/task-tool"
 import { createBackgroundOutputTool, createBackgroundCancelTool } from "./orchestration/background-tools"
 import { registerContextHooks } from "./hooks/register-context-hooks"
+import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
+import { registerHashlineEditTool } from "./tools/hashline-edit"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
 const CONTEXT_MARKER = "OMO-SPIKE-CTX-22cc"
@@ -185,6 +187,14 @@ export default Plugin.define({
       })
     })
     trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel"] })
+
+    // Hashline: tag every builtin `read` result with LINE#ID hashes, and
+    // register the hash-validated `hashline_edit` tool. The read enhancer fires
+    // on execute.after (result read back after hooks); the edit tool rejects an
+    // edit whose anchor hash no longer matches the file, before any write.
+    await registerHashlineReadEnhancer(ctx, trace)
+    await registerHashlineEditTool(ctx, trace)
+    trace("omo.hashline.registered", { tool: "hashline_edit" })
 
     // Phase 3 (context experience): dynamic Sisyphus prompt rebake + ultrawork
     // injection. The static Sisyphus prompt captured by onSisyphusPrompt is the

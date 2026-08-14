@@ -1,0 +1,8 @@
+PASS  tool.name  (registered name=hashline_edit)
+PASS  C4.edit.accepted  (content updated on disk; tool said: Updated C:\Users\Bryan\AppData\Local\Temp\oc2-hashline-qa-Xh)
+PASS  C4.other.lines.intact  (neighbors untouched)
+PASS  C5.edit.rejected  (tool said: Error: Hash mismatch - a line changed since the last read. Re-read the file to c)
+PASS  C5.reject.mentions.reread  (rejection tells model to re-read)
+PASS  C5.file.byte.identical  (sha256 before=dfce3e6c36ae after=dfce3e6c36ae)
+
+summary: PASS=6 FAIL=0
