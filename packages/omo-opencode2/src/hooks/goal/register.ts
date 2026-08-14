@@ -1,3 +1,5 @@
+import { createGoalAutoStartHandler } from "./auto-start"
+import type { GoalContextEvent, GoalSessionInfo } from "./auto-start"
 import { createGoalController } from "./controller"
 import { createGoalRuntime } from "./runtime"
 import type { GoalEvent } from "./runtime"
@@ -10,6 +12,7 @@ const IDLE_SETTLE_MS = 150
 export type RegisterGoalFeatureOptions = {
   readonly directory: string
   readonly enabled: boolean
+  readonly autoStart?: boolean
   readonly trace?: GoalTrace
 }
 
@@ -21,7 +24,11 @@ export type GoalFeatureContext = {
     subscribe(): AsyncIterable<GoalEvent>
   }
   readonly session: {
-    get(input: { readonly sessionID: string }): Promise<unknown>
+    get(input: { readonly sessionID: string }): Promise<GoalSessionInfo>
+    hook(
+      event: "context",
+      handler: (event: GoalContextEvent) => void | Promise<void>,
+    ): Promise<unknown>
     synthetic(input: {
       readonly sessionID: string
       readonly text: string
@@ -41,33 +48,42 @@ export async function registerGoalFeature(
   ctx: GoalFeatureContext,
   options: RegisterGoalFeatureOptions,
 ): Promise<RegisteredGoalFeature> {
-  const { directory, enabled, trace } = options
+  const { directory, enabled, autoStart = false, trace } = options
   if (!enabled) {
     trace?.("omo.goal.disabled", { tools: [] })
     return { dispose: () => undefined }
   }
 
   const controller = createGoalController({ projectDir: directory })
+  const getSessionInfo = async (sessionID: string): Promise<GoalSessionInfo | null> => {
+    try {
+      return await ctx.session.get({ sessionID })
+    } catch (error) {
+      trace?.("omo.goal.session-missing", {
+        sessionID,
+        message: error instanceof Error ? error.message : String(error),
+      })
+      return null
+    }
+  }
   const tools = createGoalTools({ controller, trace })
   await ctx.tool.transform((draft) => {
     for (const tool of tools) draft.add(tool)
   })
   trace?.("omo.goal.registered", { tools: tools.map((tool) => tool.name) })
 
+  if (autoStart) {
+    await ctx.session.hook("context", createGoalAutoStartHandler({
+      controller,
+      getSessionInfo,
+      trace,
+    }))
+    trace?.("omo.goal.auto-start-registered")
+  }
+
   const runtime = createGoalRuntime({
     controller,
-    sessionExists: async (sessionID) => {
-      try {
-        await ctx.session.get({ sessionID })
-        return true
-      } catch (error) {
-        trace?.("omo.goal.session-missing", {
-          sessionID,
-          message: error instanceof Error ? error.message : String(error),
-        })
-        return false
-      }
-    },
+    sessionExists: async (sessionID) => (await getSessionInfo(sessionID)) !== null,
     dispatchContinuation: async (sessionID, prompt) => {
       await ctx.session.synthetic({
         sessionID,

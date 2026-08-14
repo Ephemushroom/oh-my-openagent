@@ -1,3 +1,5 @@
+export { createGoalAutoStartHandler } from "./auto-start"
+export type { GoalAutoStartOptions, GoalContextEvent, GoalSessionInfo } from "./auto-start"
 export { createGoalController, InvalidObjectiveError } from "./controller"
 export type { GoalController } from "./controller"
 export { registerConfiguredGoalFeature } from "./configured-register"

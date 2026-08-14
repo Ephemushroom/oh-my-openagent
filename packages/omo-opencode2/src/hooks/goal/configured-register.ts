@@ -23,13 +23,16 @@ export async function registerConfiguredGoalFeature(
   })
   const enabled = loaded.config.goal?.enabled === true
     && !loaded.config.disabled_hooks?.includes("goal")
+  const autoStart = enabled && loaded.config.goal?.auto_start === true
   options.trace?.("omo.config.loaded", {
     diagnostics: loaded.diagnostics.length,
+    goalAutoStart: autoStart,
     goalEnabled: enabled,
     sources: loaded.sources.length,
   })
   return registerGoalFeature(ctx, {
     directory: options.directory,
+    autoStart,
     enabled,
     trace: options.trace,
   })
