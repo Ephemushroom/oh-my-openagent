@@ -1,0 +1,114 @@
+import { createGoalController } from "./controller"
+import { createGoalRuntime } from "./runtime"
+import type { GoalEvent } from "./runtime"
+import { createGoalTools } from "./tools"
+import type { GoalToolDefinition } from "./tools"
+import type { GoalTrace } from "./types"
+
+const IDLE_SETTLE_MS = 150
+
+export type RegisterGoalFeatureOptions = {
+  readonly directory: string
+  readonly enabled: boolean
+  readonly trace?: GoalTrace
+}
+
+export type GoalFeatureContext = {
+  readonly tool: {
+    transform(transformer: (draft: { add(tool: GoalToolDefinition): void }) => void | Promise<void>): Promise<unknown>
+  }
+  readonly event: {
+    subscribe(): AsyncIterable<GoalEvent>
+  }
+  readonly session: {
+    get(input: { readonly sessionID: string }): Promise<unknown>
+    synthetic(input: {
+      readonly sessionID: string
+      readonly text: string
+      readonly description: string
+      readonly metadata: Readonly<Record<string, string>>
+      readonly delivery: "queue"
+      readonly resume: true
+    }): Promise<unknown>
+  }
+}
+
+export type RegisteredGoalFeature = {
+  readonly dispose: () => void
+}
+
+export async function registerGoalFeature(
+  ctx: GoalFeatureContext,
+  options: RegisterGoalFeatureOptions,
+): Promise<RegisteredGoalFeature> {
+  const { directory, enabled, trace } = options
+  if (!enabled) {
+    trace?.("omo.goal.disabled", { tools: [] })
+    return { dispose: () => undefined }
+  }
+
+  const controller = createGoalController({ projectDir: directory })
+  const tools = createGoalTools({ controller, trace })
+  await ctx.tool.transform((draft) => {
+    for (const tool of tools) draft.add(tool)
+  })
+  trace?.("omo.goal.registered", { tools: tools.map((tool) => tool.name) })
+
+  const runtime = createGoalRuntime({
+    controller,
+    sessionExists: async (sessionID) => {
+      try {
+        await ctx.session.get({ sessionID })
+        return true
+      } catch (error) {
+        trace?.("omo.goal.session-missing", {
+          sessionID,
+          message: error instanceof Error ? error.message : String(error),
+        })
+        return false
+      }
+    },
+    dispatchContinuation: async (sessionID, prompt) => {
+      await ctx.session.synthetic({
+        sessionID,
+        text: prompt,
+        description: "Continue active OMO goal",
+        metadata: { source: "omo.goal.idle-continuation" },
+        delivery: "queue",
+        resume: true,
+      })
+    },
+    settle: () => new Promise<void>((resolve) => setTimeout(resolve, IDLE_SETTLE_MS)),
+    trace,
+  })
+
+  let disposed = false
+  const inFlight = new Set<Promise<void>>()
+  const pump = (async () => {
+    for await (const event of ctx.event.subscribe()) {
+      if (disposed) return
+      const pending = runtime.handleEvent(event)
+      inFlight.add(pending)
+      void pending
+        .catch((error: unknown) => {
+          trace?.("omo.goal.event-error", {
+            message: error instanceof Error ? error.message : String(error),
+          })
+        })
+        .finally(() => inFlight.delete(pending))
+    }
+  })()
+  void pump.catch((error: unknown) => {
+    trace?.("omo.goal.event-pump-error", {
+      message: error instanceof Error ? error.message : String(error),
+    })
+  })
+
+  return {
+    dispose: () => {
+      disposed = true
+      runtime.dispose()
+      inFlight.clear()
+    },
+  }
+}
