@@ -47,6 +47,7 @@ function stripResolutionControlKeys(config: OmoConfig): OmoConfig {
   const {
     "[codex]": _codex,
     "[opencode]": _opencode,
+    "[opencode2]": _opencode2,
     "[senpi]": _senpi,
     profiles: _profiles,
     ...resolved

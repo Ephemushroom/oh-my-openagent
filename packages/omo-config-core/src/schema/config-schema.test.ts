@@ -81,6 +81,21 @@ describe("omo config schema", () => {
     expect(result.data.codegraph?.daemon).toBe(true)
   })
 
+  test("#given an [opencode2] harness block #when parsed #then it is accepted as freeform config", () => {
+    // given
+    const config = {
+      "[opencode2]": { default_agent: "atlas", goal: { enabled: true } },
+    }
+
+    // when
+    const result = OmoConfigSchema.safeParse(config)
+
+    // then
+    expect(result.success).toBe(true)
+    if (!result.success) throw new Error(result.error.message)
+    expect(result.data["[opencode2]"]).toEqual({ default_agent: "atlas", goal: { enabled: true } })
+  })
+
   test("#given an unknown root key #when parsed #then the schema rejects the config", () => {
     // given
     const config = { unknown_section: true }

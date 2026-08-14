@@ -1,0 +1,3 @@
+[0m
+> sisyphus · glm-4.7
+Hello! I'm Sisyphus, your orchestration lead from OhMyOpenCode. I'm ready to help you with engineering tasks, code changes, research, or whatever you need. What would you like to work on?

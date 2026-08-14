@@ -15,6 +15,7 @@
     "@oh-my-opencode/agents-core": "workspace:*",
     "@oh-my-opencode/hashline-core": "workspace:*",
     "@oh-my-opencode/model-core": "workspace:*",
+    "@oh-my-opencode/omo-config-core": "workspace:*",
     "@oh-my-opencode/prompts-core": "workspace:*"
   }
 }

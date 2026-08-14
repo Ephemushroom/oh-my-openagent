@@ -5,12 +5,15 @@ import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 import { SUBAGENT_DEFINITIONS } from "./agent-catalog"
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
+import type { OpenCode2AgentOverride } from "../config"
 
 export interface RegisterSubagentsOptions {
   /** Live catalog source; models resolve against its freshest snapshot. */
   catalog: CatalogSource;
   /** System default model override (falls back to the catalog's default). */
   systemDefaultModel?: string;
+  /** Per-agent overrides from the config chain. */
+  agentOverrides?: Record<string, OpenCode2AgentOverride>;
   /** Optional per-agent trace hook (QA evidence; records resolved model/mode). */
   trace?: (event: string, detail?: Record<string, unknown>) => void;
 }
@@ -39,7 +42,7 @@ export async function registerSubagents(
 
     for (const def of SUBAGENT_DEFINITIONS) {
       const requirement = AGENT_MODEL_REQUIREMENTS[def.id]
-      const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault)
+      const resolved = resolveAgentModel(requirement, snapshot, effectiveDefault, options.agentOverrides?.[def.id])
       if (!resolved) continue
 
       const systemPrompt = def.buildPrompt(resolved.model)
