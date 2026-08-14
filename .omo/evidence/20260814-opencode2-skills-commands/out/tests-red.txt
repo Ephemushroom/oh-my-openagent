@@ -1,0 +1,52 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\commands\register-builtin-commands.test.ts:
+[test-setup] vendored lsp-daemon dist missing; building once via `npm ci && npm run build`...
+npm notice run @code-yeongyu/lsp-daemon@0.1.0 build
+npm notice run node scripts/clean-dist.mjs && tsc -p tsconfig.build.json && bun build src/cli.ts src/index.ts src/client.ts --outdir dist --target node --format esm && node scripts/stamp-dist-version.mjs
+44 |
+45 |     // when
+46 |     await registerBuiltinCommands(context)
+47 |
+48 |     // then
+49 |     expect([...commands.keys()]).toEqual([...EXPECTED_COMMANDS])
+                                      ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "goal",
+-   "refactor",
+-   "start-work",
+-   "stop-continuation",
+-   "handoff",
+-   "remove-ai-slops",
+-   "hyperplan",
+- ]
++ []
+
+- Expected  - 9
++ Received  + 1
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-skills\packages\omo-opencode2\src\commands\register-builtin-commands.test.ts:49:34)
+(fail) registerBuiltinCommands > #given an empty command catalog #when registering #then all builtin commands are upserted [11.83ms]
+
+packages\omo-opencode2\src\skills\register-shared-skills.test.ts:
+27 |
+28 |     // when
+29 |     await registerSharedSkills(context)
+30 |
+31 |     // then
+32 |     expect(sources).toHaveLength(1)
+                         ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (D:\Programme\AI\oh-my-openagent-wt\oc2-skills\packages\omo-opencode2\src\skills\register-shared-skills.test.ts:32:21)
+(fail) registerSharedSkills > #given the shared bundle #when registering #then one directory source exposes known skills [2.63ms]
+
+ 0 pass
+ 2 fail
+ 2 expect() calls
+Ran 2 tests across 2 files. [5.13s]

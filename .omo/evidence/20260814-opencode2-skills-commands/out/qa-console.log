@@ -1,0 +1,15 @@
+sandbox: /tmp/tmp.CTrGtNPFep
+opencode2 opencode2 v0.0.0-next-17055 model=zhipuai/glm-4.7
+## C1: live model lists registered shared skills and builtin commands
+PASS  C1.live.catalog-run  (real standalone model session completed)
+PASS  C1.trace.skills-registered  (shared directory transform fired)
+PASS  C1.trace.commands-registered  (builtin command transform fired)
+PASS  C1.trace.skills-visible  (live context observed materialized skills)
+PASS  C1.model.catalog-visible  (representative shared skills and all seven commands appeared in model output)
+## C2: one registered skill body reaches the model
+PASS  C2.live.skill-run  (skill tool completed on the real session; post-tool provider limits do not invalidate delivery)
+PASS  C2.model.skill-body  (model returned the path available only in the loaded programming skill body)
+## C3: isolated stores
+PASS  C3.isolation.clean  (no writes in real OpenCode stores)
+
+summary: PASS=8 FAIL=0
