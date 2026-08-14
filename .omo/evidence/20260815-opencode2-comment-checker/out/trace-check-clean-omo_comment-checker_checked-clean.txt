@@ -1,0 +1,18 @@
+{
+  "eventName": "omo.comment-checker.checked",
+  "outcome": "clean",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786724788589,
+      "event": "omo.comment-checker.checked",
+      "sessionID": "ses_ffee78e9fffe95moDpLZah6lu8",
+      "agent": "sisyphus",
+      "tool": "write",
+      "filePath": "C:\\Users\\Bryan\\AppData\\Local\\Temp\\tmp.DQ1b5lcQ6i\\proj\\clean.ts",
+      "outcome": "clean"
+    }
+  ]
+}

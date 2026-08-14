@@ -1,0 +1,19 @@
+{
+  "eventName": "omo.comment-checker.registered",
+  "outcome": null,
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786724777529,
+      "event": "omo.comment-checker.registered",
+      "tools": [
+        "write",
+        "edit",
+        "multiedit",
+        "apply_patch"
+      ]
+    }
+  ]
+}
