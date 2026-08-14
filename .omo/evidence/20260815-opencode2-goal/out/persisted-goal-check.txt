@@ -1,0 +1,9 @@
+{
+  "files": [
+    "ses_ffebc2b87ffeVLR1qQSl2xZzhZ.json"
+  ],
+  "expectedObjective": "GOAL_QA_TOOL_MARKER",
+  "expectedStatus": "complete",
+  "matches": 1,
+  "ok": true
+}
