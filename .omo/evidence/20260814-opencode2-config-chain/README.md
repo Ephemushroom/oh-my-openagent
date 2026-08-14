@@ -1,6 +1,12 @@
 # QA Evidence: omo-opencode2 config chain integration
 
-Date: 2026-08-14 | Branch: `feat/opencode2-config-chain` | Base: `dev` @ a83b0ecc6
+Date: 2026-08-14 | Branch: `feat/opencode2-config-chain` | Base: `dev` @ 6f394d267
+
+> Rebased from `a83b0ecc6` onto `6f394d267` after the hashline (#12) and
+> installer plugin-entry (#13) PRs merged. Both this branch and #12 modify the
+> `setup()` composition in `src/index.ts`; the rebase applied cleanly and the
+> result carries both the hashline registrations and the config wiring. The
+> live QA below was RE-RUN against the rebased tree, not carried over.
 
 ## Scope
 
@@ -10,8 +16,10 @@ User direction (2026-08-14): Wire the unified OMO configuration chain into the O
 
 ### Unit gate (hermetic, `bun test`)
 
-`packages/omo-opencode2`: **62 pass / 0 fail**, `tsgo --noEmit` clean.
-`packages/omo-config-core`: **15 pass / 0 fail**, `tsgo --noEmit` clean.
+`packages/omo-opencode2`: **75 pass / 0 fail** on the rebased tree (62 before the
+rebase; the increase is the hashline suite arriving from `dev` via #12).
+`packages/omo-config-core`: **15 pass / 0 fail**.
+`bun run typecheck`: exit code 0 on the rebased tree.
 
 - `omo-config-core/src/schema/config-schema.test.ts` — verified `[opencode2]` parses correctly.
 - `omo-config-core/src/loader/loader.test.ts` — verified `[opencode2]` overrides flow through the chain.
