@@ -1,0 +1,22 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\omo-opencode2\src\hooks\comment-checker\register.test.ts:
+176 |     try {
+177 |       // when
+178 |       await handle(event)
+179 | 
+180 |       // then
+181 |       expect(calls).toHaveLength(0)
+                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 0
+Received length: 1
+
+      at <anonymous> (D:\Programme\AI\oc2cc\packages\omo-opencode2\src\hooks\comment-checker\register.test.ts:181:21)
+(fail) OpenCode2 comment-checker post-tool hook > #given the v1 file escape at the first line #when a write completes #then the adapter bypasses the checker [3.24ms]
+
+ 8 pass
+ 1 fail
+ 20 expect() calls
+Ran 9 tests across 1 file. [390.00ms]
