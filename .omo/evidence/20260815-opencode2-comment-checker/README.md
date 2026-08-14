@@ -17,8 +17,12 @@ Verification covered:
   the new adapter module did not exist.
 - TDD GREEN: `out/tdd-green.txt` records `8 pass`, `0 fail`, and `20 expect()`
   calls after the implementation landed.
-- Package gate: `bun test packages/omo-opencode2/src` records `122 pass`,
-  `0 fail`, and `349 expect()` calls in `out/unit-tests.txt`.
+- Review RED: `out/review-red.txt` records `8 pass`, `1 fail`; the new
+  top-of-file disable test proved binary v0.8.0 was still called once.
+- Review GREEN: `out/review-green.txt` records `9 pass`, `0 fail`, and
+  `22 expect()` calls after adapter-side file disable enforcement landed.
+- Package gate: `bun test packages/omo-opencode2/src` records `123 pass`,
+  `0 fail`, and `351 expect()` calls in `out/unit-tests.txt`.
 - Type safety: `bun run typecheck` exited `0`; the full workspace command chain
   is captured in `out/typecheck.txt`.
 - Real surface: `qa.sh` drove the pinned Windows `opencode2.exe` version
@@ -43,9 +47,10 @@ Verification covered:
 - Degraded mode: unit coverage resolves the optional binary once, makes two
   completed writes inert, never calls the runner, and leaves both results
   unchanged.
-- Escape hatches: unit coverage forwards both `// @allow` and top-of-file
-  `// comment-checker-disable-file` content unchanged to the checker and honors
-  its clean result without injecting feedback or a detection trace.
+- Escape hatches: unit coverage forwards `// @allow` unchanged to the checker.
+  Because binary v0.8.0 does not implement the documented file-scope marker,
+  the adapter reads the completed target and bypasses the checker when its first
+  line is exactly `// comment-checker-disable-file`, emitting `outcome=disabled`.
 
 ## WHY IT IS ENOUGH
 
@@ -77,8 +82,10 @@ Live proof:
 
 Unit-only proof:
 
-- `// @allow` and `// comment-checker-disable-file` are forwarded unchanged and
-  suppress feedback when the checker accepts them.
+- `// @allow` is forwarded unchanged and suppresses feedback when the checker
+  accepts it.
+- A top-of-file `// comment-checker-disable-file` bypasses binary execution in
+  the adapter, leaves output unchanged, and emits `checked=disabled`.
 - Optional-binary absence disables checking without throwing or mutating output.
 - `edit`, `multiedit`, and `apply_patch` payload translation.
 - Array-shaped result feedback and failed/non-mutation filtering.
@@ -91,7 +98,13 @@ Unit-only proof:
   detection proof rather than retrying until compliance.
 - Escape markers were not forced through a model prompt. Model compliance with
   deliberately exempted comments is temperament, not adapter behavior; the
-  unit seam proves the exact payload and checker outcome deterministically.
+  unit seam proves `@allow` forwarding and adapter-side file bypass
+  deterministically.
+- The first post-review live rerun reported `PASS=6 FAIL=1` because this active
+  parent harness wrote a transient under `~/.local/share/opencode/tool-output/`
+  during the child run. `qa.sh` now excludes that parent-owned transient path;
+  `out/review-qa-summary.txt` records the cause and the final `PASS=7 FAIL=0`
+  rerun. Project/session stores remain covered by the sweep.
 - CLI transcripts are retained as `out/run-clean.txt` and `out/run-slop.txt`,
   but they are not used as hook proof.
 - The ZhipuAI key was read from the v1 auth store into the isolated child
