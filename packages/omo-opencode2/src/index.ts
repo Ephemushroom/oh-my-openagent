@@ -9,6 +9,7 @@ import { registerSubagents } from "./agents/register-subagents"
 import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 import { loadOpenCode2Config } from "./config"
+import { registerBuiltinCommands } from "./commands"
 import { TaskRegistry } from "./orchestration/task-registry"
 import { ConcurrencyLimiter } from "./orchestration/concurrency"
 import { createTaskEngine } from "./orchestration/task-engine"
@@ -19,6 +20,7 @@ import { createBackgroundOutputTool, createBackgroundCancelTool } from "./orches
 import { registerContextHooks } from "./hooks/register-context-hooks"
 import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
 import { registerHashlineEditTool } from "./tools/hashline-edit"
+import { registerSharedSkills } from "./skills"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
 const CONTEXT_MARKER = "OMO-SPIKE-CTX-22cc"
@@ -147,6 +149,9 @@ export default Plugin.define({
       subagents: [...subagents],
       categories: [...categories],
     })
+
+    await registerSharedSkills(ctx, trace)
+    await registerBuiltinCommands(ctx, trace)
 
     // Phase 2: orchestration. Task tool + background tools, wired to the task
     // engine. waitChild registers a waiter on the engine's pump; the pump
