@@ -3,6 +3,8 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { injectCommandCatalogSystemPart } from "./command-catalog-context"
 import type { LiveCommand } from "./command-catalog-context"
 import { injectSkillCatalogSystemPart } from "./skill-catalog-context"
+import { loadProjectRulesContext } from "./rules-context"
+import type { ProjectRulesContext } from "./rules-context"
 import { rebakeSisyphusSystemPart } from "./sisyphus-context"
 import type { LiveAgent, LiveSkill } from "./sisyphus-context"
 import { detectKeywordModes, injectKeywordSystemParts } from "./ultrawork-context"
@@ -10,6 +12,7 @@ import { detectKeywordModes, injectKeywordSystemParts } from "./ultrawork-contex
 export interface ContextHookDeps {
   ctx: Context
   staticSisyphusPrompt: string
+  workspaceDirectory: string
   trace?: (event: string, detail?: Record<string, unknown>) => void
 }
 
@@ -33,6 +36,7 @@ interface ComposerOptions {
   agentList: () => Promise<LiveAgent[]>
   skillList: () => Promise<LiveSkill[]>
   commandList: () => Promise<LiveCommand[]>
+  projectContext?: () => Promise<ProjectRulesContext>
   lastUserText: (messages: HookEvent["messages"]) => Promise<string>
 }
 
@@ -74,7 +78,20 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
       event.system = injectCommandCatalogSystemPart(event.system, [])
     }
 
-    // Step 3: keyword mode injection (last; only on the final real user turn).
+    // Step 3: project rules and AGENTS.md join this same context pipeline.
+    if (options.projectContext !== undefined) {
+      try {
+        const projectContext = await options.projectContext()
+        for (const part of projectContext.systemParts) {
+          if (event.system.some((existing) => existing.type === part.type && existing.text === part.text)) continue
+          event.system.push({ ...part })
+        }
+      } catch {
+        // Context discovery is advisory; catalog and keyword context still apply.
+      }
+    }
+
+    // Step 4: keyword mode injection (last; only on the final real user turn).
     // Mode directives are appended as system parts for model context.
     let userText = ""
     try {
@@ -113,7 +130,7 @@ export async function lastRealUserText(messages: HookEvent["messages"]): Promise
  * session context hook. Non-fatal on live catalog failure.
  */
 export async function registerContextHooks(deps: ContextHookDeps): Promise<void> {
-  const { ctx, staticSisyphusPrompt, trace } = deps
+  const { ctx, staticSisyphusPrompt, trace, workspaceDirectory } = deps
 
   await ctx.session.hook("context", async (event) => {
     const composer = createContextHookComposer({
@@ -146,6 +163,35 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
           name: command.name,
           description: command.description,
         }))
+      },
+      projectContext: async () => {
+        try {
+          const projectContext = await loadProjectRulesContext(workspaceDirectory)
+          trace?.("omo.context.rules", {
+            sessionID: event.sessionID,
+            injected: projectContext.systemParts.length > 0,
+            ruleFiles: projectContext.ruleFiles,
+            agentsFiles: projectContext.agentsFiles,
+            systemParts: projectContext.systemParts.length,
+            diagnostics: projectContext.diagnostics,
+          })
+          return projectContext
+        } catch {
+          trace?.("omo.context.rules", {
+            sessionID: event.sessionID,
+            injected: false,
+            ruleFiles: 0,
+            agentsFiles: 0,
+            systemParts: 0,
+            diagnostics: 1,
+          })
+          return {
+            systemParts: [],
+            ruleFiles: 0,
+            agentsFiles: 0,
+            diagnostics: 1,
+          }
+        }
       },
       lastUserText: lastRealUserText,
     })
