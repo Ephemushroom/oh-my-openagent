@@ -63,11 +63,16 @@ main-session message.
 
 ## Session dispatch
 
-There is no shared dispatch gate in v2. Session writes happen in
-`hooks/goal/register.ts` (synthetic), `index.ts` (prompt + synthetic for the task
-engine), and `orchestration/child-session.ts` (prompt). v1 funnels all such calls
-through one `prompt-async-gate`; v2 does not yet. Do not add a second
-idle-injecting feature without a shared gate.
+There is no shared dispatch gate in v2. Session writes happen in exactly three
+places: `index.ts` (synthetic, background task completion notifies the parent),
+`hooks/goal/register.ts` (synthetic, idle continuation behind its own
+reservation gate), and `orchestration/child-session.ts` (prompt into a child
+session the engine created and owns). v1 funnels all such calls through one
+`prompt-async-gate`; v2 does not yet. The pinned set is enforced by
+`src/orchestration/session-dispatch-audit.test.ts`, which fails the suite when
+any new dispatch call site or reference appears. Do not add a second
+idle-injecting feature without a shared gate; update the audit allowlist only
+with justification in the commit message.
 
 ## Conventions
 
