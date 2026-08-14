@@ -1,0 +1,9 @@
+{
+  "expected": {
+    "ultraworkParts": 1,
+    "hyperplanParts": 0,
+    "hyperplanUltraworkParts": 1
+  },
+  "composedEvents": 1,
+  "matched": true
+}
