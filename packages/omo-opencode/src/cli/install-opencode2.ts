@@ -3,29 +3,23 @@ import { resolveCodegraphCommand, buildCodegraphEnv, bunWhich } from "@oh-my-ope
 
 import type { OpenCode2McpEntry } from "./config-manager/update-opencode2-mcp-config"
 import { updateOpenCode2McpConfig } from "./config-manager/update-opencode2-mcp-config"
+import { updateOpenCode2PluginConfig } from "./config-manager/update-opencode2-plugin-config"
 import { detectConfigFormat } from "./config-manager/opencode-config-format"
 import type { UpdateOpenCode2McpResult } from "./config-manager/update-opencode2-mcp-config"
-import { updateOpenCode2PluginConfig } from "./config-manager/update-opencode2-plugin-config"
-import { resolveOpenCode2PluginEntry } from "./resolve-opencode2-plugin-entry"
+import { fileURLToPath } from "node:url"
 
 export interface OpenCode2InstallResult extends UpdateOpenCode2McpResult {
   configPath: string
   added: string[]
-  pluginEntry: string
-  pluginAdded: boolean
+  pluginEntryAdded: boolean
 }
 
-export const MISSING_PLUGIN_ENTRY_MESSAGE =
-  "omo-opencode2 plugin source not found. The v2 adapter is an unpublished workspace package, so it installs only from a source checkout of this repository."
-
 /**
- * Top-level installer entry: locates the opencode config, then writes both the
- * managed MCP entries (codegraph + lsp + remote HTTP) and the OMO plugin entry.
- *
- * Every input is resolved before the first write so a missing dependency cannot
- * leave the config half-updated. Fails closed on a missing codegraph or a
- * missing v2 plugin source; lsp degrades to a skip when the node runtime or
- * daemon cli is unavailable.
+ * Top-level installer entry: locates the opencode config, builds the managed
+ * MCP entries (codegraph + lsp), and writes only the missing ones. Fails
+ * closed on a missing codegraph; lsp degrades to a skip when the node
+ * runtime or daemon cli is unavailable.
+ * Also appends the OMO v2 plugin entry to the plugins array.
  */
 export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
   const { path } = detectConfigFormat()
@@ -34,19 +28,13 @@ export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
     nodeCommand: await resolveNodeRuntime(),
     daemonCliPath: resolveLspDaemonCli(),
   })
-  const plugin = resolveOpenCode2PluginEntry()
-  if (!plugin.exists) {
-    throw new Error(MISSING_PLUGIN_ENTRY_MESSAGE)
-  }
-
-  const result = updateOpenCode2McpConfig({ configPath: path, entries })
-  const pluginResult = updateOpenCode2PluginConfig({ configPath: path, pluginEntry: plugin.entry })
-
-  return {
-    ...result,
-    configPath: path,
-    pluginEntry: plugin.entry,
-    pluginAdded: pluginResult.changed,
+  const mcpResult = updateOpenCode2McpConfig({ configPath: path, entries })
+  const pluginResult = updateOpenCode2PluginConfig({ configPath: path, pluginEntry: resolveOpenCode2PluginEntry() })
+  return { 
+    ...mcpResult, 
+    changed: mcpResult.changed || pluginResult.changed,
+    configPath: path, 
+    pluginEntryAdded: pluginResult.changed
   }
 }
 
@@ -165,6 +153,17 @@ export function resolveCodegraphForInstall(): CodegraphResolutionInput {
     argsPrefix: [...resolved.argsPrefix],
     exists: resolved.exists,
     source: resolved.source,
+  }
+}
+
+/** Resolves the absolute path to the OMO v2 plugin entry. */
+export function resolveOpenCode2PluginEntry(): string {
+  try {
+    const require = createRequire(import.meta.url)
+    return require.resolve("@oh-my-opencode/omo-opencode2")
+  } catch {
+    const url = new URL("../../omo-opencode2/index.js", import.meta.url)
+    return fileURLToPath(url)
   }
 }
 

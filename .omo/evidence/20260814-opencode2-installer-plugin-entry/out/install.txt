@@ -1,0 +1,27 @@
+
+[45m[37m oMoMoMoMo... Install [39m[49m
+
+
+[2m┌─[22m[1m Installation Complete [22m[2m────[22m[2m┐[22m
+[2m│[22m [1m[37mConfiguration Summary[39m[22m       [2m│[22m
+[2m│[22m                             [2m│[22m
+[2m│[22m   [34m[i][39m Platform: opencode2   [2m│[22m
+[2m└[22m[2m─────────────────────────────[22m[2m┘[22m
+
+[33m*[39m [1m[32mInstallation complete![39m[22m
+
+[34m[i][39m Installing OpenCode2 MCP servers (codegraph / lsp) and OMO plugin...
+[32m[OK][39m OpenCode2 config [36m->[39m [2mC:\Users\Bryan\AppData\Local\Temp\tmp.2iOorrJV9B\config\opencode\opencode.json[22m (added MCP: codegraph, context7, grep_app, added OMO plugin)
+
+[34m[i][39m Anonymous telemetry is enabled by default. Disable it with OMO_SEND_ANONYMOUS_TELEMETRY=0 or OMO_DISABLE_POSTHOG=1.
+[34m[i][39m Docs: docs/legal/privacy-policy.md and docs/legal/terms-of-service.md
+
+
+[2m┌─[22m[1m The Magic Word [22m[2m─────────────────────────────────────────────────[22m[2m┐[22m
+[2m│[22m [1mPro Tip:[22m Include [36multrawork[39m (or [36mulw[39m) in your prompt.               [2m│[22m
+[2m│[22m All features work like magic-parallel agents, background tasks,   [2m│[22m
+[2m│[22m deep exploration, and relentless execution until completion.      [2m│[22m
+[2m└[22m[2m───────────────────────────────────────────────────────────────────[22m[2m┘[22m
+
+[2moMoMoMoMo... Enjoy![22m
+

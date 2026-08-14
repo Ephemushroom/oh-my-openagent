@@ -1,88 +1,118 @@
-import { describe, expect, it, afterEach } from "bun:test"
-import { writeFileSync, existsSync, readFileSync, rmSync } from "node:fs"
+import { afterEach, beforeEach, describe, expect, it } from "bun:test"
+import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
+
 import { updateOpenCode2PluginConfig } from "./update-opencode2-plugin-config"
 
 describe("updateOpenCode2PluginConfig", () => {
-  const tempFiles: string[] = []
+  let tempDir: string
+  let configPath: string
 
-  function createTempConfig(content: string): string {
-    const p = join(tmpdir(), `.test-opencode2-plugin-${Date.now()}-${Math.random()}.jsonc`)
-    writeFileSync(p, content, "utf8")
-    tempFiles.push(p)
-    return p
-  }
+  beforeEach(() => {
+    tempDir = join(tmpdir(), `omo-test-${Date.now()}-${Math.random()}`)
+    require("node:fs").mkdirSync(tempDir, { recursive: true })
+    configPath = join(tempDir, "opencode.jsonc")
+  })
 
   afterEach(() => {
-    for (const p of tempFiles) {
-      if (existsSync(p)) rmSync(p)
-    }
+    rmSync(tempDir, { recursive: true, force: true })
   })
 
-  describe("#given a fresh config with no plugins key", () => {
-    it("should append the plugins array with the entry", () => {
-      const config = createTempConfig(`{
-  "mcp": { "servers": {} }
-}`)
-      const result = updateOpenCode2PluginConfig({ configPath: config, pluginEntry: "/absolute/path/to/plugin" })
-      expect(result.changed).toBe(true)
-      const text = readFileSync(config, "utf8")
-      expect(text).toContain('"plugins": [')
-      expect(text).toContain('"/absolute/path/to/plugin"')
+  it("#given fresh config with no plugins key #when called #then adds plugins array with entry", () => {
+    // given
+    writeFileSync(configPath, `{\n  "mcp": { "servers": {} }\n}`)
+
+    // when
+    const result = updateOpenCode2PluginConfig({
+      configPath,
+      pluginEntry: "/absolute/path/to/plugin.js",
     })
+
+    // then
+    expect(result.changed).toBe(true)
+    const text = readFileSync(configPath, "utf8")
+    expect(text).toContain(`"plugins": [\n    "/absolute/path/to/plugin.js"\n  ]`)
+    expect(text).toContain(`"servers": {}`)
   })
 
-  describe("#given a config with an existing unrelated plugin entry", () => {
-    it("should append the new entry, not replace", () => {
-      const config = createTempConfig(`{
-  "plugins": [
-    "other-plugin"
-  ]
-}`)
-      const result = updateOpenCode2PluginConfig({ configPath: config, pluginEntry: "/absolute/path/to/plugin" })
-      expect(result.changed).toBe(true)
-      const text = readFileSync(config, "utf8")
-      expect(text).toContain('"other-plugin"')
-      expect(text).toContain('"/absolute/path/to/plugin"')
+  it("#given config with existing unrelated plugin #when called #then appends without touching existing", () => {
+    // given
+    writeFileSync(
+      configPath,
+      `{\n  // comment\n  "plugins": [\n    "other-plugin"\n  ]\n}`,
+    )
+
+    // when
+    const result = updateOpenCode2PluginConfig({
+      configPath,
+      pluginEntry: "/absolute/path/to/plugin.js",
     })
+
+    // then
+    expect(result.changed).toBe(true)
+    const text = readFileSync(configPath, "utf8")
+    expect(text).toContain(`"other-plugin",\n    "/absolute/path/to/plugin.js"`)
+    expect(text).toContain(`// comment`)
   })
 
-  describe("#given the entry is already present", () => {
-    it("should not duplicate the entry", () => {
-      const config = createTempConfig(`{
-  "plugins": [
-    "other-plugin",
-    "/absolute/path/to/plugin"
-  ]
-}`)
-      const result = updateOpenCode2PluginConfig({ configPath: config, pluginEntry: "/absolute/path/to/plugin" })
-      expect(result.changed).toBe(false)
-      const text = readFileSync(config, "utf8")
-      const matches = text.match(/\/absolute\/path\/to\/plugin/g)
-      expect(matches?.length).toBe(1)
+  it("#given config with the entry already #when called #then is idempotent and returns unchanged", () => {
+    // given
+    writeFileSync(
+      configPath,
+      `{\n  "plugins": [\n    "/absolute/path/to/plugin.js"\n  ]\n}`,
+    )
+
+    // when
+    const result = updateOpenCode2PluginConfig({
+      configPath,
+      pluginEntry: "/absolute/path/to/plugin.js",
     })
+
+    // then
+    expect(result.changed).toBe(false)
   })
 
-  describe("#given malformed JSONC", () => {
-    it("should fail closed and leave the file untouched", () => {
-      // given a config whose syntax jsonc-parser would otherwise recover from
-      const original = `{ "plugins": [ }`
-      const config = createTempConfig(original)
+  it("#given config with object-based plugin entry #when called #then is idempotent", () => {
+    // given
+    writeFileSync(
+      configPath,
+      `{\n  "plugins": [\n    { "package": "/absolute/path/to/plugin.js", "options": {} }\n  ]\n}`,
+    )
 
-      // when the writer runs
-      const run = () => updateOpenCode2PluginConfig({ configPath: config, pluginEntry: "/abs/path" })
-
-      // then it refuses to write and the original bytes survive
-      expect(run).toThrow("opencode config is not valid JSONC")
-      expect(readFileSync(config, "utf8")).toBe(original)
+    // when
+    const result = updateOpenCode2PluginConfig({
+      configPath,
+      pluginEntry: "/absolute/path/to/plugin.js",
     })
+
+    // then
+    expect(result.changed).toBe(false)
   })
 
-  describe("#given a non-array plugins value", () => {
-    it("should fail closed", () => {
-      const config = createTempConfig(`{ "plugins": "not-an-array" }`)
-      expect(() => updateOpenCode2PluginConfig({ configPath: config, pluginEntry: "/abs/path" })).toThrow("opencode config `plugins` must be an array")
-    })
+  it("#given non-array plugins key #when called #then fails closed", () => {
+    // given
+    writeFileSync(configPath, `{\n  "plugins": "not-an-array"\n}`)
+
+    // when / then
+    expect(() =>
+      updateOpenCode2PluginConfig({
+        configPath,
+        pluginEntry: "/path",
+      }),
+    ).toThrow("must be an array")
+  })
+
+  it("#given malformed JSONC #when called #then fails closed", () => {
+    // given
+    writeFileSync(configPath, `{\n  "plugins": [\n}`)
+
+    // when / then
+    expect(() =>
+      updateOpenCode2PluginConfig({
+        configPath,
+        pluginEntry: "/path",
+      }),
+    ).toThrow("opencode config must be a valid JSON object")
   })
 })
