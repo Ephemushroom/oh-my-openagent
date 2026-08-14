@@ -1,0 +1,18 @@
+{
+  "expected": "absent",
+  "observed": 1,
+  "valid": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1786721698039,
+      "event": "omo.context.rules",
+      "sessionID": "ses_fff168690ffebgOnSdiJ7x7g5d",
+      "injected": false,
+      "ruleFiles": 0,
+      "agentsFiles": 0,
+      "systemParts": 0,
+      "diagnostics": 0
+    }
+  ]
+}
