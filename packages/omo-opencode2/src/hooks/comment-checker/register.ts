@@ -1,4 +1,6 @@
 import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import { readFile } from "node:fs/promises"
+import { resolve } from "node:path"
 import {
   extractApplyPatchEdits,
   getString,
@@ -53,6 +55,7 @@ type CheckRequest = {
 }
 
 const MUTATION_TOOLS = new Set(["write", "edit", "multiedit", "apply_patch"])
+const FILE_DISABLE_MARKER = "// comment-checker-disable-file"
 
 export function createCommentCheckerAfterHandler(
   runtime: CommentCheckerRuntime = createDefaultCommentCheckerRuntime(),
@@ -67,17 +70,20 @@ export function createCommentCheckerAfterHandler(
     const requests = extractCheckRequests(event, tool)
     if (requests.length === 0) return
 
-    if (binaryPath === undefined) {
-      binaryPath = runtime.resolveBinary()
-    }
-    if (binaryPath === null) {
-      for (const request of requests) {
-        trace?.("omo.comment-checker.checked", traceDetail(event, request, "unavailable"))
-      }
-      return
-    }
-
     for (const request of requests) {
+      if (await isFileCheckDisabled(request.filePath)) {
+        trace?.("omo.comment-checker.checked", traceDetail(event, request, "disabled"))
+        continue
+      }
+
+      if (binaryPath === undefined) {
+        binaryPath = runtime.resolveBinary()
+      }
+      if (binaryPath === null) {
+        trace?.("omo.comment-checker.checked", traceDetail(event, request, "unavailable"))
+        continue
+      }
+
       let result: CheckResult
       try {
         result = await runtime.run({
@@ -187,10 +193,21 @@ function appendFeedback(result: ToolResultLike, message: string): ToolResultLike
   return result
 }
 
+async function isFileCheckDisabled(filePath: string): Promise<boolean> {
+  try {
+    const contents = await readFile(resolve(filePath), "utf8")
+    const firstLine = contents.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0]?.trim()
+    return firstLine === FILE_DISABLE_MARKER
+  } catch (error) {
+    if (error instanceof Error) return false
+    throw error
+  }
+}
+
 function traceDetail(
   event: CompletedEvent,
   request: CheckRequest,
-  outcome: "clean" | "detected" | "error" | "unavailable",
+  outcome: "clean" | "detected" | "disabled" | "error" | "unavailable",
 ): Record<string, unknown> {
   return {
     sessionID: event.sessionID,

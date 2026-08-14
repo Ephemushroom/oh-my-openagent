@@ -1,6 +1,9 @@
 /// <reference types="bun-types" />
 
 import { describe, expect, it } from "bun:test"
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 
 import type { CheckResult, RunCommentCheckerInput } from "@oh-my-opencode/comment-checker-core"
 import {
@@ -134,7 +137,7 @@ describe("OpenCode2 comment-checker post-tool hook", () => {
     ])
   })
 
-  it("#given v1 escape markers #when the checker accepts them #then markers are forwarded unchanged and no feedback is injected", async () => {
+  it("#given the v1 line escape #when the checker accepts it #then @allow is forwarded unchanged and no feedback is injected", async () => {
     // given
     const calls: RunCommentCheckerInput[] = []
     const runtime: CommentCheckerRuntime = {
@@ -142,27 +145,50 @@ describe("OpenCode2 comment-checker post-tool hook", () => {
       run: async (input) => {
         calls.push(input)
         const content = input.hookInput.tool_input.content ?? ""
-        const escaped = content.includes("// @allow") || content.startsWith("// comment-checker-disable-file")
-        return escaped
+        return content.includes("// @allow")
           ? { hasComments: false, message: "" }
           : { hasComments: true, message: "unexpected unescaped content" }
       },
     }
     const { handle, traces } = createHandler(runtime)
     const lineEscape = "// @allow - protocol explanation is required\nconst value = 1\n"
-    const fileEscape = "// comment-checker-disable-file\n// generated fixture comments are intentional\n"
     const lineEvent = createCompletedEvent({ input: { path: "src/line.ts", content: lineEscape } })
-    const fileEvent = createCompletedEvent({ input: { file_path: "src/file.ts", content: fileEscape } })
 
     // when
     await handle(lineEvent)
-    await handle(fileEvent)
 
     // then
-    expect(calls.map((call) => call.hookInput.tool_input.content)).toEqual([lineEscape, fileEscape])
+    expect(calls.map((call) => call.hookInput.tool_input.content)).toEqual([lineEscape])
     expect(lineEvent.result.content).toBe("written")
-    expect(fileEvent.result.content).toBe("written")
     expect(traces.some((record) => record.event === "omo.comment-checker.detected")).toBe(false)
+  })
+
+  it("#given the v1 file escape at the first line #when a write completes #then the adapter bypasses the checker", async () => {
+    // given
+    const directory = mkdtempSync(join(tmpdir(), "omo-oc2-comment-checker-"))
+    const filePath = join(directory, "fixture.ts")
+    const content = "// comment-checker-disable-file\n// generated fixture comments are intentional\n"
+    writeFileSync(filePath, content)
+    const { runtime, calls } = createRuntime({ hasComments: true, message: "must not run" })
+    const { handle, traces } = createHandler(runtime)
+    const event = createCompletedEvent({ input: { filePath, content } })
+
+    try {
+      // when
+      await handle(event)
+
+      // then
+      expect(calls).toHaveLength(0)
+      expect(event.result.content).toBe("written")
+      expect(traces).toEqual([
+        {
+          event: "omo.comment-checker.checked",
+          detail: expect.objectContaining({ outcome: "disabled", filePath }),
+        },
+      ])
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 
   it("#given a completed edit #when the hook runs #then old and new strings are mapped to the core contract", async () => {
