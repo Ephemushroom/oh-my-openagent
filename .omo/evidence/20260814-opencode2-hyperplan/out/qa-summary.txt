@@ -1,0 +1,16 @@
+sandbox: /tmp/tmp.NxLyyDiTiy
+opencode2: opencode2 v0.0.0-next-17055
+model: zhipuai/glm-4.7
+## standalone hyperplan
+PASS  hyperplan.run  (real session completed)
+PASS  hyperplan.injected  (one standalone hyperplan system part and no ultrawork/combo part)
+## adjacent hyperplan plus ultrawork
+PASS  combo.run  (real session completed)
+PASS  combo.injected  (one combo system part embeds exactly one routed ultrawork part)
+## no keyword
+PASS  negative.run  (real session completed)
+PASS  negative.clean  (no keyword mode system part was injected)
+## host-store isolation
+PASS  isolation.clean  (newer-than-marker sweep found no host-store writes)
+
+summary: PASS=7 FAIL=0

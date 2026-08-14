@@ -1,0 +1,11 @@
+[0m
+> sisyphus · glm-4.7
+HYPERPLAN ULTRAWORK MODE ENABLED!
+[0m✗ [0mSkill "hyperplan" failed
+[91m[1mError: [0mundefined is not an object (evaluating 'event.result.content')
+> sisyphus · glm-4.7
+HYPERPLAN ULTRAWORK MODE ENABLED!
+
+Skill load failed (undefined error in skill resolution).
+
+No placeholder provided in your message. What should I assess?
