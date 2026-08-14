@@ -1,0 +1,43 @@
+{
+  "plugins": ["oh-my-opencode2"],
+  "mcp": { "servers": {
+      "codegraph": {
+        "type": "local",
+        "command": [
+          "node",
+          "/abs/codegraph/cli.js",
+          "serve",
+          "--mcp"
+        ],
+        "environment": {
+          "CODEGRAPH_INSTALL_DIR": "C:\\Users\\Bryan\\.omo\\codegraph",
+          "CODEGRAPH_NO_DOWNLOAD": "1",
+          "CODEGRAPH_TELEMETRY": "0",
+          "DO_NOT_TRACK": "1"
+        },
+        "codemode": false
+      },
+      "lsp": {
+        "type": "local",
+        "command": [
+          "node",
+          "/abs/lsp/cli.js",
+          "mcp"
+        ],
+        "environment": {
+          "LSP_TOOLS_MCP_PROJECT_CONFIG": ".opencode/lsp.json"
+        },
+        "codemode": false
+      },
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp",
+        "codemode": false
+      },
+      "grep_app": {
+        "type": "remote",
+        "url": "https://mcp.grep.app",
+        "codemode": false
+      }
+    } }
+}
