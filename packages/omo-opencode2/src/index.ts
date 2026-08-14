@@ -22,6 +22,7 @@ import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
 import { registerHashlineEditTool } from "./tools/hashline-edit"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
+import { registerCommentChecker } from "./hooks/comment-checker"
 import { registerSharedSkills } from "./skills"
 
 const RUN_MARKER = "OMO-SPIKE-7f3a9"
@@ -202,6 +203,7 @@ export default Plugin.define({
 
     await registerWriteExistingFileGuard(ctx, trace)
     await registerPrometheusMdOnly(ctx, trace)
+    await registerCommentChecker(ctx, trace)
     trace("omo.tool-guards.registered", { hooks: ["write_existing_file_guard", "prometheus_md_only"] })
 
     // Phase 3 (context experience): dynamic Sisyphus prompt rebake + ultrawork
