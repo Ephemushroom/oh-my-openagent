@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 
 import { createHash } from "node:crypto"

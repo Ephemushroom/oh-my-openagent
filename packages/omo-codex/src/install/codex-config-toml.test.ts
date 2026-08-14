@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 
 // allow: SIZE_OK - Codex TOML writer coverage shares parser/fixture helpers across migration edge cases; this release adds config regressions and future edits should split by table family.

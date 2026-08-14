@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 
 // allow: SIZE_OK - cache install tests share one managed Codex cache fixture; this release adds narrow context cleanup coverage and future additions should split by cache operation.
@@ -150,7 +150,7 @@ describe("codex-cache", () => {
       packages: Record<string, { dependencies?: Record<string, string>; resolved?: string }>
     }
     expect(cachedPackageLock.packages[""]?.dependencies?.["@scope/lsp-tools"]).toBe(`file:${sourceDependencyPath}`)
-    expect(cachedPackageLock.packages[packageLockDependencyPath]).toEqual({ name: "@scope/lsp-tools", version: "0.1.0" })
+    expect(cachedPackageLock.packages[packageLockDependencyPath] as any).toEqual({ name: "@scope/lsp-tools", version: "0.1.0" })
     expect(cachedPackageLock.packages["node_modules/@scope/lsp-tools"]?.resolved).toBe(packageLockDependencyPath)
   })
 

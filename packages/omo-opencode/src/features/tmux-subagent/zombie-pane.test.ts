@@ -1,4 +1,4 @@
-/// <reference path="../../../../../bun-test.d.ts" />
+
 import { afterEach, beforeEach, describe, expect, mock, test, afterAll } from "bun:test"
 import type { TmuxConfig } from "../../config/schema"
 import type { ActionResult, ExecuteContext, ExecuteActionsResult } from "./action-executor"

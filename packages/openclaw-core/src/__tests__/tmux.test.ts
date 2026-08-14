@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 
 import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test"
 import * as tmuxModule from "../tmux"

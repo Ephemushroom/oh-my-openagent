@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 import { describe, test, expect } from "bun:test"
 
 import { buildTeamIdleWakeHintClient } from "./build-team-idle-wake-hint-client"

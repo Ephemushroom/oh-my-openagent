@@ -1,4 +1,4 @@
-/// <reference path="../../../../../bun-test.d.ts" />
+
 import { describe, expect, it, mock } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 

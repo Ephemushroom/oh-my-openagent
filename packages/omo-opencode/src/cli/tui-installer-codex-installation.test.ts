@@ -1,4 +1,4 @@
-/// <reference path="../../../../bun-test.d.ts" />
+
 /// <reference types="bun-types" />
 
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test"

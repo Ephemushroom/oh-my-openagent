@@ -82,7 +82,7 @@ export async function createRuntimeSkillSourceServer(
     const server = createServer(async (request, response) => {
       try {
         const sourceUrl = new URL(request.url ?? "/", "http://127.0.0.1")
-        await writeResponse(await handleRequest(new Request(sourceUrl.toString())), response)
+        await writeResponse(await handleRequest(new Request(sourceUrl.toString())), response as any)
       } catch (error) {
         response.writeHead(500, { "content-type": "text/plain; charset=utf-8" })
         response.end(error instanceof Error ? error.message : String(error))

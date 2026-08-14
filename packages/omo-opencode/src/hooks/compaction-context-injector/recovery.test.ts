@@ -1,4 +1,4 @@
-/// <reference path="../../../../../bun-test.d.ts" />
+
 
 import { afterEach, describe, expect, it } from "bun:test"
 import { setCompactionAgentConfigCheckpoint } from "../../shared/compaction-agent-config-checkpoint"
