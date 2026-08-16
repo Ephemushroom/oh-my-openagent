@@ -1,0 +1,4 @@
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0mtodowrite {"todos":[{"content":"Implement the feature","id":"task-a","priority":"high","status":"in_progress"},{"content":"Write tests","id":"task-b","priority":"medium","status":"pending"}]} 
+> sisyphus · glm-4.7

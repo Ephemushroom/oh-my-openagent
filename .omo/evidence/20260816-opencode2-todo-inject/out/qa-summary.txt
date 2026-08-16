@@ -1,0 +1,16 @@
+sandbox: /tmp/tmp.uL140QN0eq
+plugin:  D:/Programme/AI/oh-my-openagent-wt/todoinject/packages/omo-opencode2/src/index.ts
+
+=== case 1: todowrite call + todo-state injection ===
+PASS  tool-registered  (todowrite in omo.orchestration.registered)
+PASS  tool-executed  (omo.todo.write event present)
+PASS  state-injected  (omo.context.composed with todoParts > 0)
+
+=== case 2: no todowrite call, no injection ===
+PASS  no-tool-executed  (no omo.todo.write without tool call)
+PASS  no-state-injected  (no todoParts in composed without todowrite)
+
+=== isolation sweep ===
+PASS  isolation  (0 host-store writes)
+
+summary: PASS=6 FAIL=0

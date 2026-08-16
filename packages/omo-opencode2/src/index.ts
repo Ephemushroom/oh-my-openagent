@@ -15,6 +15,8 @@ import type { TaskEngine } from "./orchestration/task-engine"
 import type { ChildResult } from "./orchestration/task-engine"
 import { createTaskTool } from "./orchestration/task-tool"
 import { createBackgroundOutputTool, createBackgroundCancelTool } from "./orchestration/background-tools"
+import { TodoStore } from "./orchestration/todo-store"
+import { createTodoWriteTool } from "./orchestration/todo-store"
 import { registerContextHooks } from "./hooks/register-context-hooks"
 import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
 import { registerHashlineEditTool } from "./tools/hashline-edit"
@@ -44,6 +46,7 @@ export default Plugin.define({
     const workspaceDirectory = process.cwd()
     const registry = new TaskRegistry()
     const limiter = new ConcurrencyLimiter()
+    const todoStore = new TodoStore()
     const engine = createTaskEngine({
       ctx,
       registry,
@@ -182,12 +185,21 @@ export default Plugin.define({
         options: { codemode: false },
         execute: cancelTool.execute,
       })
+
+      const todoTool = createTodoWriteTool({ store: todoStore, trace })
+      draft.add({
+        name: todoTool.name,
+        description: todoTool.description,
+        input: todoTool.input,
+        options: { codemode: false },
+        execute: todoTool.execute,
+      })
     })
     
     await registerHashlineEditTool(ctx, trace)
     await registerHashlineReadEnhancer(ctx, trace)
     
-    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit"] })
+    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit", "todowrite"] })
 
     await registerWriteExistingFileGuard(ctx, trace)
     await registerPrometheusMdOnly(ctx, trace)
@@ -202,11 +214,28 @@ export default Plugin.define({
       ctx,
       staticSisyphusPrompt: capturedStaticSisyphusPrompt ?? "",
       workspaceDirectory,
+      todoStore,
       trace,
     })
     trace("omo.context-hooks.registered", { staticPromptLength: capturedStaticSisyphusPrompt?.length ?? 0 })
 
+    let todoCleanupDisposed = false
+    const todoCleanup = (async () => {
+      for await (const event of ctx.event.subscribe()) {
+        if (todoCleanupDisposed) return
+        if (event.type !== "session.deleted") continue
+        const data = (event as { data?: Record<string, unknown> }).data ?? {}
+        const sessionID = typeof data.sessionID === "string" ? data.sessionID : undefined
+        if (sessionID) {
+          todoStore.clear(sessionID)
+          trace("omo.todo.cleanup", { sessionID })
+        }
+      }
+    })()
+    void todoCleanup
+
     return () => {
+      todoCleanupDisposed = true
       goalFeature.dispose()
       engine.dispose()
     }

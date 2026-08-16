@@ -20,7 +20,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 5 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
+| Tools | 6 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | Skills | 17 | whole `shared-skills` tree registered as one directory source |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |

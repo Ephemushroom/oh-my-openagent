@@ -8,11 +8,14 @@ import type { ProjectRulesContext } from "./rules-context"
 import { rebakeSisyphusSystemPart } from "./sisyphus-context"
 import type { LiveAgent, LiveSkill } from "./sisyphus-context"
 import { detectKeywordModes, injectKeywordSystemParts } from "./ultrawork-context"
+import { injectTodoStateSystemPart } from "../orchestration/todo-store"
+import type { TodoStore } from "../orchestration/todo-store"
 
 export interface ContextHookDeps {
   ctx: Context
   staticSisyphusPrompt: string
   workspaceDirectory: string
+  todoStore?: TodoStore
   trace?: (event: string, detail?: Record<string, unknown>) => void
 }
 
@@ -37,6 +40,7 @@ interface ComposerOptions {
   skillList: () => Promise<LiveSkill[]>
   commandList: () => Promise<LiveCommand[]>
   projectContext?: () => Promise<ProjectRulesContext>
+  todoItems?: (sessionID: string) => readonly import("../orchestration/todo-store").TodoItem[]
   lastUserText: (messages: HookEvent["messages"]) => Promise<string>
 }
 
@@ -91,7 +95,13 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
       }
     }
 
-    // Step 4: keyword mode injection (last; only on the final real user turn).
+    // Step 4: todo state (survives compaction; re-injected every request).
+    if (options.todoItems !== undefined) {
+      const items = options.todoItems(event.sessionID)
+      event.system = injectTodoStateSystemPart(event.system, items)
+    }
+
+    // Step 5: keyword mode injection (last; only on the final real user turn).
     // Mode directives are appended as system parts for model context.
     let userText = ""
     try {
@@ -130,7 +140,7 @@ export async function lastRealUserText(messages: HookEvent["messages"]): Promise
  * session context hook. Non-fatal on live catalog failure.
  */
 export async function registerContextHooks(deps: ContextHookDeps): Promise<void> {
-  const { ctx, staticSisyphusPrompt, trace, workspaceDirectory } = deps
+  const { ctx, staticSisyphusPrompt, trace, workspaceDirectory, todoStore } = deps
 
   await ctx.session.hook("context", async (event) => {
     const composer = createContextHookComposer({
@@ -193,6 +203,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
           }
         }
       },
+      todoItems: todoStore ? (sessionID: string) => todoStore.get(sessionID) : undefined,
       lastUserText: lastRealUserText,
     })
 
@@ -202,6 +213,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
     const hyperplanUltraworkParts = output.system.filter((part) =>
       part.text?.includes("<hyperplan-ultrawork-mode>"),
     ).length
+    const todoParts = output.system.filter((part) => part.text?.includes("<todo-state>")).length
     trace?.("omo.context.composed", {
       sessionID: (event as unknown as { sessionID?: string }).sessionID,
       systemParts: output.system.length,
@@ -209,6 +221,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
       ultraworkParts,
       hyperplanParts,
       hyperplanUltraworkParts,
+      todoParts,
     })
   })
 }
