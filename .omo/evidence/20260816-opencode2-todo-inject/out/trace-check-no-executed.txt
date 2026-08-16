@@ -1,0 +1,1 @@
+{"check":"no-tool-executed","pass":true,"count":0}
