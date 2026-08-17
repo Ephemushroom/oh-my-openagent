@@ -12,12 +12,28 @@ export interface CatalogSnapshot {
   availableModels: Set<string>;
   /** Providers that have at least one model registered in the catalog. */
   connectedProviders: string[];
+  /**
+   * Subset of `availableModels` whose capabilities accept image input. Drives
+   * the `look_at` gate: a caller already on one of these needs no delegation.
+   */
+  visionModels: Set<string>;
   /** The harness's configured default model ("<provider>/<model>"), if any. */
   systemDefaultModel?: string;
 }
 
 function emptySnapshot(): CatalogSnapshot {
-  return { availableModels: new Set(), connectedProviders: [] }
+  return { availableModels: new Set(), connectedProviders: [], visionModels: new Set() }
+}
+
+/** Structural read of the capability block, tolerant of a catalog that omits it. */
+interface CapabilityCarrier {
+  capabilities?: { input?: readonly string[] }
+}
+
+const IMAGE_INPUT = "image"
+
+function acceptsImageInput(model: CapabilityCarrier): boolean {
+  return model.capabilities?.input?.includes(IMAGE_INPUT) === true
 }
 
 /** Read a catalog transform draft into a snapshot (pure). */
@@ -26,8 +42,10 @@ export function captureCatalogDraft(draft: CatalogDraft): CatalogSnapshot {
   for (const record of draft.provider.list()) {
     const providerID = record.provider.id as unknown as string
     snapshot.connectedProviders.push(providerID)
-    for (const modelID of record.models.keys()) {
-      snapshot.availableModels.add(`${providerID}/${modelID as unknown as string}`)
+    for (const [modelID, model] of record.models) {
+      const key = `${providerID}/${modelID as unknown as string}`
+      snapshot.availableModels.add(key)
+      if (acceptsImageInput(model)) snapshot.visionModels.add(key)
     }
   }
   const def = draft.model.default.get()

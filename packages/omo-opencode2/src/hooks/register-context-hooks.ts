@@ -10,12 +10,16 @@ import type { LiveAgent, LiveSkill } from "./sisyphus-context"
 import { detectKeywordModes, injectKeywordSystemParts } from "./ultrawork-context"
 import { injectTodoStateSystemPart } from "../orchestration/todo-store"
 import type { TodoStore } from "../orchestration/todo-store"
+import { formatModelKey } from "../tools/look-at"
+import type { SessionModelRegistry } from "../tools/look-at"
 
 export interface ContextHookDeps {
   ctx: Context
   staticSisyphusPrompt: string
   workspaceDirectory: string
   todoStore?: TodoStore
+  /** Fed with the caller's model on every request so `look_at` can gate on it. */
+  sessionModels?: SessionModelRegistry
   trace?: (event: string, detail?: Record<string, unknown>) => void
 }
 
@@ -140,9 +144,14 @@ export async function lastRealUserText(messages: HookEvent["messages"]): Promise
  * session context hook. Non-fatal on live catalog failure.
  */
 export async function registerContextHooks(deps: ContextHookDeps): Promise<void> {
-  const { ctx, staticSisyphusPrompt, trace, workspaceDirectory, todoStore } = deps
+  const { ctx, staticSisyphusPrompt, trace, workspaceDirectory, todoStore, sessionModels } = deps
 
   await ctx.session.hook("context", async (event) => {
+    // The context hook is the only surface that reports the caller's model
+    // alongside its session id, so it is where look_at's gate gets its input.
+    const modelKey = formatModelKey(event.model)
+    if (modelKey) sessionModels?.record(event.sessionID as unknown as string, modelKey)
+
     const composer = createContextHookComposer({
       staticSisyphusPrompt,
       agentList: async () => {

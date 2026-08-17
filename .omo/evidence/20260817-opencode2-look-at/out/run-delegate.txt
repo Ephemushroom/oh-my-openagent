@@ -1,0 +1,6 @@
+[0m
+> sisyphus · glm-4.7
+I read this as a direct tool invocation request.
+[0m⚙ [0mlook_at {"file_path":"C:/Users/Bryan/AppData/Local/Temp/tmp.EerP4tmM9h/home/project/probe.png","goal":"describe this image"} 
+> sisyphus · glm-4.7
+The image is a solid pink/salmon color with no other elements.
