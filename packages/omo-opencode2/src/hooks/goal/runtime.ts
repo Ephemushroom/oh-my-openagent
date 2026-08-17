@@ -1,8 +1,7 @@
+import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
 import type { GoalController } from "./controller"
 import { buildContinuationPrompt } from "./prompt"
 import type { GoalTrace } from "./types"
-
-const DEFAULT_POST_DISPATCH_HOLD_MS = 2_000
 
 export type GoalEvent = {
   readonly type: string
@@ -15,79 +14,50 @@ export type GoalRuntimeDependencies = {
   readonly sessionExists: (sessionID: string) => Promise<boolean>
   readonly dispatchContinuation: (sessionID: string, prompt: string) => Promise<void>
   readonly settle: () => Promise<void>
+  // Required, not defaulted: a per-feature default instance would give each
+  // idle-injecting feature its own lock, which is the double injection the
+  // gate exists to prevent. The owner of the plugin creates one and shares it.
+  readonly gate: SessionDispatchGate
   readonly trace?: GoalTrace
-  readonly postDispatchHoldMs?: number
 }
 
 export type GoalRuntime = ReturnType<typeof createGoalRuntime>
 
-type Reservation = {
-  readonly token: symbol
-  readonly expiresAt?: number
-}
-
 export function createGoalRuntime(dependencies: GoalRuntimeDependencies) {
-  const {
-    controller,
-    dispatchContinuation,
-    postDispatchHoldMs = DEFAULT_POST_DISPATCH_HOLD_MS,
-    sessionExists,
-    settle,
-    trace,
-  } = dependencies
+  const { controller, dispatchContinuation, gate, sessionExists, settle, trace } = dependencies
   const activity = new Map<string, "busy" | "idle">()
-  const reservations = new Map<string, Reservation>()
   let disposed = false
 
-  function activeReservation(sessionID: string): Reservation | undefined {
-    const reservation = reservations.get(sessionID)
-    if (reservation?.expiresAt !== undefined && reservation.expiresAt <= Date.now()) {
-      reservations.delete(sessionID)
-      return undefined
-    }
-    return reservation
-  }
-
   async function continueGoal(sessionID: string): Promise<void> {
-    if (disposed || activeReservation(sessionID) !== undefined) return
+    if (disposed) return
     const goal = controller.getGoal(sessionID)
     if (goal === null || goal.status !== "active") return
 
-    const reservation: Reservation = { token: Symbol(sessionID) }
-    reservations.set(sessionID, reservation)
-    let dispatchAttempted = false
-    try {
-      await settle()
-      if (disposed || activity.get(sessionID) !== "idle") return
-      if (!await sessionExists(sessionID)) return
-      if (disposed || activity.get(sessionID) !== "idle") return
-      const currentGoal = controller.getGoal(sessionID)
-      if (currentGoal === null || currentGoal.status !== "active") return
+    // Errors are caught inside the body so the gate sees a normal return and
+    // still releases; a rejection here would escape into the event pump.
+    await gate.run(sessionID, async (markDispatched) => {
+      try {
+        await settle()
+        if (disposed || activity.get(sessionID) !== "idle") return
+        if (!await sessionExists(sessionID)) return
+        if (disposed || activity.get(sessionID) !== "idle") return
+        const currentGoal = controller.getGoal(sessionID)
+        if (currentGoal === null || currentGoal.status !== "active") return
 
-      dispatchAttempted = true
-      await dispatchContinuation(sessionID, buildContinuationPrompt(currentGoal))
-      trace?.("omo.goal.continuation-injected", {
-        sessionID,
-        goalID: currentGoal.id,
-        objectiveUpdatedAt: currentGoal.updatedAt,
-      })
-    } catch (error) {
-      trace?.("omo.goal.continuation-failed", {
-        sessionID,
-        message: error instanceof Error ? error.message : String(error),
-      })
-    } finally {
-      if (reservations.get(sessionID)?.token === reservation.token) {
-        if (dispatchAttempted && postDispatchHoldMs > 0) {
-          reservations.set(sessionID, {
-            ...reservation,
-            expiresAt: Date.now() + postDispatchHoldMs,
-          })
-        } else {
-          reservations.delete(sessionID)
-        }
+        markDispatched()
+        await dispatchContinuation(sessionID, buildContinuationPrompt(currentGoal))
+        trace?.("omo.goal.continuation-injected", {
+          sessionID,
+          goalID: currentGoal.id,
+          objectiveUpdatedAt: currentGoal.updatedAt,
+        })
+      } catch (error) {
+        trace?.("omo.goal.continuation-failed", {
+          sessionID,
+          message: error instanceof Error ? error.message : String(error),
+        })
       }
-    }
+    })
   }
 
   return {
@@ -112,7 +82,7 @@ export function createGoalRuntime(dependencies: GoalRuntimeDependencies) {
           return
         case "session.deleted":
           activity.delete(sessionID)
-          reservations.delete(sessionID)
+          gate.release(sessionID)
           controller.clearGoal(sessionID)
           return
         default:
@@ -121,13 +91,14 @@ export function createGoalRuntime(dependencies: GoalRuntimeDependencies) {
     },
 
     hasReservation(sessionID: string): boolean {
-      return activeReservation(sessionID) !== undefined
+      return gate.isReserved(sessionID)
     },
 
+    // The gate is shared, so disposing this feature must not clear it. Doing so
+    // would free reservations another feature is holding.
     dispose(): void {
       disposed = true
       activity.clear()
-      reservations.clear()
     },
   }
 }

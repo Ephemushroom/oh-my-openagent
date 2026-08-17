@@ -1,0 +1,4 @@
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0mcreate_goal {"objective":"count to three"} 
+> sisyphus · glm-4.7

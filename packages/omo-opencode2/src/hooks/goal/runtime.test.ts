@@ -3,6 +3,7 @@ import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
+import { createSessionDispatchGate } from "../../orchestration/session-dispatch-gate"
 import { createGoalController, createGoalRuntime } from "./index"
 import type { GoalEvent, GoalRuntimeDependencies } from "./index"
 
@@ -23,6 +24,7 @@ function runtimeFixture(overrides: Partial<GoalRuntimeDependencies> = {}) {
   const traces: string[] = []
   const runtime = createGoalRuntime({
     controller,
+    gate: createSessionDispatchGate(),
     sessionExists: async () => true,
     dispatchContinuation: async (sessionID) => {
       dispatches.push(sessionID)
