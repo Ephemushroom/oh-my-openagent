@@ -26,6 +26,7 @@ import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guar
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
 import { registerConfiguredGoalFeature } from "./hooks/goal"
+import { createSessionDispatchGate } from "./orchestration/session-dispatch-gate"
 import { registerSharedSkills } from "./skills"
 
 type Trace = (event: string, detail?: Record<string, unknown>) => void
@@ -49,6 +50,10 @@ export default Plugin.define({
     const registry = new TaskRegistry()
     const limiter = new ConcurrencyLimiter()
     const todoStore = new TodoStore()
+    // One gate for the whole plugin. Every feature that injects into a session
+    // on an observed idle edge takes THIS instance; a second instance would
+    // hand that feature its own lock and let both inject on the same edge.
+    const sessionDispatchGate = createSessionDispatchGate()
     const engine = createTaskEngine({
       ctx,
       registry,
@@ -106,6 +111,7 @@ export default Plugin.define({
     await registerBuiltinCommands(ctx, trace)
     const goalFeature = await registerConfiguredGoalFeature(ctx, {
       directory: workspaceDirectory,
+      gate: sessionDispatchGate,
       trace,
     })
 

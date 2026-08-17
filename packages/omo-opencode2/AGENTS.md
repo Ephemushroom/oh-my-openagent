@@ -93,24 +93,44 @@ These are v2-API-specific and differ from v1. Read before editing.
 ## Goal idle continuation
 
 Goal is the only feature that injects on session idle, and it is default-off
-(`goal.enabled === true` required; `disabled_hooks` respected). Its continuation
-gate reserves the session synchronously before any `await`, so concurrent idle
-events cannot both pass; release compares a symbol token; there is a
-post-dispatch hold. `auto_start` (default off) creates a goal from the first
+(`goal.enabled === true` required; `disabled_hooks` respected). Its exclusion
+comes from the shared gate described under Session dispatch, which it takes as a
+required `gate` dependency rather than owning. Goal keeps only its own concerns:
+the busy/idle activity map, the settle delay, and the goal-status re-checks that
+run after settling. `auto_start` (default off) creates a goal from the first
 main-session message.
 
 ## Session dispatch
 
-There is no shared dispatch gate in v2. Session writes happen in exactly three
-places: `index.ts` (synthetic, background task completion notifies the parent),
-`hooks/goal/register.ts` (synthetic, idle continuation behind its own
-reservation gate), and `orchestration/child-session.ts` (prompt into a child
-session the engine created and owns). v1 funnels all such calls through one
-`prompt-async-gate`; v2 does not yet. The pinned set is enforced by
-`src/orchestration/session-dispatch-audit.test.ts`, which fails the suite when
-any new dispatch call site or reference appears. Do not add a second
-idle-injecting feature without a shared gate; update the audit allowlist only
-with justification in the commit message.
+`orchestration/session-dispatch-gate.ts` is the shared gate, v2's equivalent of
+v1's `prompt-async-gate`. It reserves a session synchronously before any
+`await`, compares a symbol token on release so a late release cannot free a
+newer reservation, and holds the reservation for `postDispatchHoldMs` after a
+dispatch so the next idle observer does not fire into a session the harness has
+accepted a message for but not yet marked busy.
+
+**One instance, created in `index.ts`, injected into every feature that injects
+on an observed edge.** This is the load-bearing part. Extracting the code is not
+what prevents double injection: two instances would each admit one dispatch, so
+two features would still both inject on the same edge. `createGoalRuntime` and
+`registerGoalFeature` therefore take `gate` as a REQUIRED dependency with no
+default, so a new feature cannot silently get its own lock. A feature's
+`dispose` must not clear the gate, since that would free another feature's
+reservation.
+
+**The gate is for N observers of ONE edge, not N distinct events.** Do not put
+per-item notifications behind it. Session writes happen in exactly three places,
+and only one of them belongs to the gate:
+
+| Site | Gated | Why |
+|---|---|---|
+| `hooks/goal/register.ts` | yes | Idle continuation. The only idle injector today. |
+| `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
+| `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
+
+The pinned set is enforced by `src/orchestration/session-dispatch-audit.test.ts`,
+which fails the suite when any new dispatch call site or reference appears.
+Update the allowlist only with justification in the commit message.
 
 ## Conventions
 

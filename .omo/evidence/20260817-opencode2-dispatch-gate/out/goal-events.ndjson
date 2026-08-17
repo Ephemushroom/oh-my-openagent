@@ -1,0 +1,3 @@
+{"t":1786945403489,"event":"omo.goal.registered","tools":["create_goal","update_goal","get_goal"]}
+{"t":1786945425938,"event":"omo.goal.created","sessionID":"ses_ff1c10baeffe8l6qvX0RgxWrfk","goalID":"99039307-8356-4143-be04-bf2bb87a1b3b","status":"active"}
+{"t":1786945427914,"event":"omo.goal.continuation-injected","sessionID":"ses_ff1c10baeffe8l6qvX0RgxWrfk","goalID":"99039307-8356-4143-be04-bf2bb87a1b3b","objectiveUpdatedAt":1786945425}

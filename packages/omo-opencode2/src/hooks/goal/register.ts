@@ -1,3 +1,4 @@
+import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
 import { createGoalAutoStartHandler } from "./auto-start"
 import type { GoalContextEvent, GoalSessionInfo } from "./auto-start"
 import { createGoalController } from "./controller"
@@ -13,6 +14,9 @@ export type RegisterGoalFeatureOptions = {
   readonly directory: string
   readonly enabled: boolean
   readonly autoStart?: boolean
+  // Supplied by the plugin owner so every idle-injecting feature shares one
+  // lock. See orchestration/session-dispatch-gate.
+  readonly gate: SessionDispatchGate
   readonly trace?: GoalTrace
 }
 
@@ -48,7 +52,7 @@ export async function registerGoalFeature(
   ctx: GoalFeatureContext,
   options: RegisterGoalFeatureOptions,
 ): Promise<RegisteredGoalFeature> {
-  const { directory, enabled, autoStart = false, trace } = options
+  const { directory, enabled, autoStart = false, gate, trace } = options
   if (!enabled) {
     trace?.("omo.goal.disabled", { tools: [] })
     return { dispose: () => undefined }
@@ -83,6 +87,7 @@ export async function registerGoalFeature(
 
   const runtime = createGoalRuntime({
     controller,
+    gate,
     sessionExists: async (sessionID) => (await getSessionInfo(sessionID)) !== null,
     dispatchContinuation: async (sessionID, prompt) => {
       await ctx.session.synthetic({

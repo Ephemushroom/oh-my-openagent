@@ -1,4 +1,5 @@
 import { loadOpenCode2Config } from "../../config"
+import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
 
 import { registerGoalFeature } from "./register"
 import type { GoalFeatureContext, RegisteredGoalFeature } from "./register"
@@ -10,6 +11,7 @@ export type ConfiguredGoalContext = GoalFeatureContext & {
 
 export type RegisterConfiguredGoalFeatureOptions = {
   readonly directory: string
+  readonly gate: SessionDispatchGate
   readonly trace?: GoalTrace
 }
 
@@ -34,6 +36,7 @@ export async function registerConfiguredGoalFeature(
     directory: options.directory,
     autoStart,
     enabled,
+    gate: options.gate,
     trace: options.trace,
   })
 }

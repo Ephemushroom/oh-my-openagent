@@ -9,24 +9,28 @@ const SRC_ROOT = join(import.meta.dir, "..")
 // separate lines.
 const DISPATCH_PATTERN = /session\s*\.\s*(prompt|promptAsync|synthetic)\s*\(/g
 
-// v1 funnels every session.prompt/promptAsync call through one shared gate
-// (packages/omo-opencode/src/shared/prompt-async-gate.ts) because multiple
-// observers of the same idle/error edge can inject the same internal message
-// into a live parent session. The v2 adapter has no shared gate, so the
-// pinned set below is the complete audited list of session-dispatch points:
+// Multiple observers of the same idle/error edge can inject the same internal
+// message into a live parent session. v2 closes that with the shared gate in
+// orchestration/session-dispatch-gate.ts, whose single instance is created in
+// index.ts and injected into every feature that injects on such an edge.
 //
-// - index.ts: background task completion notifies the parent session.
-// - hooks/goal/register.ts: goal idle continuation, behind its own
-//   reservation gate and default-off config.
-// - orchestration/child-session.ts: prompts a child session the engine
-//   created and owns, not a live parent.
+// Being on this allowlist does NOT mean a site is gated. The gate is for N
+// observers of ONE edge, and gating a per-item notifier would drop items:
+//
+// - index.ts: background task completion. NOT gated on purpose. It fires once
+//   per task, so two tasks finishing together are two distinct notifications,
+//   and a per-session reservation would silently drop the second.
+// - hooks/goal/register.ts: goal idle continuation. Gated, and default-off.
+//   The only idle injector today.
+// - orchestration/child-session.ts: prompts a child session the engine created
+//   and owns, not a live parent. NOT gated; no competing observer exists.
 //
 // Adding a new dispatch site is a deliberate design decision, not a drive-by
-// edit. If the new site injects on an idle/error/completion edge into a live
-// parent session, build a shared reservation gate FIRST, then update this
-// allowlist and state the justification in the commit message. The audit
-// matches source text, so a comment containing a dispatch call shape will
-// also trip it; keep dispatch references out of comments.
+// edit. A new site that injects on an idle/error/completion edge into a live
+// parent session MUST take the shared gate instance rather than build its own,
+// then update this allowlist and state the justification in the commit message.
+// The audit matches source text, so a comment containing a dispatch call shape
+// will also trip it; keep dispatch references out of comments.
 const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, number>>>> = {
   "index.ts": { synthetic: 1 },
   "hooks/goal/register.ts": { synthetic: 1 },
