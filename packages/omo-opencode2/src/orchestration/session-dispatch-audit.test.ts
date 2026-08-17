@@ -38,6 +38,9 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // SAME gate instance goal does; two instances would let both inject on one
   // idle edge. Default-off, and bounded by max_consecutive on top of the gate.
   "hooks/todo-continuation/register.ts": { synthetic: 1 },
+  // Boulder (start-work) continuation. The third idle injector, same shared
+  // gate, same reason. Default-off; re-reads the plan off disk on every idle.
+  "hooks/boulder-continuation/register.ts": { synthetic: 1 },
   "orchestration/child-session.ts": { prompt: 1 },
 }
 

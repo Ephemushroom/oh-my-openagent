@@ -27,6 +27,7 @@ import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
 import { registerConfiguredGoalFeature } from "./hooks/goal"
 import { registerConfiguredTodoContinuation } from "./hooks/todo-continuation"
+import { registerConfiguredBoulderContinuation } from "./hooks/boulder-continuation"
 import { createSessionDispatchGate } from "./orchestration/session-dispatch-gate"
 import { registerSharedSkills } from "./skills"
 
@@ -120,6 +121,14 @@ export default Plugin.define({
     const todoContinuation = await registerConfiguredTodoContinuation(ctx, {
       directory: workspaceDirectory,
       getTodos: (sessionID) => todoStore.get(sessionID),
+      gate: sessionDispatchGate,
+      trace,
+    })
+    // The third idle injector on the same shared gate. All three watch the one
+    // idle edge; a third gate instance would be the exact double-injection bug
+    // PR-4 exists to prevent.
+    const boulderContinuation = await registerConfiguredBoulderContinuation(ctx, {
+      directory: workspaceDirectory,
       gate: sessionDispatchGate,
       trace,
     })
@@ -282,6 +291,7 @@ export default Plugin.define({
       todoCleanupDisposed = true
       goalFeature.dispose()
       todoContinuation.dispose()
+      boulderContinuation.dispose()
       engine.dispose()
     }
   },

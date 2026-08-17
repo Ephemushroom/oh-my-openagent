@@ -22,15 +22,21 @@ export const OpenCode2TodoContinuationSettingsSchema = z.object({
   max_consecutive: z.number().int().min(1).optional(),
 }).strip()
 
+export const OpenCode2BoulderSettingsSchema = z.object({
+  enabled: z.boolean().optional(),
+}).strip()
+
 export const OpenCode2ConfigSchema = z.object({
   default_agent: z.string().optional(),
   agents: z.record(z.string(), OpenCode2AgentOverrideSchema).optional(),
   goal: OpenCode2GoalSettingsSchema.optional(),
   todo_continuation: OpenCode2TodoContinuationSettingsSchema.optional(),
+  boulder: OpenCode2BoulderSettingsSchema.optional(),
   disabled_hooks: z.array(z.string()).optional(),
 }).strip() // permissive: ignores all core root keys (categories, task, etc.)
 
 export type OpenCode2AgentOverride = z.infer<typeof OpenCode2AgentOverrideSchema>
 export type OpenCode2GoalSettings = z.infer<typeof OpenCode2GoalSettingsSchema>
 export type OpenCode2TodoContinuationSettings = z.infer<typeof OpenCode2TodoContinuationSettingsSchema>
+export type OpenCode2BoulderSettings = z.infer<typeof OpenCode2BoulderSettingsSchema>
 export type OpenCode2Config = z.infer<typeof OpenCode2ConfigSchema>

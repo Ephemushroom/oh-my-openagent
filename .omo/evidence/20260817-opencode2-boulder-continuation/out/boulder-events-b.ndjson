@@ -1,0 +1,4 @@
+{"t":1786949170781,"event":"omo.goal.registered","tools":["create_goal","update_goal","get_goal"]}
+{"t":1786949170783,"event":"omo.todo.registered","maxConsecutive":2}
+{"t":1786949170786,"event":"omo.boulder.registered"}
+{"t":1786949176641,"event":"omo.boulder.continuation-injected","sessionID":"ses_ff1878f36ffe0B04Nmf6KL0zi5","planName":"plan","remaining":2,"total":3}
