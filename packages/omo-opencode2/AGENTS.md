@@ -110,6 +110,22 @@ injectors are configurations of `orchestration/idle-injector.ts`: the feature
 supplies the predicate, the prompt, and the trace name; the busy/idle tracking,
 settle delay, post-settle re-checks and gated dispatch are shared.
 
+## Boulder (start-work) idle continuation
+
+A third idle injector. When the session goes idle owning an active plan in
+`.omo/boulder.json` with unchecked top-level tasks, it injects the next task and
+nudges the model to continue the plan. Default-off (`boulder.enabled === true`;
+`disabled_hooks` respected), and it shares the one gate instance with goal and
+the todo enforcer. Its state is entirely on disk and re-read on every idle, so
+it holds no in-memory boulder state and survives a restart. v2 runs the
+single-active-work mirror mode, not v1's N-work `works` map: a session owns
+work when its id is recorded (`boundVia="session"`, a resumed session) or when
+the file holds exactly one active work (`boundVia="sole-active"`). More than
+one active work and no recorded id returns null, the safe direction; explicit
+multi-work resume is v1-only. The checklist is parsed by the harness-neutral
+`@oh-my-opencode/boulder-state` core; the adapter imports it and must not fork
+it.
+
 ## Session dispatch
 
 `orchestration/session-dispatch-gate.ts` is the shared gate, v2's equivalent of
@@ -137,8 +153,9 @@ and only one of them belongs to the gate:
 
 | Site | Gated | Why |
 |---|---|---|
-| `hooks/goal/register.ts` | yes | Idle continuation. Shares the one gate with the enforcer. |
-| `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does; two instances would let both inject on one edge. |
+| `hooks/goal/register.ts` | yes | Idle continuation. Shares the one gate. |
+| `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does. |
+| `hooks/boulder-continuation/register.ts` | yes | The third idle injector (start-work). Same shared gate; re-reads the plan off disk on every idle. |
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
 
