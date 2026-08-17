@@ -1,0 +1,5 @@
+{"t":1786947254988,"event":"omo.goal.registered","tools":["create_goal","update_goal","get_goal"]}
+{"t":1786947254990,"event":"omo.todo.registered","maxConsecutive":2}
+{"t":1786947264761,"event":"omo.goal.created","sessionID":"ses_ff1a4cb1fffeJ1QGSumpPW1RA7","goalID":"b5e60d8e-61a6-4a50-8cb6-54997c8c0b19","status":"active"}
+{"t":1786947264762,"event":"omo.todo.write","sessionID":"ses_ff1a4cb1fffeJ1QGSumpPW1RA7","count":1}
+{"t":1786947267284,"event":"omo.goal.continuation-injected","sessionID":"ses_ff1a4cb1fffeJ1QGSumpPW1RA7","goalID":"b5e60d8e-61a6-4a50-8cb6-54997c8c0b19","objectiveUpdatedAt":1786947264}

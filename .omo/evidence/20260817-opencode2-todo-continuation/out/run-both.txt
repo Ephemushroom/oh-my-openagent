@@ -1,0 +1,7 @@
+[0m
+> sisyphus · glm-4.7
+I read this as direct execution: follow the specified command sequence.
+[0m⚙ [0mcreate_goal {"objective":"count to three"} 
+[0m⚙ [0mtodowrite {"todos":[{"id":"1","content":"count to three","status":"pending","priority":"medium"}]} 
+> sisyphus · glm-4.7
+DONE

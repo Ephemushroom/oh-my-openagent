@@ -92,13 +92,23 @@ These are v2-API-specific and differ from v1. Read before editing.
 
 ## Goal idle continuation
 
-Goal is the only feature that injects on session idle, and it is default-off
-(`goal.enabled === true` required; `disabled_hooks` respected). Its exclusion
-comes from the shared gate described under Session dispatch, which it takes as a
-required `gate` dependency rather than owning. Goal keeps only its own concerns:
-the busy/idle activity map, the settle delay, and the goal-status re-checks that
-run after settling. `auto_start` (default off) creates a goal from the first
-main-session message.
+Goal is default-off (`goal.enabled === true` required; `disabled_hooks`
+respected). Its exclusion comes from the shared gate described under Session
+dispatch, which it takes as a required `gate` dependency rather than owning.
+`auto_start` (default off) creates a goal from the first main-session message.
+
+## Todo idle continuation
+
+A second idle injector. When the session goes idle with unfinished todos, it
+injects a prompt listing them and nudging the model to continue. Default-off
+(`todo_continuation.enabled === true`; `disabled_hooks` respected), and it
+shares the one gate instance with goal so the two cannot both inject on one
+edge. Bounded by `max_consecutive` (default 12): any drop in the remaining count
+resets the budget, so a long productive run is never cut off and the bound only
+bites when the model keeps going idle without finishing anything. Both
+injectors are configurations of `orchestration/idle-injector.ts`: the feature
+supplies the predicate, the prompt, and the trace name; the busy/idle tracking,
+settle delay, post-settle re-checks and gated dispatch are shared.
 
 ## Session dispatch
 
@@ -116,7 +126,10 @@ two features would still both inject on the same edge. `createGoalRuntime` and
 `registerGoalFeature` therefore take `gate` as a REQUIRED dependency with no
 default, so a new feature cannot silently get its own lock. A feature's
 `dispose` must not clear the gate, since that would free another feature's
-reservation.
+reservation. Two features genuinely share the gate today (goal and the todo
+enforcer); the property that one edge admits exactly one injection across both
+is unit-tested in `idle-injector.test.ts` and driven on the binary in
+`.omo/evidence/20260817-opencode2-todo-continuation/`.
 
 **The gate is for N observers of ONE edge, not N distinct events.** Do not put
 per-item notifications behind it. Session writes happen in exactly three places,
@@ -124,7 +137,8 @@ and only one of them belongs to the gate:
 
 | Site | Gated | Why |
 |---|---|---|
-| `hooks/goal/register.ts` | yes | Idle continuation. The only idle injector today. |
+| `hooks/goal/register.ts` | yes | Idle continuation. Shares the one gate with the enforcer. |
+| `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does; two instances would let both inject on one edge. |
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
 
