@@ -1,0 +1,4 @@
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0mtodowrite {"todos":[{"content":"count to three","id":"1","priority":"medium","status":"pending"}]} 
+> sisyphus · glm-4.7

@@ -34,6 +34,10 @@ const DISPATCH_PATTERN = /session\s*\.\s*(prompt|promptAsync|synthetic)\s*\(/g
 const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, number>>>> = {
   "index.ts": { synthetic: 1 },
   "hooks/goal/register.ts": { synthetic: 1 },
+  // Todo continuation. The second idle injector, so it is gated and takes the
+  // SAME gate instance goal does; two instances would let both inject on one
+  // idle edge. Default-off, and bounded by max_consecutive on top of the gate.
+  "hooks/todo-continuation/register.ts": { synthetic: 1 },
   "orchestration/child-session.ts": { prompt: 1 },
 }
 

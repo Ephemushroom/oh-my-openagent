@@ -26,6 +26,7 @@ import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guar
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
 import { registerConfiguredGoalFeature } from "./hooks/goal"
+import { registerConfiguredTodoContinuation } from "./hooks/todo-continuation"
 import { createSessionDispatchGate } from "./orchestration/session-dispatch-gate"
 import { registerSharedSkills } from "./skills"
 
@@ -111,6 +112,14 @@ export default Plugin.define({
     await registerBuiltinCommands(ctx, trace)
     const goalFeature = await registerConfiguredGoalFeature(ctx, {
       directory: workspaceDirectory,
+      gate: sessionDispatchGate,
+      trace,
+    })
+    // Shares the one gate with goal on purpose. Both watch the same idle edge,
+    // so a second gate instance would let both inject into the same turn.
+    const todoContinuation = await registerConfiguredTodoContinuation(ctx, {
+      directory: workspaceDirectory,
+      getTodos: (sessionID) => todoStore.get(sessionID),
       gate: sessionDispatchGate,
       trace,
     })
@@ -272,6 +281,7 @@ export default Plugin.define({
     return () => {
       todoCleanupDisposed = true
       goalFeature.dispose()
+      todoContinuation.dispose()
       engine.dispose()
     }
   },
