@@ -66,6 +66,18 @@ These are v2-API-specific and differ from v1. Read before editing.
   which is the one provider proven to authenticate, before any tuned chain.
   Verified: a chain-first choice picked an uncallable `openai/gpt-5.6-sol` on a
   zhipuai-only account and the delegated child failed with a routing error.
+- **The shell/job registry is NOT reachable from a plugin.** `ctx.shell` is
+  `ShellDomain`, which is `{ hook("create.before") }` and nothing else. The full
+  `ShellApi` (`list`, `create`, `get`, `timeout`, `output` with a polling
+  cursor, `remove`) does exist, but it hangs off `AppApi`, the HTTP client
+  surface, and the plugin `Context` never hands that client out: `ctx.app` is
+  `{ name, version, channel }` metadata, `ctx.plugin` is `PluginApi` which is
+  `{ list }` over PLUGINS, and `ctx.options` is freeform config with no server
+  handle. Contrast `SessionDomain`, which IS `Pick<SessionApi, ...> & { hook }`;
+  shell was not given the same treatment. The capability ships only as server
+  routes (`GET /api/shell` = `v2.shell.list`), which need pairing and answer 401
+  otherwise. So monitor-style list/poll/kill tools cannot be built on the plugin
+  API. Verified on `0.0.0-next-17444`.
 - **`aisdk` hooks only fire for providers that ship a provider plugin.** The
   `aisdk.hook("sdk" | "language")` domain exists in the plugin types, but core
   dispatches it from `createProviderPlugin`, which is instantiated only for the
