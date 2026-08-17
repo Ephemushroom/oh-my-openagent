@@ -11,8 +11,8 @@
     "typecheck": "tsgo --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "0.0.0-next-17055",
-    "@opencode-ai/schema": "0.0.0-next-17055",
+    "@opencode-ai/plugin": "0.0.0-next-17444",
+    "@opencode-ai/schema": "0.0.0-next-17444",
     "@oh-my-opencode/agents-core": "workspace:*",
     "@oh-my-opencode/comment-checker-core": "workspace:*",
     "@oh-my-opencode/delegate-core": "workspace:*",
@@ -21,6 +21,7 @@
     "@oh-my-opencode/omo-config-core": "workspace:*",
     "@oh-my-opencode/prompts-core": "workspace:*",
     "@oh-my-opencode/rules-engine": "workspace:*",
-    "@oh-my-opencode/shared-skills": "workspace:*"
+    "@oh-my-opencode/shared-skills": "workspace:*",
+    "@oh-my-opencode/utils": "workspace:*"
   }
 }

@@ -22,7 +22,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
 | Tools | 6 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
-| Skills | 17 | whole `shared-skills` tree registered as one directory source |
+| Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |
 
 ## Implementation invariants
@@ -51,6 +51,17 @@ These are v2-API-specific and differ from v1. Read before editing.
   avoids v1's `promptAsync` duplicate-injection bug class.
 - **v2 types are readonly over mutable runtime drafts.** Core reads arrays back
   after hooks, so in-place rewrite is the expected pattern.
+- **`aisdk` hooks only fire for providers that ship a provider plugin.** The
+  `aisdk.hook("sdk" | "language")` domain exists in the plugin types, but core
+  dispatches it from `createProviderPlugin`, which is instantiated only for the
+  bundled `@ai-sdk/*` packages (alibaba, cohere, groq, mistral, perplexity,
+  togetherai, deepinfra, gateway, ...). A provider resolved through any other
+  path never reaches those hooks, so neither hook fires for it. Registration
+  succeeds and the callback is simply never invoked, which looks identical to a
+  silent bug. Model fallback built on this domain therefore cannot cover most
+  providers; `session.hook("http.request")` and `session.hook("http.response")`
+  do fire and are the viable interception point. Verified on `0.0.0-next-17444`
+  by tracing both hooks in a live session.
 
 ## Goal idle continuation
 

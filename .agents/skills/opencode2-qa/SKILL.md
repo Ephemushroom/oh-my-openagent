@@ -13,7 +13,7 @@ The core difference: **v1 QA proves a hook fired via the SSE event stream. v2 QA
 proves it via `OMO_SPIKE_TRACE` NDJSON**, because the v2 adapter emits its own
 trace events and the CLI does not expose raw system parts or tool results.
 
-Verified against `opencode2` `0.0.0-next-17055` on Windows with `zhipuai/glm-4.7`.
+Verified against `opencode2` `0.0.0-next-17444` on Windows with `zhipuai/glm-4.7`.
 
 ## Golden rules
 
