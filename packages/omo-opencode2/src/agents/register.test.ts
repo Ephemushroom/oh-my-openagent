@@ -102,7 +102,7 @@ describe("resolveAgentModel", () => {
     const override: OpenCode2AgentOverride = { model: "anthropic/claude-3-5-sonnet", variant: "latest" }
     const result = resolveAgentModel(
       { fallbackChain: [{ providers: ["openai"], model: "gpt-5.6-sol" }] },
-      { availableModels: new Set(["openai/gpt-5.6-sol"]), connectedProviders: ["openai"] },
+      { availableModels: new Set(["openai/gpt-5.6-sol"]), connectedProviders: ["openai"], visionModels: new Set() },
       undefined,
       override,
     )
@@ -114,7 +114,7 @@ describe("resolveAgentModel", () => {
   test("#given a chain model available in the catalog #when resolving #then it uses the chain entry", () => {
     const result = resolveAgentModel(
       { fallbackChain: [{ providers: ["openai"], model: "gpt-5.6-sol", variant: "xhigh" }] },
-      { availableModels: new Set(["openai/gpt-5.6-sol"]), connectedProviders: ["openai"] },
+      { availableModels: new Set(["openai/gpt-5.6-sol"]), connectedProviders: ["openai"], visionModels: new Set() },
     )
 
     expect(result?.model).toBe("openai/gpt-5.6-sol")
@@ -124,7 +124,7 @@ describe("resolveAgentModel", () => {
   test("#given no chain entry available and a system default #when resolving #then it falls back to the default", () => {
     const result = resolveAgentModel(
       { fallbackChain: [{ providers: ["openai"], model: "gpt-5.6-sol" }] },
-      { availableModels: new Set(["zhipuai/glm-4.7"]), connectedProviders: ["zhipuai"] },
+      { availableModels: new Set(["zhipuai/glm-4.7"]), connectedProviders: ["zhipuai"], visionModels: new Set() },
       "zhipuai/glm-4.7",
     )
 
@@ -134,7 +134,7 @@ describe("resolveAgentModel", () => {
   test("#given a cold catalog and no default #when resolving #then it uses the first fallback entry", () => {
     const result = resolveAgentModel(
       { fallbackChain: [{ providers: ["anthropic"], model: "claude-opus-5", variant: "max" }] },
-      { availableModels: new Set(), connectedProviders: [] },
+      { availableModels: new Set(), connectedProviders: [], visionModels: new Set() },
     )
 
     expect(result?.model).toBe("anthropic/claude-opus-5")

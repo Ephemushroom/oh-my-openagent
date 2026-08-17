@@ -20,6 +20,8 @@ import { createTodoWriteTool } from "./orchestration/todo-store"
 import { registerContextHooks } from "./hooks/register-context-hooks"
 import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
 import { registerHashlineEditTool } from "./tools/hashline-edit"
+import { runChildSession } from "./orchestration/child-session"
+import { createSessionModelRegistry, registerLookAtTool, LOOK_AT_AGENT } from "./tools/look-at"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
@@ -73,6 +75,7 @@ export default Plugin.define({
       const snap = catalog.current
       trace("omo.catalog.snapshot", {
         availableModels: snap.availableModels.size,
+        visionModels: [...snap.visionModels],
         providers: snap.connectedProviders,
         defaultModel: snap.systemDefaultModel,
       })
@@ -198,8 +201,33 @@ export default Plugin.define({
     
     await registerHashlineEditTool(ctx, trace)
     await registerHashlineReadEnhancer(ctx, trace)
-    
-    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit", "todowrite"] })
+
+    // look_at gates on the caller's own vision capability, so it needs the
+    // per-session model recorded by the context hook below.
+    const sessionModels = createSessionModelRegistry()
+    await registerLookAtTool({
+      ctx,
+      catalog,
+      sessionModels,
+      delegate: async (input) => {
+        const result = await runChildSession({
+          ctx,
+          registry,
+          limiter,
+          deps,
+          parentSessionID: input.parentSessionID,
+          agent: LOOK_AT_AGENT,
+          model: input.visionModel,
+          prompt: input.prompt,
+          description: input.description,
+          background: false,
+        })
+        return { ok: result.ok, text: result.text }
+      },
+      trace,
+    })
+
+    trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit", "todowrite", "look_at"] })
 
     await registerWriteExistingFileGuard(ctx, trace)
     await registerPrometheusMdOnly(ctx, trace)
@@ -215,6 +243,7 @@ export default Plugin.define({
       staticSisyphusPrompt: capturedStaticSisyphusPrompt ?? "",
       workspaceDirectory,
       todoStore,
+      sessionModels,
       trace,
     })
     trace("omo.context-hooks.registered", { staticPromptLength: capturedStaticSisyphusPrompt?.length ?? 0 })

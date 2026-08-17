@@ -20,7 +20,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 6 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
+| Tools | 7 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |
@@ -51,6 +51,21 @@ These are v2-API-specific and differ from v1. Read before editing.
   avoids v1's `promptAsync` duplicate-injection bug class.
 - **v2 types are readonly over mutable runtime drafts.** Core reads arrays back
   after hooks, so in-place rewrite is the expected pattern.
+- **`look_at` gates on the CALLER's vision capability; v1 always delegated.**
+  v2's native `read` renders images and PDFs to the model, so delegating from a
+  model that can already see the file wastes a child session. The gate needs the
+  caller's model, which `ToolContext` does not carry, so `session.hook("context")`
+  (the only surface exposing `model` beside `sessionID`) feeds a session-to-model
+  registry that the tool reads at execute time. Routes are passthrough / delegate
+  / unavailable; see `tools/look-at/vision-gate.ts`.
+- **The catalog lists models the user cannot call.** `catalog.provider.list()`
+  covers roughly 200 providers regardless of credentials, so
+  `connectedProviders` means "known to the catalog", NOT "authenticated". Any
+  code choosing a model to dispatch to must not assume a catalog entry is
+  callable. `selectVisionModel` therefore prefers the caller's own provider,
+  which is the one provider proven to authenticate, before any tuned chain.
+  Verified: a chain-first choice picked an uncallable `openai/gpt-5.6-sol` on a
+  zhipuai-only account and the delegated child failed with a routing error.
 - **`aisdk` hooks only fire for providers that ship a provider plugin.** The
   `aisdk.hook("sdk" | "language")` domain exists in the plugin types, but core
   dispatches it from `createProviderPlugin`, which is instantiated only for the
