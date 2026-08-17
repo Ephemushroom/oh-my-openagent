@@ -54,10 +54,12 @@ The first run passed all four checks yet the delegated child FAILED with a
 provider routing error. Routing fired; the work did not happen.
 
 Cause: `visionModels` is built from every model the catalog lists, and v2's
-catalog lists models from roughly 200 providers regardless of whether the user
-holds credentials for them. Preferring the multimodal-looker fallback chain
-therefore selected `openai/gpt-5.6-sol`, which this account cannot call, while
-the usable `zhipuai/glm-4.5v` sat in the same catalog.
+catalog lists models regardless of whether the user holds credentials for them.
+Measured on this account (`out/catalog-summary.json`): **6071 models across 181
+providers, 3273 of them vision-capable**, while exactly one provider is
+authenticated. Preferring the multimodal-looker fallback chain therefore
+selected `openai/gpt-5.6-sol`, which this account cannot call, while the usable
+`zhipuai/glm-4.5v` sat in the same catalog.
 
 Fix: `selectVisionModel` now prefers a vision model from the CALLER's own
 provider, which is the one provider proven to authenticate, before consulting
@@ -92,5 +94,11 @@ base, 27 added). `bun run typecheck` exit 0.
 
 No API keys, auth headers, or env dumps are recorded. `ZHIPU_API_KEY` is read
 from the host auth store at run time and passed to the child process only; it
-never appears in `out/`. The catalog trace in `out/catalog.json` lists public
-model identifiers only.
+never appears in `out/`.
+
+Raw `OMO_SPIKE_TRACE` files are NOT committed. Each was about 250 KB and
+consisted almost entirely of the full catalog snapshot for 181 providers, which
+is reviewer-noise and drags legacy model identifiers into committed surfaces
+that the repo audits. They stay in the sandbox; `out/lookat-events-*.ndjson`
+keeps the `omo.lookat.*` events that are the actual proof, and
+`out/catalog-summary.json` keeps the catalog shape as counts.

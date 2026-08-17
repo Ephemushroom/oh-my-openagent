@@ -1,1 +1,2 @@
+{"t":1786942417845,"event":"omo.lookat.tool-registered","tool":"look_at"}
 {"t":1786942424493,"event":"omo.lookat.passthrough","model":"zhipuai/glm-5v-turbo","files":1}

@@ -17,6 +17,14 @@ OC2="${OPENCODE2_BIN:-/c/Users/Bryan/AppData/Local/Temp/opencode/oc2-next/node_m
 REAL_HOME="$(cygpath -u "${USERPROFILE:-$HOME}" 2>/dev/null || printf '%s' "${USERPROFILE:-$HOME}")"
 ZHIPU_API_KEY="$(node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write((a.zhipuai&&a.zhipuai.key)||"")' "$REAL_HOME/.local/share/opencode/auth.json")"
 
+# Raw traces hold the full catalog of ~200 providers (250 KB each) and are
+# reviewer-noise, so they stay in the sandbox. Only the look_at events, which
+# are the actual proof, are kept as evidence.
+TRACEDIR="$(mktemp -d)"
+keep_lookat_events() { # $1 = raw trace, $2 = destination
+  grep 'omo\.lookat\.' "$1" > "$2" 2>/dev/null || : > "$2"
+}
+
 PASS=0; FAIL=0
 check() {
   if [ "$2" -eq 0 ]; then printf 'PASS  %s  (%s)\n' "$1" "$3"; PASS=$((PASS+1));
@@ -73,14 +81,31 @@ cd "$P"
 
 echo "=== case 1+2: caller WITHOUT vision must delegate ==="
 write_config "zhipuai/glm-4.7"
-export OMO_SPIKE_TRACE="$OUT/trace-delegate.ndjson"; : > "$OMO_SPIKE_TRACE"
+export OMO_SPIKE_TRACE="$TRACEDIR/trace-delegate.ndjson"; : > "$OMO_SPIKE_TRACE"
 timeout -k 5 420 "$OC2" run --standalone --auto \
   "Call the look_at tool with file_path \"$IMG_WIN\" and goal \"describe this image\". Do not use read." \
   > "$OUT/run-delegate.txt" 2>&1 || true
 tail -5 "$OUT/run-delegate.txt"
 
-trace_events "$OMO_SPIKE_TRACE" "omo.catalog.snapshot" | tail -1 > "$OUT/catalog.json"
-echo "  catalog: $(cat "$OUT/catalog.json")"
+# Summarise the catalog rather than dumping it. The raw snapshot lists every
+# model of ~200 providers, which is reviewer-noise and drags legacy model ids
+# into committed evidence (the repo audits committed surfaces for those).
+trace_events "$OMO_SPIKE_TRACE" "omo.catalog.snapshot" | tail -1 > "$OUT/catalog-raw.tmp"
+node -e '
+const fs=require("fs");
+const raw=fs.readFileSync(process.argv[1],"utf8").trim();
+if(!raw){fs.writeFileSync(process.argv[2],"{}");process.exit(0)}
+const e=JSON.parse(raw);
+const vision=e.visionModels||[];
+fs.writeFileSync(process.argv[2], JSON.stringify({
+  availableModels: e.availableModels,
+  providers: Array.isArray(e.providers)?e.providers.length:undefined,
+  visionModelCount: vision.length,
+  visionModelSelected: vision[0],
+}, null, 2));
+' "$OUT/catalog-raw.tmp" "$OUT/catalog-summary.json"
+rm -f "$OUT/catalog-raw.tmp"
+echo "  catalog: $(cat "$OUT/catalog-summary.json" | tr -d '\n')"
 
 trace_events "$OMO_SPIKE_TRACE" "omo.lookat.tool-registered" > "$OUT/registered.json"
 [ -s "$OUT/registered.json" ]; check "registered" $? "look_at reached core's tool registry"
@@ -90,6 +115,7 @@ DELEGATED=$?
 if [ -s "$OUT/delegated.json" ]; then DELEGATED=0; else DELEGATED=1; fi
 echo "  delegated event: $(cat "$OUT/delegated.json")"
 check "delegated" "$DELEGATED" "blind caller (glm-4.7) routed to a vision model"
+keep_lookat_events "$OMO_SPIKE_TRACE" "$OUT/lookat-events-delegate.ndjson"
 
 echo
 echo "=== case 3: caller WITH vision must pass through ==="
@@ -102,15 +128,13 @@ const p=process.argv[1];
 if(!fs.existsSync(p)){process.exit(0)}
 const raw=fs.readFileSync(p,"utf8").trim();
 if(!raw){process.exit(0)}
-const e=JSON.parse(raw);
-const list=(e.detail&&e.detail.visionModels)||e.visionModels||[];
-process.stdout.write(list[0]||"");
-' "$OUT/catalog.json")"
+process.stdout.write(JSON.parse(raw).visionModelSelected||"");
+' "$OUT/catalog-summary.json")"
 echo "  vision model from catalog: ${VISION_MODEL:-<none>}"
 
 if [ -n "$VISION_MODEL" ]; then
   write_config "$VISION_MODEL"
-  export OMO_SPIKE_TRACE="$OUT/trace-passthrough.ndjson"; : > "$OMO_SPIKE_TRACE"
+  export OMO_SPIKE_TRACE="$TRACEDIR/trace-passthrough.ndjson"; : > "$OMO_SPIKE_TRACE"
   timeout -k 5 420 "$OC2" run --standalone --auto \
     "Call the look_at tool with file_path \"$IMG_WIN\" and goal \"describe this image\"." \
     > "$OUT/run-passthrough.txt" 2>&1 || true
@@ -119,6 +143,7 @@ if [ -n "$VISION_MODEL" ]; then
   if [ -s "$OUT/passthrough.json" ]; then PT=0; else PT=1; fi
   echo "  passthrough event: $(cat "$OUT/passthrough.json")"
   check "passthrough" "$PT" "sighted caller ($VISION_MODEL) told to use read"
+  keep_lookat_events "$OMO_SPIKE_TRACE" "$OUT/lookat-events-passthrough.ndjson"
 else
   printf 'GAP   passthrough  (no vision-capable model in this account catalog)\n'
 fi

@@ -1,0 +1,6 @@
+{
+  "availableModels": 6071,
+  "providers": 181,
+  "visionModelCount": 3273,
+  "visionModelSelected": "zhipuai/glm-5v-turbo"
+}
