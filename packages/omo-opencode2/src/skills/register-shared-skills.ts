@@ -1,7 +1,11 @@
+import { readFileSync, readdirSync, statSync } from "node:fs"
+import { join } from "node:path"
+
+import { parseFrontmatter } from "@oh-my-opencode/utils"
+import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills"
 import type { SkillDraft } from "@opencode-ai/plugin/promise/skill"
 import { AbsolutePath } from "@opencode-ai/schema/schema"
-import { Source } from "@opencode-ai/schema/skill"
-import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills"
+import { Skill } from "@opencode-ai/schema/skill"
 
 export interface SharedSkillsRegistrationContext {
   readonly skill: {
@@ -9,15 +13,72 @@ export interface SharedSkillsRegistrationContext {
   }
 }
 
+interface SharedSkillFile {
+  readonly id: string
+  readonly name: string
+  readonly description?: string
+  readonly location: string
+  readonly content: string
+}
+
+interface SharedSkillFrontmatter {
+  readonly name?: unknown
+  readonly description?: unknown
+}
+
+export function readSharedSkillFiles(root: string): readonly SharedSkillFile[] {
+  let entries: readonly string[]
+  try {
+    entries = readdirSync(root)
+  } catch {
+    return []
+  }
+
+  const skills: SharedSkillFile[] = []
+  for (const entry of [...entries].sort()) {
+    const location = join(root, entry, "SKILL.md")
+    let raw: string
+    try {
+      if (!statSync(join(root, entry)).isDirectory()) continue
+      raw = readFileSync(location, "utf8")
+    } catch {
+      continue
+    }
+
+    const parsed = parseFrontmatter<SharedSkillFrontmatter>(raw)
+    const name = typeof parsed.data.name === "string" && parsed.data.name.length > 0 ? parsed.data.name : entry
+    const description = typeof parsed.data.description === "string" ? parsed.data.description : undefined
+    skills.push({
+      id: entry,
+      name,
+      description,
+      location,
+      content: parsed.hadFrontmatter ? parsed.body : raw,
+    })
+  }
+  return skills
+}
+
 export async function registerSharedSkills(
   ctx: SharedSkillsRegistrationContext,
   trace?: (event: string, detail?: Record<string, unknown>) => void,
 ): Promise<void> {
   const path = sharedSkillsRootPath()
+  const skills = readSharedSkillFiles(path)
 
   await ctx.skill.transform((draft) => {
-    draft.source(Source.make({ type: "directory", path: AbsolutePath.make(path) }))
+    for (const skill of skills) {
+      draft.add(
+        Skill.Info.make({
+          id: Skill.ID.make(skill.id),
+          name: Skill.Name.make(skill.name),
+          ...(skill.description === undefined ? {} : { description: skill.description }),
+          location: AbsolutePath.make(skill.location),
+          content: skill.content,
+        }),
+      )
+    }
   })
 
-  trace?.("omo.skills.registered", { path })
+  trace?.("omo.skills.registered", { path, count: skills.length })
 }
