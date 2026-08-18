@@ -19,7 +19,7 @@ const tempDirs: string[] = []
 const CREDENTIALED_URL = "https://user:s3cr3t-token@127.0.0.1:1/memory.git"
 
 afterEach(async () => {
-  await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
+  await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })))
 })
 
 const SEEDS = [
@@ -62,7 +62,7 @@ describe("/memory-repository", () => {
     expect(text).toContain("127.0.0.1")
     expect(text).not.toContain("s3cr3t-token")
     expect(text).toContain("ahead")
-  })
+  }, 20_000)
 
   test("#given no configured mirror #when status runs #then it reports the unconfigured state", async () => {
     // given

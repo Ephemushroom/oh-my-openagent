@@ -5817,11 +5817,12 @@ var OmoCodegraphSettingsSchema = OmoCodegraphSettingsLayerSchema.extend({
 
 // ../../../../omo-config-core/src/schema/memory.ts
 var OmoMemoryReflectionTriggerSchema = object({
-  step_count: number2().int().nonnegative().default(0),
+  step_count: number2().int().nonnegative().default(25),
   on_compaction: boolean2().default(true)
 }).strict();
 var OmoMemoryReflectionSchema = object({
-  trigger: OmoMemoryReflectionTriggerSchema.default({ step_count: 0, on_compaction: true }),
+  enabled: boolean2().default(true),
+  trigger: OmoMemoryReflectionTriggerSchema.default({ step_count: 25, on_compaction: true }),
   merge: _enum(["auto", "integration"]).default("auto"),
   category: string2().min(1).default("quick"),
   timeout_minutes: number2().int().positive().default(15),
@@ -5834,11 +5835,36 @@ var OmoMemorySyncSchema = object({
 var OmoMemorySearchSchema = object({
   enabled: boolean2().default(true)
 }).strict();
+var OmoMemoryNudgeSchema = object({
+  enabled: boolean2().default(true),
+  every_user_turns: number2().int().min(1).default(10)
+}).strict();
+var OmoMemoryFactsSchema = object({
+  enabled: boolean2().default(true),
+  debounce_settles: number2().int().min(1).default(4)
+}).strict();
+var OmoMemoryDreamSchema = object({
+  enabled: boolean2().default(true),
+  idle_minutes: number2().int().min(0).default(30),
+  min_hours_between: number2().int().min(1).default(24),
+  shutdown_launch: boolean2().default(true),
+  auto_select_max: number2().int().min(1).max(10).default(5),
+  auto_select_max_chars: number2().int().min(1e4).default(150000)
+}).strict();
+var OmoMemoryPeopleSchema = object({
+  enabled: boolean2().default(true),
+  max_entries: number2().int().min(1).max(100).default(40),
+  max_entry_chars: number2().int().min(50).max(500).default(200)
+}).strict();
+var OmoMemorySoulSchema = object({
+  edit_notice: boolean2().default(true)
+}).strict();
 var OmoMemoryReflectionTriggerLayerSchema = object({
   step_count: number2().int().nonnegative().optional(),
   on_compaction: boolean2().optional()
 }).strict();
 var OmoMemoryReflectionLayerSchema = object({
+  enabled: boolean2().optional(),
   trigger: OmoMemoryReflectionTriggerLayerSchema.optional(),
   merge: _enum(["auto", "integration"]).optional(),
   category: string2().min(1).optional(),
@@ -5852,10 +5878,39 @@ var OmoMemorySyncLayerSchema = object({
 var OmoMemorySearchLayerSchema = object({
   enabled: boolean2().optional()
 }).strict();
+var OmoMemoryNudgeLayerSchema = object({
+  enabled: boolean2().optional(),
+  every_user_turns: number2().int().min(1).optional()
+}).strict();
+var OmoMemoryFactsLayerSchema = object({
+  enabled: boolean2().optional(),
+  debounce_settles: number2().int().min(1).optional()
+}).strict();
+var OmoMemoryDreamLayerSchema = object({
+  enabled: boolean2().optional(),
+  idle_minutes: number2().int().min(0).optional(),
+  min_hours_between: number2().int().min(1).optional(),
+  shutdown_launch: boolean2().optional(),
+  auto_select_max: number2().int().min(1).max(10).optional(),
+  auto_select_max_chars: number2().int().min(1e4).optional()
+}).strict();
+var OmoMemoryPeopleLayerSchema = object({
+  enabled: boolean2().optional(),
+  max_entries: number2().int().min(1).max(100).optional(),
+  max_entry_chars: number2().int().min(50).max(500).optional()
+}).strict();
+var OmoMemorySoulLayerSchema = object({
+  edit_notice: boolean2().optional()
+}).strict();
 var OmoMemoryAgentOverridesSchema = object({
   enabled: boolean2().optional(),
   agent: string2().min(1).optional(),
   reflection: OmoMemoryReflectionLayerSchema.optional(),
+  nudge: OmoMemoryNudgeLayerSchema.optional(),
+  facts: OmoMemoryFactsLayerSchema.optional(),
+  dream: OmoMemoryDreamLayerSchema.optional(),
+  people: OmoMemoryPeopleLayerSchema.optional(),
+  soul: OmoMemorySoulLayerSchema.optional(),
   sync: OmoMemorySyncLayerSchema.optional(),
   search: OmoMemorySearchLayerSchema.optional(),
   compile_warn_tokens: number2().int().positive().optional()
@@ -5865,12 +5920,25 @@ var OmoMemorySettingsSchema = object({
   agent: string2().min(1).default("auto"),
   tool_exposure: _enum(["direct", "search"]).default("direct"),
   reflection: OmoMemoryReflectionSchema.default({
-    trigger: { step_count: 0, on_compaction: true },
+    enabled: true,
+    trigger: { step_count: 25, on_compaction: true },
     merge: "auto",
     category: "quick",
     timeout_minutes: 15,
     sandbox: "auto"
   }),
+  nudge: OmoMemoryNudgeSchema.default({ enabled: true, every_user_turns: 10 }),
+  facts: OmoMemoryFactsSchema.default({ enabled: true, debounce_settles: 4 }),
+  dream: OmoMemoryDreamSchema.default({
+    enabled: true,
+    idle_minutes: 30,
+    min_hours_between: 24,
+    shutdown_launch: true,
+    auto_select_max: 5,
+    auto_select_max_chars: 150000
+  }),
+  people: OmoMemoryPeopleSchema.default({ enabled: true, max_entries: 40, max_entry_chars: 200 }),
+  soul: OmoMemorySoulSchema.default({ edit_notice: true }),
   sync: OmoMemorySyncSchema.default({ enabled: true }),
   search: OmoMemorySearchSchema.default({ enabled: true }),
   compile_warn_tokens: number2().int().positive().default(30000),
@@ -5881,6 +5949,11 @@ var OmoMemorySettingsLayerSchema = object({
   agent: string2().min(1).optional(),
   tool_exposure: _enum(["direct", "search"]).optional(),
   reflection: OmoMemoryReflectionLayerSchema.optional(),
+  nudge: OmoMemoryNudgeLayerSchema.optional(),
+  facts: OmoMemoryFactsLayerSchema.optional(),
+  dream: OmoMemoryDreamLayerSchema.optional(),
+  people: OmoMemoryPeopleLayerSchema.optional(),
+  soul: OmoMemorySoulLayerSchema.optional(),
   sync: OmoMemorySyncLayerSchema.optional(),
   search: OmoMemorySearchLayerSchema.optional(),
   compile_warn_tokens: number2().int().positive().optional(),
@@ -6021,6 +6094,15 @@ var OmoTeamSpecLayerSchema = OmoTeamSpecBaseSchema.partial();
 var OmoTeamsConfigSchema = record(string2(), OmoTeamSpecSchema);
 var OmoTeamsConfigLayerSchema = record(string2(), OmoTeamSpecLayerSchema);
 
+// ../../../../omo-config-core/src/schema/telemetry.ts
+var OmoTelemetrySettingsShape = {
+  enabled: boolean2()
+};
+var OmoTelemetrySettingsLayerSchema = object(OmoTelemetrySettingsShape).partial().strict();
+var OmoTelemetrySettingsSchema = OmoTelemetrySettingsLayerSchema.extend({
+  enabled: boolean2().default(true)
+}).strict();
+
 // ../../../../omo-config-core/src/schema/config.ts
 var OmoOpenCodeHarnessConfigSchema = record(string2(), unknown());
 var OmoTypedHarnessConfigSchema = object({
@@ -6030,7 +6112,8 @@ var OmoTypedHarnessConfigSchema = object({
   task: OmoTaskSettingsLayerSchema.optional(),
   teams: OmoTeamsConfigLayerSchema.optional(),
   models: OmoModelCatalogLayerSchema.optional(),
-  memory: OmoMemorySettingsLayerSchema.optional()
+  memory: OmoMemorySettingsLayerSchema.optional(),
+  telemetry: OmoTelemetrySettingsLayerSchema.optional()
 }).strict();
 var OmoConfigProfileSchema = object({
   categories: OmoCategoriesConfigSchema.optional(),
@@ -6040,6 +6123,7 @@ var OmoConfigProfileSchema = object({
   teams: OmoTeamsConfigLayerSchema.optional(),
   models: OmoModelCatalogLayerSchema.optional(),
   memory: OmoMemorySettingsLayerSchema.optional(),
+  telemetry: OmoTelemetrySettingsLayerSchema.optional(),
   "[opencode]": OmoOpenCodeHarnessConfigSchema.optional(),
   "[senpi]": OmoTypedHarnessConfigSchema.optional(),
   "[codex]": OmoTypedHarnessConfigSchema.optional()
@@ -6053,6 +6137,7 @@ var OmoConfigSchema = object({
   teams: OmoTeamsConfigSchema.optional(),
   models: OmoModelCatalogSchema.optional(),
   memory: OmoMemorySettingsSchema.optional(),
+  telemetry: OmoTelemetrySettingsSchema.optional(),
   "[opencode]": OmoOpenCodeHarnessConfigSchema.optional(),
   "[senpi]": OmoTypedHarnessConfigSchema.optional(),
   "[codex]": OmoTypedHarnessConfigSchema.optional(),
@@ -6069,6 +6154,7 @@ var OmoConfigLayerSchema = object({
   teams: OmoTeamsConfigLayerSchema.optional(),
   models: OmoModelCatalogLayerSchema.optional(),
   memory: OmoMemorySettingsLayerSchema.optional(),
+  telemetry: OmoTelemetrySettingsLayerSchema.optional(),
   "[opencode]": OmoOpenCodeHarnessConfigSchema.optional(),
   "[senpi]": OmoTypedHarnessConfigSchema.optional(),
   "[codex]": OmoTypedHarnessConfigSchema.optional(),

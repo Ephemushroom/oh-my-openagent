@@ -8,7 +8,10 @@ import {
 
 import type { MemoryIdentityContext } from "./context"
 
-export const MEMORY_PROMPT_TEMPLATE = "omo-senpi:before_agent_start:v1"
+export const MEMORY_PROMPT_TEMPLATE = "omo-senpi:before_agent_start:v3"
+export const MEMORY_NOTICE_CUSTOM_TYPE = "omo-memory:notice"
+export const MEMORY_NUDGE_METADATA_TOKEN = "user turns since your last memory save"
+export const MEMORY_SOUL_METADATA_TOKEN = "Soul updated by"
 
 // Injected ONLY under the opt-in search exposure: pointing the agent at tool_search while the tools
 // are directly registered sent it hunting for a tool that does not exist (session 019fe95c-09d2).
@@ -24,15 +27,23 @@ export interface MemoryPromptInjectionOptions {
   readonly resolveContext: (sessionId: string) => MemoryIdentityContext | undefined
   readonly createRepo?: (context: MemoryIdentityContext) => GitMemoryRepo
   readonly cache?: MemoryBlockCache
-  readonly clock?: () => Date
   readonly searchExposure?: () => boolean
+  readonly resolveNudgeTurns?: (
+    repo: GitMemoryRepo,
+    sessionId: string,
+    identity: string,
+  ) => Promise<number | undefined>
+  readonly resolveSoulNotice?: (
+    repo: GitMemoryRepo,
+    sessionId: string,
+    identity: string,
+  ) => Promise<{ readonly sha: string } | undefined>
 }
 
 /**
- * Per-run compiled-memory injection. Transforms ONLY the event's systemPrompt (compose, never
- * rebuild): an earlier extension's chained modifications survive, and our sentinel-delimited
- * block is replaced in place or appended. Unbound/disabled sessions return undefined so the
- * handler chain passes through untouched.
+ * Per-run memory injection. The stable projection composes with the event's systemPrompt (never
+ * rebuilds it), while session-volatile recall and maintenance notices return as a late hidden
+ * custom message. Unbound/disabled sessions return undefined so the handler chain passes through.
  */
 export function createMemoryPromptHandler(
   options: MemoryPromptInjectionOptions,
@@ -47,15 +58,40 @@ export function createMemoryPromptHandler(
     const context = options.resolveContext(session.id)
     if (context === undefined) return undefined
 
-    const block = await cache.compile(createRepo(context), `${MEMORY_PROMPT_TEMPLATE}:${context.identity}`, {
+    const repo = createRepo(context)
+    const nudgeTurns = await options.resolveNudgeTurns?.(repo, session.id, context.identity)
+    const soulNotice = await options.resolveSoulNotice?.(repo, session.id, context.identity)
+    const block = await cache.compile(repo, `${MEMORY_PROMPT_TEMPLATE}:${context.identity}`, {
       agentId: context.identity,
-      conversationId: session.id,
-      previousMessageCount: session.priorMessageCount,
-      ...(options.clock === undefined ? {} : { clock: options.clock }),
     })
     const composed = options.searchExposure?.() === true ? `${block}\n\n${MEMORY_TOOL_DISCOVERY_NOTE}` : block
-    return { systemPrompt: replaceMemoryBlock(systemPrompt, markMemoryBlock(context.identity, composed)) }
+    return {
+      systemPrompt: replaceMemoryBlock(systemPrompt, markMemoryBlock(context.identity, composed)),
+      message: {
+        customType: MEMORY_NOTICE_CUSTOM_TYPE,
+        content: renderMemoryNotice(session.priorMessageCount, nudgeTurns, soulNotice),
+        display: false,
+      },
+    }
   }
+}
+
+function renderMemoryNotice(
+  previousMessageCount: number,
+  nudgeTurns: number | undefined,
+  soulNotice: { readonly sha: string } | undefined,
+): string {
+  return [
+    "<memory_notice>",
+    `- ${previousMessageCount} previous messages between you and the user are stored in recall memory`,
+    ...(nudgeTurns === undefined
+      ? []
+      : [`- ${nudgeTurns} ${MEMORY_NUDGE_METADATA_TOKEN}. Save durable facts now, or decide nothing qualifies.`]),
+    ...(soulNotice === undefined
+      ? []
+      : [`- ${MEMORY_SOUL_METADATA_TOKEN} reflection ${soulNotice.sha.slice(0, 7)} since your last run`]),
+    "</memory_notice>",
+  ].join("\n")
 }
 
 function defaultCreateRepo(context: MemoryIdentityContext): GitMemoryRepo {

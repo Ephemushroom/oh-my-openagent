@@ -11,6 +11,8 @@ export {
   isGeminiModel,
   isGlmModel,
   isGptModel,
+  isGrok45Model,
+  isGrok46Model,
   isKimiK2Model,
   isKimiK27Model,
   isKimiK3Model,

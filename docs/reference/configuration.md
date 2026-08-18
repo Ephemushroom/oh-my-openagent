@@ -19,6 +19,7 @@ Complete reference for Oh My OpenCode plugin configuration. Every omo harness re
   - [Sisyphus Tasks](#sisyphus-tasks)
 - [Features](#features)
   - [Skills](#skills)
+  - [Memory](#memory)
   - [Hooks](#hooks)
   - [Commands](#commands)
   - [Browser Automation](#browser-automation)
@@ -137,7 +138,7 @@ Here's a practical starting `~/.omo/omo.jsonc`. OpenCode plugin settings live in
       "quick": { "model": "kimi-for-coding/kimi-for-coding-highspeed" },
 
       // unspecified-low - moderate tasks
-      "unspecified-low": { "model": "openai/gpt-5.6-luna", "reasoning": "xhigh" },
+      "unspecified-low": { "model": "xai/grok-4.6", "reasoning": "xhigh" },
 
       // unspecified-high - complex work
       "unspecified-high": { "model": "kimi-for-coding/kimi-k3", "reasoning": "max" },
@@ -351,7 +352,7 @@ Domain-specific model delegation used by the `task()` tool. When Sisyphus delega
 | `deep`               | `openai/gpt-5.6-sol` (medium)   | Autonomous problem-solving, thorough research  |
 | `artistry`           | `anthropic/claude-fable-5` (xhigh) | Creative/unconventional approaches             |
 | `quick`              | `kimi-for-coding/kimi-for-coding-highspeed` | Trivial tasks, typo fixes, single-file changes |
-| `unspecified-low`    | `openai/gpt-5.6-luna` (xhigh)   | General tasks, low effort                      |
+| `unspecified-low`    | `xai/grok-4.6` (xhigh)          | General tasks, low effort                      |
 | `unspecified-high`   | `kimi-for-coding/kimi-k3` (max)  | General tasks, high effort                     |
 | `writing`            | `kimi-for-coding/kimi-k3` (low)  | Documentation, prose, technical writing        |
 
@@ -454,8 +455,8 @@ This table mirrors the authoritative hardcoded category fallback chains, includi
 | **Ultrabrain** | `gpt-5.6-sol` | `openai\|quotio-openai\|vercel/gpt-5.6-sol (max)` → `github-copilot/gpt-5.6-sol (max)` → `openai\|opencode\|vercel/gpt-5.6-sol (max)` |
 | **Deep** | `gpt-5.6-sol` | `openai\|quotio-openai\|github-copilot\|opencode\|vercel/gpt-5.6-sol (medium)` |
 | **Artistry** | `claude-fable-5` | `anthropic\|anthropic-api\|github-copilot\|opencode\|vercel/claude-fable-5 (xhigh)` → `kimi-for-coding\|moonshotai\|opencode-go\|opencode\|vercel/kimi-k3 (max)` → `anthropic\|anthropic-api\|github-copilot\|opencode\|vercel/claude-opus-5 (xhigh)` |
-| **Quick** | `kimi-for-coding-highspeed` | `kimi-for-coding/kimi-for-coding-highspeed` → `quotio-openai/gpt-5.6-luna-fast (low)` → `deepseek/deepseek-v4-flash (off)` → `qwen-token-plan\|alibaba-token-plan\|bailian-coding-plan\|opencode-go\|vercel/qwen3.6-flash (low)` → `opencode-go\|vercel/minimax-m3 (max)` → `opencode-go\|vercel/minimax-m2.7 (max)` → `xai/grok-4.20-0309-non-reasoning` → `anthropic\|anthropic-api\|github-copilot\|vercel/claude-haiku-4-5 (off)` |
-| **Unspecified Low** | `gpt-5.6-terra` | `openai\|quotio-openai\|github-copilot\|opencode\|vercel/gpt-5.6-terra (high)` → `anthropic\|anthropic-api\|github-copilot\|opencode\|vercel/claude-sonnet-5 (low)` → `qwen-token-plan\|alibaba-token-plan\|qwen-token-plan-cn\|alibaba-token-plan-cn/qwen3.8-max-preview (max)` → `deepseek\|opencode-go\|vercel/deepseek-v4-pro (max)` → `xiaomi\|opencode-go\|vercel/mimo-v2.5-pro (max)` |
+| **Quick** | `kimi-for-coding-highspeed` | `kimi-for-coding/kimi-for-coding-highspeed` → `openai-codex/gpt-5.6-luna-fast (low)` → `deepseek/deepseek-v4-flash (off)` → `qwen-token-plan\|alibaba-token-plan\|bailian-coding-plan\|opencode-go\|vercel/qwen3.6-flash (low)` → `opencode-go\|vercel/minimax-m3 (max)` → `opencode-go\|vercel/minimax-m2.7 (max)` → `xai/grok-4.20-0309-non-reasoning` → `anthropic\|anthropic-api\|github-copilot\|vercel/claude-haiku-4-5 (off)` |
+| **Unspecified Low** | `grok-4.6` | `xai\|github-copilot\|opencode\|vercel/grok-4.6 (xhigh)` → `openai\|quotio-openai\|github-copilot\|opencode\|vercel/gpt-5.6-terra (high)` → `anthropic\|anthropic-api\|github-copilot\|opencode\|vercel/claude-sonnet-5 (low)` → `qwen-token-plan\|alibaba-token-plan\|qwen-token-plan-cn\|alibaba-token-plan-cn/qwen3.8-max-preview (max)` → `deepseek\|opencode-go\|vercel/deepseek-v4-pro (max)` → `xiaomi\|opencode-go\|vercel/mimo-v2.5-pro (max)` |
 | **Unspecified High** | `kimi-k3` | `kimi-for-coding\|moonshotai\|opencode-go\|opencode\|vercel/kimi-k3 (max)` → `anthropic\|anthropic-api\|github-copilot\|opencode\|vercel/claude-opus-5 (xhigh)` → `openai\|quotio-openai\|github-copilot\|opencode\|vercel/gpt-5.6-sol (high)` |
 | **Writing** | `kimi-k3` | `kimi-for-coding\|moonshotai\|opencode-go\|opencode\|vercel/kimi-k3 (low)` → `anthropic\|anthropic-api\|github-copilot\|opencode\|vercel/claude-opus-5 (low)` → `google\|github-copilot\|opencode\|vercel/gemini-3.6-flash` |
 
@@ -597,6 +598,115 @@ Disable built-in skills: `{ "disabled_skills": ["playwright"] }`
 | `path`           | -       | Local path or remote URL        |
 | `recursive`      | `false` | Recurse into subdirectories     |
 | `glob`           | -       | Glob pattern for file selection |
+
+### Memory
+
+Persistent, per-agent memory stored as a git repository. Memory is on by default and learns
+actively: it reflects on its own, nudges when durable facts go unsaved, extracts facts in the
+background, consolidates during a dream pass, and keeps records about people.
+
+Configured under `memory` in `omo.json`, with per-agent overrides under `memory.agents.<name>`.
+
+```json
+{
+  "memory": {
+    "enabled": true,
+    "agent": "auto",
+    "tool_exposure": "direct",
+    "reflection": { "trigger": { "step_count": 25 } },
+    "nudge": { "every_user_turns": 10 },
+    "dream": { "idle_minutes": 30 },
+    "agents": {
+      "reviewer": { "dream": { "enabled": false } }
+    }
+  }
+}
+```
+
+| Option               | Default    | Description                                                                     |
+| -------------------- | ---------- | ------------------------------------------------------------------------------- |
+| `enabled`            | `true`     | Master switch for the whole memory component                                     |
+| `agent`              | `"auto"`   | Which agent identity owns the memory repository                                  |
+| `tool_exposure`      | `"direct"` | `direct` registers the memory tools always-on; `search` opts into the MCP server |
+| `compile_warn_tokens`| `30000`    | Warn when the compiled memory block exceeds this many tokens                     |
+| `agents`             | `{}`       | Per-agent overrides; any block below may be overridden field by field            |
+
+`tool_exposure` defaults to `direct` deliberately. The `search` value moves the tools behind
+senpi's `tool_search` catalog through an extension-declared MCP server, which keeps the tool list
+smaller but removes memory entirely if that server fails to start.
+
+#### Reflection
+
+Reflection reviews the conversation and writes durable notes back into memory.
+
+| Option                     | Default  | Description                                               |
+| -------------------------- | -------- | --------------------------------------------------------- |
+| `reflection.enabled`       | `true`   | Turn reflection off without disabling the rest of memory   |
+| `reflection.trigger.step_count`   | `25` | Reflect every N steps; `0` disables the step trigger   |
+| `reflection.trigger.on_compaction`| `true` | Also reflect when the context is compacted            |
+| `reflection.merge`         | `"auto"` | `auto` or `integration` merge strategy                     |
+| `reflection.category`      | `"quick"`| Task executor category for the reflection child            |
+| `reflection.timeout_minutes`| `15`    | Hard timeout for a reflection run                          |
+| `reflection.sandbox`       | `"auto"` | `auto`, `required`, or `off`                               |
+
+#### Nudge
+
+Reminds the agent to save when durable facts have gone unwritten.
+
+| Option                    | Default | Description                                          |
+| ------------------------- | ------- | ---------------------------------------------------- |
+| `nudge.enabled`           | `true`  | Emit the nudge line in the memory metadata block      |
+| `nudge.every_user_turns`  | `10`    | Nudge after this many user turns without a save       |
+
+#### Facts
+
+Background extraction of durable facts from settled turns.
+
+| Option                    | Default | Description                                              |
+| ------------------------- | ------- | -------------------------------------------------------- |
+| `facts.enabled`           | `true`  | Run background fact extraction                            |
+| `facts.debounce_settles`  | `4`     | Settled turns to accumulate before extracting             |
+
+#### Dream
+
+A consolidation pass that reorganizes memory, audits skill usage, and updates people records.
+It runs opportunistically when the session goes idle, and optionally at shutdown.
+
+| Option                        | Default  | Description                                                  |
+| ----------------------------- | -------- | ------------------------------------------------------------ |
+| `dream.enabled`               | `true`   | Enable the dream pass                                         |
+| `dream.idle_minutes`          | `30`     | Idle minutes before a dream may start; `0` disables the trigger|
+| `dream.min_hours_between`     | `24`     | Minimum hours between two dream runs                          |
+| `dream.shutdown_launch`       | `true`   | Allow a dream to be launched at shutdown                      |
+| `dream.auto_select_max`       | `5`      | Conversations `--auto` may select (1-10)                      |
+| `dream.auto_select_max_chars` | `150000` | Byte budget for auto-selected conversations                   |
+
+#### People
+
+Records about individuals, stored as cards with an observation ledger.
+
+| Option                    | Default | Description                                       |
+| ------------------------- | ------- | ------------------------------------------------- |
+| `people.enabled`          | `true`  | Maintain people records                            |
+| `people.max_entries`      | `40`    | Maximum observation entries per person (1-100)     |
+| `people.max_entry_chars`  | `200`   | Maximum characters per entry (50-500)              |
+
+#### Soul
+
+| Option             | Default | Description                                            |
+| ------------------ | ------- | ------------------------------------------------------ |
+| `soul.edit_notice` | `true`  | Surface a notice when the persona or identity changes   |
+
+#### Sync and Search
+
+| Option           | Default | Description                                    |
+| ---------------- | ------- | ---------------------------------------------- |
+| `sync.enabled`   | `true`  | Sync the memory repository                      |
+| `sync.remote`    | -       | Optional git remote for the memory repository   |
+| `search.enabled` | `true`  | Enable memory search                            |
+
+Run `/sleeptime` in a session to see every resolved value, including which ones a per-agent
+override changed.
 
 ### Hooks
 
