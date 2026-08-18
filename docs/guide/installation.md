@@ -1,9 +1,10 @@
 # Installation
 
-oh-my-openagent ships in **two editions** of the same product:
+oh-my-openagent ships in **three editions** of the same product: two plugins that load into a host you already run, plus one standalone edition.
 
 - **Ultimate Edition (omo for [OpenCode](https://opencode.ai))** — the full omo experience. 11 discipline agents, 54+ lifecycle hooks, all built-in MCPs, every slash command, Team Mode, ulw-loop, hashline edits, the works.
 - **Light Edition (omo for [OpenAI Codex CLI](https://github.com/openai/codex))** - the portable components that fit Codex's plugin system: `codegraph`, `comment-checker`, `git-bash`, `lazycodex-executor-verify`, `rules`, `lsp`, `telemetry`, `teammode`, `start-work-continuation`, `ulw-loop`, and `ultrawork`, plus plugin-scoped MCPs for `grep_app`, `context7`, `codegraph`, `git_bash`, and `lsp`, and the shared `ast-grep` skill. It has no OpenCode agent registry or `team_*` tool family, but ships Codex-native agent roles and the script-and-skill-driven `teammode` component.
+- **Senpi Edition (standalone, beta)** — the native `omo` command with the OMO extension built in. It installs from `omo-ai@beta` instead of loading as a plugin into OpenCode or Codex.
 
 Most users want **Ultimate**. Pick **Light** if you are already invested in Codex CLI. Pick **both** if you want OMO available wherever you happen to be working that day.
 
@@ -14,6 +15,16 @@ Most users want **Ultimate**. Pick **Light** if you are already invested in Code
 | Both | `bunx oh-my-openagent install --platform=both` | Both of the above |
 
 Both `lazycodex-ai` and `lazycodex` are shipped bin aliases that default to the Codex Light installer and run through Node/npm. `--platform` on the shared `omo-agent-toolkit` CLI still defaults to `opencode` (Ultimate). `lazycodex` is also the repository identity that hosts the marketplace bundle. Neither alias is the Codex marketplace name.
+
+## Which edition should I pick?
+
+- Already use OpenCode, or want the most-tested path? Choose **Ultimate**: `bunx oh-my-openagent install`.
+- Already use Codex CLI? Choose **Light**: `npx lazycodex-ai install`.
+- Want one command without installing a host first? Choose **Senpi/native (beta)**: `npm i -g omo-ai@beta`.
+
+Ultimate and Light are plugins that load into a host you already run. Senpi is standalone: it ships a pinned Senpi engine with OMO built in.
+
+For Senpi, the `@beta` tag is required; bare `npm i -g omo-ai` fails by design. Do not install plain `omo` from npm: it is an unrelated package by a different author.
 
 ## For Humans
 
@@ -160,6 +171,15 @@ omo
 ```
 
 A bare `npm i -g omo-ai` fails with ETARGET on purpose; every published version is a prerelease, so the default channel never resolves. See the [omo-ai publishing runbook](../reference/omo-ai-publishing.md) for the mechanism.
+
+**Where omo keeps its state.** The senpi edition stores everything flat under `~/.omo`
+(`settings.json`, `auth.json`, `models.json`, `sessions/`, `themes/`, `prompts/`), alongside the
+files the other omo harnesses already keep there. On first run, an existing `~/.senpi/agent` is
+copied forward once: caches and logs are skipped, a `.migrated-from-senpi` marker is written, and
+the original directory is left untouched. That copy is a snapshot, not a link, so a standalone
+senpi install keeps working and the two products hold independent state from then on. Set
+`OMO_CODING_AGENT_DIR` to override the location; the legacy `SENPI_*` and `PI_*` variables are
+still read when the `OMO_*` one is unset.
 
 **Upgrade order on older machines.** If the machine still has oh-my-openagent/oh-my-opencode 4.19.4 or earlier installed globally, that package owns a global `omo` bin and the install above fails with EEXIST. Upgrade or uninstall the old package first, then install `omo-ai@beta`.
 

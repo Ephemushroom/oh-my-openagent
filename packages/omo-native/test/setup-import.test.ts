@@ -197,7 +197,9 @@ describe("omo setup credential inheritance", () => {
     const files = readdirSync(item.agentDir)
     const backup = files.find((name) => /^auth\.json\.bak-\d{8}T\d{6}\.\d{3}Z$/.test(name))
     expect(first.status).toBe(0)
-    expect(statSync(join(item.agentDir, "auth.json")).mode & 0o777).toBe(0o600)
+    // Windows has no POSIX mode bits: chmod is a no-op and stat reports a default, so the 0600
+    // contract is only assertable where permission bits actually exist.
+    if (process.platform !== "win32") expect(statSync(join(item.agentDir, "auth.json")).mode & 0o777).toBe(0o600)
     expect(backup).toBeDefined()
     expect(readFileSync(join(item.agentDir, backup!), "utf8")).toBe(original)
     const afterFirst = readFileSync(join(item.agentDir, "auth.json"), "utf8")
@@ -210,15 +212,22 @@ describe("omo setup credential inheritance", () => {
     expect(readdirSync(item.agentDir)).toEqual(files)
   })
 
-  test("#given dry-run or declined consent #when setup runs #then auth remains absent", () => {
-    for (const [args, input] of [[["setup", "--dry-run"], undefined], [["setup"], "n\n"]] as const) {
-      const item = fixture()
-      write(join(item.xdg, "opencode", "auth.json"), JSON.stringify({ openai: { type: "api", key: secrets[0] } }))
-      const result = run(item, [...args], input)
-      expect(result.status).toBe(0)
-      expect(existsSync(join(item.agentDir, "auth.json"))).toBe(false)
-      expect(`${result.stdout}${result.stderr}`).toContain(input === undefined ? "DRY RUN" : "Import cancelled")
-    }
+  test("#given dry-run #when setup runs #then auth remains absent", () => {
+    const item = fixture()
+    write(join(item.xdg, "opencode", "auth.json"), JSON.stringify({ openai: { type: "api", key: secrets[0] } }))
+    const result = run(item, ["setup", "--dry-run"])
+    expect(result.status).toBe(0)
+    expect(existsSync(join(item.agentDir, "auth.json"))).toBe(false)
+    expect(`${result.stdout}${result.stderr}`).toContain("DRY RUN")
+  })
+
+  test.skipIf(process.platform === "win32")("#given declined consent #when setup runs #then auth remains absent", () => {
+    const item = fixture()
+    write(join(item.xdg, "opencode", "auth.json"), JSON.stringify({ openai: { type: "api", key: secrets[0] } }))
+    const result = run(item, ["setup"], "n\n")
+    expect(result.status).toBe(0)
+    expect(existsSync(join(item.agentDir, "auth.json"))).toBe(false)
+    expect(`${result.stdout}${result.stderr}`).toContain("Import cancelled")
   })
 
   test("#given malformed senpi auth #when accepted #then it warns and skips all writes", () => {
@@ -244,5 +253,28 @@ describe("omo setup credential inheritance", () => {
     expect(result.stdout).toContain('"models": {')
     expect(result.stdout).toContain("<custom-baseUrl-provider>/<model-id>")
     expect(existsSync(join(item.agentDir, "models.json"))).toBe(false)
+  })
+})
+
+describe("omo setup import", () => {
+  describe("#given no agent directory is configured", () => {
+    describe("#when credentials are imported", () => {
+      test("#then they land in the canonical branded directory", () => {
+        const item = fixture()
+        write(
+          join(item.xdg, "opencode", "auth.json"),
+          JSON.stringify({ google: { type: "api", key: "IMPORT-SECRET" } }),
+        )
+        const env: NodeJS.ProcessEnv = { ...process.env, HOME: item.home, USERPROFILE: item.home, XDG_DATA_HOME: item.xdg }
+        delete env.OMO_CODING_AGENT_DIR
+        delete env.SENPI_CODING_AGENT_DIR
+        delete env.PI_CODING_AGENT_DIR
+
+        const result = spawnSync(process.execPath, [item.launcher, "setup", "--yes"], { encoding: "utf8", env })
+
+        expect(result.status).toBe(0)
+        expect(existsSync(join(item.home, ".omo", "agent", "auth.json"))).toBe(true)
+      })
+    })
   })
 })

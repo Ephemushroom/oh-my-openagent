@@ -47,13 +47,20 @@ export {
 } from "./status-line"
 export type { StatusLineInput, StatusLineStats, StatusTargetInput, TaskIdentityInput } from "./status-line"
 export { TASK_SUMMARY_MAX_LENGTH, clampTaskSummary } from "./task-summary"
-export { assistantLastLine, formatToolActivity } from "./progress"
+export {
+  assistantLastLine,
+  createChildProgress,
+  formatToolActivity,
+  type ToolProgressDetails,
+} from "./progress"
 export { createMinimalSenpiResourceLoader } from "./senpi/minimal-resource-loader"
 export type { MinimalSenpiResourceLoaderOptions } from "./senpi/minimal-resource-loader"
 export {
+  MEMBER_IDENTITY_ENV,
   SenpiTeamSpecError,
   TEAM_LEAD_SENTINEL,
   ensureTeamRuntimeDirs,
+  isTeamMemberProcess,
   loadTeamRegistry,
   normalizeSenpiTeamSpec,
   resolveProjectTeamSpecPath,
@@ -127,6 +134,7 @@ export {
   parseExtensionEntries,
   resolveChildSessionDir,
   resolveSenpiExecutable,
+  resolveSenpiLauncher,
   tailStderr,
   terminateRpcChild,
 } from "./runners"
@@ -143,6 +151,7 @@ export type {
   RpcRunnerSpec,
   RpcSpawnDescriptor,
   RpcSpawnRuntime,
+  SenpiLauncher,
   RunnerErrorFacts,
   TerminateOptions,
 } from "./runners"
@@ -311,7 +320,7 @@ export {
   linesComponent,
   listTaskAgents,
   listTaskCategories,
-  normalizeRendererText,
+  normalizeRendererText, recordSummary,
   rendererVisibleWidth,
   statusThemeColor,
   taskCallLines,
