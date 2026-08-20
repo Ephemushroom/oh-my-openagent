@@ -20,7 +20,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 7 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
+| Tools | 10 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |
@@ -76,8 +76,24 @@ These are v2-API-specific and differ from v1. Read before editing.
   handle. Contrast `SessionDomain`, which IS `Pick<SessionApi, ...> & { hook }`;
   shell was not given the same treatment. The capability ships only as server
   routes (`GET /api/shell` = `v2.shell.list`), which need pairing and answer 401
-  otherwise. So monitor-style list/poll/kill tools cannot be built on the plugin
-  API. Verified on `0.0.0-next-17444`.
+  otherwise. Verified on `0.0.0-next-17444`.
+
+  **Scope this claim carefully.** It means a plugin cannot ENUMERATE OR CONTROL
+  the shells the harness itself owns. It does NOT mean a plugin cannot run
+  long-lived child processes: a plugin that spawns and owns its own children is
+  unaffected, which is exactly what v1's monitor does (it never touched the
+  OpenCode shell registry either). An earlier revision of this file wrongly
+  extended the limit to "monitor-style tools cannot be built"; that was wrong.
+- **`SessionDomain` cannot list sessions or read their messages.** It is
+  `Pick<SessionApi, "create" | "get" | "prompt" | "generate" | "command" | "synthetic" | "interrupt">`.
+  There is no `list` and no `messages`, so session-history tools cannot be built
+  on `ctx.session`. opencode2 persists every session to SQLite at
+  `$XDG_DATA_HOME/opencode/opencode.db` (`session_v2` plus `session_message`,
+  the latter carrying an ordered `seq` and a JSON `data` payload), and
+  `tools/session-manager/` reads that store directly, read-only, the same way v1
+  reads OpenCode's storage. This couples to an internal schema on purpose: every
+  reader degrades to a reported message instead of throwing when the shape
+  changes. Verified on `0.0.0-next-17444`.
 - **`aisdk` hooks only fire for providers that ship a provider plugin.** The
   `aisdk.hook("sdk" | "language")` domain exists in the plugin types, but core
   dispatches it from `createProviderPlugin`, which is instantiated only for the
@@ -125,6 +141,24 @@ one active work and no recorded id returns null, the safe direction; explicit
 multi-work resume is v1-only. The checklist is parsed by the harness-neutral
 `@oh-my-opencode/boulder-state` core; the adapter imports it and must not fork
 it.
+
+## Session history tools
+
+`tools/session-manager/` serves `session_list`, `session_read`, `session_search`,
+and `session_info` by reading opencode2's SQLite store. Registered
+unconditionally; there is no config gate.
+
+- `db-path.ts` resolves the store: `OMO_OPENCODE2_DB`, then
+  `$XDG_DATA_HOME/opencode/opencode.db`, then `~/.local/share`, then
+  `%LOCALAPPDATA%` on win32. A missing store is a normal result, not an error.
+- `store.ts` opens `bun:sqlite` with `{ readonly: true }` and parameterizes every
+  statement. It must never gain a write path.
+- `message-shape.ts` parses `session_message.data` into a typed union and falls
+  back to `unknown` rather than throwing, because the schema is internal to
+  opencode2 and can change between builds.
+- Defaults are project-scoped: `session_list` and `session_search` filter on the
+  workspace directory and skip child sessions unless asked. Search skips
+  assistant reasoning, so it matches what the model actually said.
 
 ## Session dispatch
 

@@ -22,6 +22,7 @@ import { registerHashlineReadEnhancer } from "./hooks/hashline-read-enhancer"
 import { registerHashlineEditTool } from "./tools/hashline-edit"
 import { runChildSession } from "./orchestration/child-session"
 import { createSessionModelRegistry, registerLookAtTool, LOOK_AT_AGENT } from "./tools/look-at"
+import { registerSessionTools } from "./tools/session-manager"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
@@ -250,6 +251,11 @@ export default Plugin.define({
       },
       trace,
     })
+
+    // Session history reads opencode2's own SQLite store: the plugin Context
+    // exposes no session list or message reader (SessionDomain has neither
+    // `list` nor `messages`), so the store is the only route.
+    await registerSessionTools(ctx, { directory: workspaceDirectory, trace })
 
     trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit", "todowrite", "look_at"] })
 

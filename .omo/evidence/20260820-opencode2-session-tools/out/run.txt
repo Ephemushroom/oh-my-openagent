@@ -1,0 +1,29 @@
+[0m
+> sisyphus · glm-4.7
+ORANGE_MARKER_ALPHA
+[0m
+> sisyphus · glm-4.7
+PURPLE_MARKER_BETA
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0msession_list Unknown 
+> sisyphus · glm-4.7
+[0m⚙ [0msession_list Unknown 
+> sisyphus · glm-4.7
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0msession_search {"query":"ORANGE_MARKER_ALPHA"} 
+> sisyphus · glm-4.7
+[0m
+> sisyphus · glm-4.7
+> sisyphus · glm-4.7
+> sisyphus · glm-4.7
+> sisyphus · glm-4.7
+> sisyphus · glm-4.7
+[0m⚙ [0msession_list {"limit":1} 
+> sisyphus · glm-4.7
+[0m⚙ [0msession_info {"session_id":"ses_fe2aade80ffej6IyylGGK9GXy0"} 
+> sisyphus · glm-4.7
+[0m⚙ [0msession_read {"limit":5,"session_id":"ses_fe2aade80ffej6IyylGGK9GXy0"} 
+> sisyphus · glm-4.7
+DONE
