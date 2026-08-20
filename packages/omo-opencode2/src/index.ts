@@ -23,6 +23,7 @@ import { registerHashlineEditTool } from "./tools/hashline-edit"
 import { runChildSession } from "./orchestration/child-session"
 import { createSessionModelRegistry, registerLookAtTool, LOOK_AT_AGENT } from "./tools/look-at"
 import { registerSessionTools } from "./tools/session-manager"
+import { registerMonitorTools } from "./tools/monitor/register"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
@@ -257,6 +258,17 @@ export default Plugin.define({
     // `list` nor `messages`), so the store is the only route.
     await registerSessionTools(ctx, { directory: workspaceDirectory, trace })
 
+    // Monitor spawns and owns its own child processes, so the ctx.shell limit
+    // does not apply. Default off, and with no allowed_commands it refuses.
+    const monitor = await registerMonitorTools(ctx, {
+      cwd: workspaceDirectory,
+      resolveSessionID: (toolCtx) => {
+        const record = typeof toolCtx === "object" && toolCtx !== null ? (toolCtx as Record<string, unknown>) : {}
+        return typeof record.sessionID === "string" ? record.sessionID : undefined
+      },
+      trace,
+    })
+
     trace("omo.orchestration.registered", { tools: ["task", "background_output", "background_cancel", "hashline_edit", "todowrite", "look_at"] })
 
     await registerWriteExistingFileGuard(ctx, trace)
@@ -287,6 +299,8 @@ export default Plugin.define({
         const sessionID = typeof data.sessionID === "string" ? data.sessionID : undefined
         if (sessionID) {
           todoStore.clear(sessionID)
+          // Reap the session's watcher processes, or they outlive the session.
+          await monitor?.manager.stopSessionMonitors(sessionID)
           trace("omo.todo.cleanup", { sessionID })
         }
       }
@@ -299,6 +313,7 @@ export default Plugin.define({
       todoContinuation.dispose()
       boulderContinuation.dispose()
       engine.dispose()
+      void monitor?.dispose()
     }
   },
 })

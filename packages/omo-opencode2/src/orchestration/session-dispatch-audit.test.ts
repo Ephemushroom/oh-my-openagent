@@ -42,6 +42,14 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // gate, same reason. Default-off; re-reads the plan off disk on every idle.
   "hooks/boulder-continuation/register.ts": { synthetic: 1 },
   "orchestration/child-session.ts": { prompt: 1 },
+  // Monitor output delivery. NOT gated, for the same reason as background
+  // completion: it fires once per BATCH, from a specific monitor. Two monitors
+  // flushing in the same tick are two distinct notifications, and a per-session
+  // reservation would admit one and silently drop the other, losing output the
+  // user asked to watch. Duplicate suppression is per batch instead, keyed
+  // `monitor-output:<id>:batch-<seq>` in features/monitor/delivery.ts, which is
+  // the correct granularity here.
+  "features/monitor/delivery.ts": { synthetic: 1 },
 }
 
 function collectSourceFiles(dir: string): string[] {

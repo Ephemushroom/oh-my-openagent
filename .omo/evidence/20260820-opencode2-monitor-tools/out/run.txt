@@ -1,0 +1,27 @@
+[0m
+> sisyphus · glm-4.7
+[0m⚙ [0mmonitor_start {"command":"node watch.js","label":"Node watch process","match_pattern":"ERROR"} 
+> sisyphus · glm-4.7
+[0m⚙ [0mmonitor_list Unknown 
+> sisyphus · glm-4.7
+[0m⚙ [0mmonitor_output {"monitor_id":"mon_mt11ht37_1","stream":"unmatched"} 
+> sisyphus · glm-4.7
+[0m⚙ [0mmonitor_output {"monitor_id":"mon_mt11ht37_1","stream":"matched"} 
+> sisyphus · glm-4.7
+[0m⚙ [0mmonitor_stop {"monitor_id":"mon_mt11ht37_1"} 
+> sisyphus · glm-4.7
+**Report:**
+
+The `node watch.js` process produced 4 total lines before exiting:
+
+- **Matched output (2 lines containing "ERROR"):**
+  1. `ERROR alpha`
+  2. `ERROR beta`
+
+- **Unmatched output (2 lines without "ERROR"):**
+  1. `boot line, not interesting`
+  2. `still quiet`
+
+The monitor successfully filtered output using the "ERROR" pattern, delivering matched lines automatically and leaving unmatched lines available for manual retrieval. The process exited cleanly after emitting all 4 lines.
+> sisyphus · glm-4.7
+Acknowledged - this is the automatic delivery of matched output from the monitor. The two ERROR lines were delivered as expected while the process was running, and the process has since exited.

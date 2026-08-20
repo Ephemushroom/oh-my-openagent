@@ -20,7 +20,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 10 base + 3 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` |
+| Tools | 10 base + 7 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |
@@ -160,6 +160,60 @@ unconditionally; there is no config gate.
   workspace directory and skip child sessions unless asked. Search skips
   assistant reasoning, so it matches what the model actually said.
 
+## Monitor tools
+
+`features/monitor/` + `tools/monitor/` serve `monitor_start`, `monitor_stop`,
+`monitor_list`, and `monitor_output`. Gated on `monitor.enabled` (default off);
+`disabled_hooks` respects the name `monitor`.
+
+A monitor is a watcher process the PLUGIN spawns and owns. This is why the
+`ctx.shell` limit above does not block it: nothing here touches the harness shell
+registry. Output is line-split, ANSI-stripped, binary-suppressed, filtered by an
+optional regex, ring-buffered, and batched. Matching lines are pushed at the
+model automatically; everything else stays queryable through `monitor_output`,
+so a wide monitor cannot flood the context window.
+
+- **Delivery is a queued synthetic message, not the v1 defer ladder.** v1 polled
+  busy/idle, inspected the last assistant turn, deferred, retried, and deduped
+  through the prompt-async gate. v2 hands the batch to the harness queue and lets
+  core decide when the session accepts it, so none of that machinery is ported.
+- **Delivery is deliberately NOT behind the shared dispatch gate.** See the table
+  under Session dispatch. Dedupe is per batch instead, keyed
+  `monitor-output:<id>:batch-<seq>`. A failed delivery removes its own key so the
+  batch can be retried rather than lost.
+- **Permission fails closed.** The v2 tool context has no equivalent of v1's
+  bash-permission `ask`, so `monitor_start` allows only programs listed in
+  `monitor.allowed_commands`, matched on argv[0]. With the list unset or empty,
+  every command is refused and the refusal names the config key. Do not soften
+  this into a default-allow: the tool spawns arbitrary processes and the model
+  chooses the command string.
+- **The untrusted-observation banner in the envelope is load-bearing.** It is
+  arbitrary process output entering the model's context, and the model has to be
+  told not to treat it as instructions.
+- Monitors are reaped on `session.deleted` and on plugin dispose.
+- The pure pipeline stages (line-stream, ring-buffer, filter, batcher, envelope)
+  are a deliberate parallel implementation of v1's, not a shared core package.
+  Extracting `monitor-core` would mean rewiring v1's monitor too, which pulls the
+  change into the OpenCode adapter and its QA regimen for no v2 benefit. Revisit
+  if a third harness needs monitors.
+
+## Configuration keys live under `[opencode2]`, never at the root
+
+`@oh-my-opencode/omo-config-core` rejects unknown keys at the config ROOT, and it
+discards a rejected file WHOLE. A root-level adapter key such as
+`{ "monitor": {...} }` or `{ "boulder": {...} }` therefore invalidates the entire
+`.omo/omo.json`, every key in it is silently lost, and `sources` comes back empty.
+There is no error at the call site; the feature just looks disabled.
+
+Correct shape:
+
+```jsonc
+{ "[opencode2]": { "monitor": { "enabled": true, "allowed_commands": ["npm"] } } }
+```
+
+Verified on `0.0.0-next-17444`; reproducer and outcome recorded in
+`.omo/evidence/20260820-opencode2-monitor-tools/`.
+
 ## Session dispatch
 
 `orchestration/session-dispatch-gate.ts` is the shared gate, v2's equivalent of
@@ -192,6 +246,7 @@ and only one of them belongs to the gate:
 | `hooks/boulder-continuation/register.ts` | yes | The third idle injector (start-work). Same shared gate; re-reads the plan off disk on every idle. |
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
+| `features/monitor/delivery.ts` | NO | Fires once per BATCH from one monitor. Two monitors flushing in the same tick are two distinct notifications; a per-session reservation would drop one and lose output. Deduped per batch instead. |
 
 The pinned set is enforced by `src/orchestration/session-dispatch-audit.test.ts`,
 which fails the suite when any new dispatch call site or reference appears.
