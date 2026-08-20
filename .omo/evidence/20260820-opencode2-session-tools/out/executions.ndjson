@@ -1,0 +1,6 @@
+{"t":1787198495283,"event":"omo.session-tools.executed","tool":"session_list","sessions":3,"scoped":true}
+{"t":1787198497647,"event":"omo.session-tools.executed","tool":"session_list","sessions":3,"scoped":true}
+{"t":1787198509759,"event":"omo.session-tools.executed","tool":"session_search","query":"ORANGE_MARKER_ALPHA","matches":3,"scopedToSession":false}
+{"t":1787198561168,"event":"omo.session-tools.executed","tool":"session_list","sessions":1,"scoped":true}
+{"t":1787198564123,"event":"omo.session-tools.executed","tool":"session_info","sessionID":"ses_fe2aade80ffej6IyylGGK9GXy0","messages":4}
+{"t":1787198567033,"event":"omo.session-tools.executed","tool":"session_read","sessionID":"ses_fe2aade80ffej6IyylGGK9GXy0","messages":5,"totalMessages":5}
