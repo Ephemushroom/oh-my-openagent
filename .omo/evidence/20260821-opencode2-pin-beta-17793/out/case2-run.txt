@@ -1,0 +1,6 @@
+[0m
+> build · glm-4.7
+I'll read the dummy.txt file for you.
+[0m→ [0mRead dummy.txt 
+> build · glm-4.7
+DONE.
