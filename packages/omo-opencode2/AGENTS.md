@@ -1,6 +1,7 @@
 # @oh-my-opencode/omo-opencode2
 
-OpenCode 2 (v2 plugin API, `@opencode-ai/plugin@next`) adapter for OMO. Ported from v1.
+OpenCode 2 (v2 plugin API, `@opencode-ai/plugin@0.0.0-beta-17793`) adapter for
+OMO. Ported from v1.
 
 ## Overview
 
@@ -14,6 +15,13 @@ imperatively inside `setup` against typed draft-mutation APIs.
   assertions. This is the primary observability surface; the CLI does not expose
   raw system parts or tool results.
 - QA regimen: `.agents/skills/opencode2-qa/`. Port design: `.omo/plans/opencode2-port.md`.
+- Pin history: `0.0.0-next-17444` → `0.0.0-beta-17793` (2026-08-21). The
+  beta-17793 plugin dist is byte-identical in beta-17823 (the binary current at
+  that date); QA drove 17823. Beta adds `ctx.mcp` + `ctx.storage` domains,
+  `session.hook("model.request")`, `session.switchAgent`/`switchModel`/`rename`/
+  `wait`, `ModelHookOptions.providerID` scoping, and a `v1/` compat subpath
+  (`@opencode-ai/plugin/v1`) for v1-shaped plugins. All changes were additive;
+  the pin bump required zero adapter code changes.
 
 ## Registered surface
 
@@ -76,7 +84,8 @@ These are v2-API-specific and differ from v1. Read before editing.
   handle. Contrast `SessionDomain`, which IS `Pick<SessionApi, ...> & { hook }`;
   shell was not given the same treatment. The capability ships only as server
   routes (`GET /api/shell` = `v2.shell.list`), which need pairing and answer 401
-  otherwise. Verified on `0.0.0-next-17444`.
+  otherwise. Verified on `0.0.0-next-17444`; unchanged in `0.0.0-beta-17793`
+  types (re-checked 2026-08-21).
 
   **Scope this claim carefully.** It means a plugin cannot ENUMERATE OR CONTROL
   the shells the harness itself owns. It does NOT mean a plugin cannot run
@@ -85,7 +94,8 @@ These are v2-API-specific and differ from v1. Read before editing.
   OpenCode shell registry either). An earlier revision of this file wrongly
   extended the limit to "monitor-style tools cannot be built"; that was wrong.
 - **`SessionDomain` cannot list sessions or read their messages.** It is
-  `Pick<SessionApi, "create" | "get" | "prompt" | "generate" | "command" | "synthetic" | "interrupt">`.
+  `Pick<SessionApi, "create" | "get" | "switchAgent" | "switchModel" | "prompt"
+  | "generate" | "command" | "synthetic" | "interrupt" | "rename" | "wait">`.
   There is no `list` and no `messages`, so session-history tools cannot be built
   on `ctx.session`. opencode2 persists every session to SQLite at
   `$XDG_DATA_HOME/opencode/opencode.db` (`session_v2` plus `session_message`,
@@ -93,18 +103,28 @@ These are v2-API-specific and differ from v1. Read before editing.
   `tools/session-manager/` reads that store directly, read-only, the same way v1
   reads OpenCode's storage. This couples to an internal schema on purpose: every
   reader degrades to a reported message instead of throwing when the shape
-  changes. Verified on `0.0.0-next-17444`.
-- **`aisdk` hooks only fire for providers that ship a provider plugin.** The
+  changes. Verified on `0.0.0-next-17444`; the beta-17793 additions
+  (`switchAgent`/`switchModel`/`rename`/`wait`) do not change this.
+- **`session.hook("model.request")` is new in beta-17793 and is the fallback
+  interception point.** The event carries a mutable `baseURL?` and `headers`,
+  fires per provider dispatch, and unlike the `aisdk` domain it is not gated on
+  provider-plugin instantiation. Model fallback should be built here (or on
+  `http.request`/`http.response`), NOT on `aisdk.hook("sdk"|"language")`.
+- **`aisdk` hooks only fire for models the NATIVE map cannot resolve.** The
   `aisdk.hook("sdk" | "language")` domain exists in the plugin types, but core
-  dispatches it from `createProviderPlugin`, which is instantiated only for the
-  bundled `@ai-sdk/*` packages (alibaba, cohere, groq, mistral, perplexity,
-  togetherai, deepinfra, gateway, ...). A provider resolved through any other
-  path never reaches those hooks, so neither hook fires for it. Registration
-  succeeds and the callback is simply never invoked, which looks identical to a
-  silent bug. Model fallback built on this domain therefore cannot cover most
-  providers; `session.hook("http.request")` and `session.hook("http.response")`
-  do fire and are the viable interception point. Verified on `0.0.0-next-17444`
-  by tracing both hooks in a live session.
+  resolves in `model-resolver.ts` via `AISDKNative.map()` FIRST: nine major
+  packages (`@ai-sdk/anthropic`, `openai`, `openai-compatible`, `google`,
+  `google-vertex`, `google-vertex/anthropic`, `azure`, `amazon-bedrock`,
+  `amazon-bedrock/mantle`, `xai`) map directly to `@opencode-ai/ai/providers/*`
+  and never reach `loadAISDK`, so the hooks never fire for them. Only
+  unmapped minor providers fall through to the plugin-hook path (and separately,
+  registration succeeds silently even when a callback will never be invoked,
+  which looks identical to a silent bug). Model fallback built on this domain
+  therefore covers almost nothing; `session.hook("model.request")` and
+  `session.hook("http.request")` / `session.hook("http.response")` do fire and
+  are the viable interception points. Verified on `0.0.0-next-17444` by tracing
+  both hooks in a live session; native-map-first resolution re-verified against
+  the v2 branch source (`packages/core/src/aisdk-native.ts`, read 2026-08-21).
 
 ## Goal idle continuation
 

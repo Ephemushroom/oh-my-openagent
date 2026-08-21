@@ -11,8 +11,8 @@
     "typecheck": "tsgo --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "0.0.0-next-17444",
-    "@opencode-ai/schema": "0.0.0-next-17444",
+    "@opencode-ai/plugin": "0.0.0-beta-17793",
+    "@opencode-ai/schema": "0.0.0-beta-17793",
     "@oh-my-opencode/agents-core": "workspace:*",
     "@oh-my-opencode/boulder-state": "workspace:*",
     "@oh-my-opencode/comment-checker-core": "workspace:*",
