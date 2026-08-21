@@ -43,6 +43,12 @@ export const OpenCode2MonitorSettingsSchema = z.object({
   pattern_max_length: z.number().int().min(1).optional(),
 }).strip()
 
+export const OpenCode2CodegraphSettingsSchema = z.object({
+  daemon: z.boolean().optional(),
+  install_dir: z.string().optional(),
+  excluded_roots: z.array(z.string()).optional(),
+}).strip()
+
 export const OpenCode2ConfigSchema = z.object({
   default_agent: z.string().optional(),
   agents: z.record(z.string(), OpenCode2AgentOverrideSchema).optional(),
@@ -50,7 +56,9 @@ export const OpenCode2ConfigSchema = z.object({
   todo_continuation: OpenCode2TodoContinuationSettingsSchema.optional(),
   boulder: OpenCode2BoulderSettingsSchema.optional(),
   monitor: OpenCode2MonitorSettingsSchema.optional(),
+  codegraph: OpenCode2CodegraphSettingsSchema.optional(),
   disabled_hooks: z.array(z.string()).optional(),
+  disabled_mcps: z.array(z.string()).optional(),
 }).strip() // permissive: ignores all core root keys (categories, task, etc.)
 
 export type OpenCode2AgentOverride = z.infer<typeof OpenCode2AgentOverrideSchema>
@@ -58,4 +66,5 @@ export type OpenCode2GoalSettings = z.infer<typeof OpenCode2GoalSettingsSchema>
 export type OpenCode2TodoContinuationSettings = z.infer<typeof OpenCode2TodoContinuationSettingsSchema>
 export type OpenCode2BoulderSettings = z.infer<typeof OpenCode2BoulderSettingsSchema>
 export type OpenCode2MonitorSettings = z.infer<typeof OpenCode2MonitorSettingsSchema>
+export type OpenCode2CodegraphSettings = z.infer<typeof OpenCode2CodegraphSettingsSchema>
 export type OpenCode2Config = z.infer<typeof OpenCode2ConfigSchema>

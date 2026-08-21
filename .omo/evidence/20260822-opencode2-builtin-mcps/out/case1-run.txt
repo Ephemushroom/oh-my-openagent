@@ -1,0 +1,6 @@
+[0m
+> sisyphus · glm-4.7
+I read this as understanding: direct file read.
+[0m→ [0mRead dummy.txt 
+> sisyphus · glm-4.7
+DONE.
