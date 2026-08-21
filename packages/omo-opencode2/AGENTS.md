@@ -30,6 +30,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
 | Tools | 10 base + 7 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
+| MCP servers | 4 built-ins | `context7` + `grep_app` (remote), `lsp` + `codegraph` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |
 
@@ -216,6 +217,33 @@ so a wide monitor cannot flood the context window.
   Extracting `monitor-core` would mean rewiring v1's monitor too, which pulls the
   change into the OpenCode adapter and its QA regimen for no v2 benefit. Revisit
   if a third harness needs monitors.
+
+## Built-in MCP servers
+
+`src/mcp/` registers four v1 built-ins through `ctx.mcp.transform` (the MCP
+domain added in beta-17793): `context7` + `grep_app` (remote) and `lsp` +
+`codegraph` (local stdio). **websearch is deliberately absent**: opencode2
+ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
+
+- **A user-defined server entry always wins.** The transform checks the draft
+  before `set`; an existing name is deferred to the user, never overwritten.
+- **`disabled_mcps` under `[opencode2]`** removes a built-in entirely.
+- **Materialization must be forced.** v2 `State` defers transform application
+  when registration happens inside a batch — the same laziness
+  `agent.transform` shows at setup — so `registerBuiltinMcps` calls
+  `await ctx.mcp.reload()` before reporting what registered. Without it the
+  trace says `servers:[]` while the harness later connects them anyway.
+- **Connection status is polled, not awaited.** `ctx.mcp.list()` returns
+  harness-side statuses; the register function polls a few times (500ms apart)
+  and traces each observation, then stops when nothing is pending.
+- lsp resolution mirrors v1's `mcp/lsp.ts`: dist CLI → bun source CLI (only
+  when `packages/lsp-tools-mcp/dist/cli.js` exists AND the daemon
+  `package.json` is readable — the version feeds `OMO_LSP_DAEMON_VERSION`) →
+  self-building bootstrap script. User config paths are v2-layout
+  (`$XDG_CONFIG_HOME/opencode/lsp.json`).
+- codegraph reuses `@oh-my-opencode/utils` resolvers (bundled / provisioned /
+  PATH + node support + project exclusion). A failed resolution skips that one
+  server; it never fails the whole registration.
 
 ## Configuration keys live under `[opencode2]`, never at the root
 

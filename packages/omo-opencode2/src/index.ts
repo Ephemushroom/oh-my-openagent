@@ -32,6 +32,7 @@ import { registerConfiguredTodoContinuation } from "./hooks/todo-continuation"
 import { registerConfiguredBoulderContinuation } from "./hooks/boulder-continuation"
 import { createSessionDispatchGate } from "./orchestration/session-dispatch-gate"
 import { registerSharedSkills } from "./skills"
+import { registerBuiltinMcps } from "./mcp/register"
 
 type Trace = (event: string, detail?: Record<string, unknown>) => void
 
@@ -113,6 +114,10 @@ export default Plugin.define({
 
     await registerSharedSkills(ctx, trace)
     await registerBuiltinCommands(ctx, trace)
+    // Built-in MCP servers ride ctx.mcp.transform (added in beta-17793). A
+    // user-defined server entry always wins over the built-in; websearch is
+    // deliberately absent because opencode2 ships a native websearch domain.
+    await registerBuiltinMcps(ctx, { cwd: workspaceDirectory, trace })
     const goalFeature = await registerConfiguredGoalFeature(ctx, {
       directory: workspaceDirectory,
       gate: sessionDispatchGate,
