@@ -807,6 +807,31 @@
       ],
       "additionalProperties": false
     },
+    "git_master": {
+      "type": "object",
+      "properties": {
+        "commit_footer": {
+          "default": true,
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "include_co_authored_by": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "commit_footer",
+        "include_co_authored_by"
+      ],
+      "additionalProperties": false
+    },
     "task": {
       "type": "object",
       "properties": {
@@ -1525,6 +1550,22 @@
           ],
           "additionalProperties": false
         },
+        "write_notice": {
+          "default": {
+            "enabled": true
+          },
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "additionalProperties": false
+        },
         "sync": {
           "default": {
             "enabled": true
@@ -1718,6 +1759,15 @@
                 },
                 "additionalProperties": false
               },
+              "write_notice": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
               "sync": {
                 "type": "object",
                 "properties": {
@@ -1760,6 +1810,7 @@
         "dream",
         "people",
         "soul",
+        "write_notice",
         "sync",
         "search",
         "compile_warn_tokens",
@@ -12514,6 +12565,25 @@
           },
           "additionalProperties": false
         },
+        "git_master": {
+          "type": "object",
+          "properties": {
+            "commit_footer": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "include_co_authored_by": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "task": {
           "type": "object",
           "properties": {
@@ -13058,6 +13128,15 @@
               },
               "additionalProperties": false
             },
+            "write_notice": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
             "sync": {
               "type": "object",
               "properties": {
@@ -13230,6 +13309,15 @@
                     "type": "object",
                     "properties": {
                       "edit_notice": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "write_notice": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
                         "type": "boolean"
                       }
                     },
@@ -14073,6 +14161,25 @@
           },
           "additionalProperties": false
         },
+        "git_master": {
+          "type": "object",
+          "properties": {
+            "commit_footer": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "include_co_authored_by": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "task": {
           "type": "object",
           "properties": {
@@ -14617,6 +14724,15 @@
               },
               "additionalProperties": false
             },
+            "write_notice": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
             "sync": {
               "type": "object",
               "properties": {
@@ -14789,6 +14905,15 @@
                     "type": "object",
                     "properties": {
                       "edit_notice": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "write_notice": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
                         "type": "boolean"
                       }
                     },
@@ -15638,6 +15763,25 @@
             },
             "additionalProperties": false
           },
+          "git_master": {
+            "type": "object",
+            "properties": {
+              "commit_footer": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "include_co_authored_by": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
           "task": {
             "type": "object",
             "properties": {
@@ -16182,6 +16326,15 @@
                 },
                 "additionalProperties": false
               },
+              "write_notice": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
               "sync": {
                 "type": "object",
                 "properties": {
@@ -16354,6 +16507,15 @@
                       "type": "object",
                       "properties": {
                         "edit_notice": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "write_notice": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
                           "type": "boolean"
                         }
                       },
@@ -27136,6 +27298,25 @@
                 },
                 "additionalProperties": false
               },
+              "git_master": {
+                "type": "object",
+                "properties": {
+                  "commit_footer": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "include_co_authored_by": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
               "task": {
                 "type": "object",
                 "properties": {
@@ -27680,6 +27861,15 @@
                     },
                     "additionalProperties": false
                   },
+                  "write_notice": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
                   "sync": {
                     "type": "object",
                     "properties": {
@@ -27852,6 +28042,15 @@
                           "type": "object",
                           "properties": {
                             "edit_notice": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "write_notice": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
                               "type": "boolean"
                             }
                           },
@@ -28695,6 +28894,25 @@
                 },
                 "additionalProperties": false
               },
+              "git_master": {
+                "type": "object",
+                "properties": {
+                  "commit_footer": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "include_co_authored_by": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
               "task": {
                 "type": "object",
                 "properties": {
@@ -29239,6 +29457,15 @@
                     },
                     "additionalProperties": false
                   },
+                  "write_notice": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
                   "sync": {
                     "type": "object",
                     "properties": {
@@ -29411,6 +29638,15 @@
                           "type": "object",
                           "properties": {
                             "edit_notice": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "write_notice": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
                               "type": "boolean"
                             }
                           },

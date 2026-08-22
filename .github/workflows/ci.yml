@@ -55,7 +55,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # beta.16 sync grew the suite to ~2160 test files; a full run takes
+    # ~28 min on a fast local host, so CI needs more headroom than 30.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
 
