@@ -262,6 +262,35 @@ Correct shape:
 Verified on `0.0.0-next-17444`; reproducer and outcome recorded in
 `.omo/evidence/20260820-opencode2-monitor-tools/`.
 
+## BTW side conversations
+
+`features/btw/` ports v1's BTW side conversations as tool-driven instead of
+TUI-driven: the v2 plugin API has no TUI registration surface, so the
+capability is expressed as `btw_start` / `btw_reply` / `btw_list` tools the
+model calls. Gated on `btw.enabled` under `[opencode2]` (default off);
+`disabled_hooks` respects the name `btw`.
+
+- **The BTW tag rides prompt metadata, not session metadata.** v2 `Session.Info`
+  has no metadata field; `session.prompt({ metadata })` is persisted onto the
+  user message by core's projector, so `getBtwMetadata` reads it back from the
+  first user message of the side session on every turn.
+- **Parent context comes from the SQLite store**, through the same readonly
+  `SessionStore` the session-manager tools use (bounded 64KB / 64 messages,
+  binary-search tail truncation, ported from v1), and is rendered INLINE into
+  the side prompt (boundary sentinel + read-only transcript envelope) rather
+  than spliced as real messages.
+- **Delegation tools are stripped in the context hook, not blocked at
+  execute time.** `registerBtwToolGuard` deletes `task` / `btw_*` /
+  `monitor_start` from `event.tools` for tagged sessions — v2's idiomatic
+  surface, per the plugin README.
+- **Side prompts are NOT behind the shared dispatch gate.** Like
+  `child-session.ts`, the plugin creates and owns the side session; each
+  `btw_start`/`btw_reply` is a distinct user-initiated call, never an
+  idle-edge injection. Pinned in `session-dispatch-audit.test.ts`.
+- **Answers return as tool results through the task engine's waiter pump**,
+  shared with `deps.waitChild`; the side completion never writes into the
+  parent session directly.
+
 ## Session dispatch
 
 `orchestration/session-dispatch-gate.ts` is the shared gate, v2's equivalent of

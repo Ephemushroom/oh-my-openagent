@@ -42,6 +42,14 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // gate, same reason. Default-off; re-reads the plan off disk on every idle.
   "hooks/boulder-continuation/register.ts": { synthetic: 1 },
   "orchestration/child-session.ts": { prompt: 1 },
+  // BTW side conversations. The plugin creates and owns the side session
+  // (session.create + prompt with omo_btw metadata) exactly like the task
+  // engine's child sessions: there is no competing observer, and each
+  // btw_start / btw_reply is a distinct user-initiated call, never an
+  // idle-edge injection. NOT gated for the same reason child-session is not.
+  // Delivery of the side answer back to the parent rides the task engine's
+  // waiter pump as a TOOL RESULT, not as a session write.
+  "features/btw/tools.ts": { prompt: 2 },
   // Monitor output delivery. NOT gated, for the same reason as background
   // completion: it fires once per BATCH, from a specific monitor. Two monitors
   // flushing in the same tick are two distinct notifications, and a per-session

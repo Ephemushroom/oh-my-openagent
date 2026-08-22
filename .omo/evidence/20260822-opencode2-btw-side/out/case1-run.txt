@@ -1,0 +1,7 @@
+[0m
+> sisyphus · glm-4.7
+[0m→ [0mRead notes.txt 
+> sisyphus · glm-4.7
+[0m⚙ [0mbtw_start {"question":"what word did the note say the cache key is?"} 
+> sisyphus · glm-4.7
+BTWANSWER:fruit

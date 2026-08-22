@@ -24,6 +24,7 @@ import { runChildSession } from "./orchestration/child-session"
 import { createSessionModelRegistry, registerLookAtTool, LOOK_AT_AGENT } from "./tools/look-at"
 import { registerSessionTools } from "./tools/session-manager"
 import { registerMonitorTools } from "./tools/monitor/register"
+import { registerBtwFeature } from "./features/btw/register"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
@@ -263,6 +264,18 @@ export default Plugin.define({
     // `list` nor `messages`), so the store is the only route.
     await registerSessionTools(ctx, { directory: workspaceDirectory, trace })
 
+    // BTW side conversations share the task engine's waiter pump so a side
+    // answer resolves exactly like a delegated child result. Default off.
+    const btwFeature = await registerBtwFeature(ctx, {
+      cwd: workspaceDirectory,
+      deps,
+      resolveSessionID: (toolCtx) => {
+        const record = typeof toolCtx === "object" && toolCtx !== null ? (toolCtx as Record<string, unknown>) : {}
+        return typeof record.sessionID === "string" ? record.sessionID : undefined
+      },
+      trace,
+    })
+
     // Monitor spawns and owns its own child processes, so the ctx.shell limit
     // does not apply. Default off, and with no allowed_commands it refuses.
     const monitor = await registerMonitorTools(ctx, {
@@ -319,6 +332,7 @@ export default Plugin.define({
       boulderContinuation.dispose()
       engine.dispose()
       void monitor?.dispose()
+      void btwFeature?.dispose()
     }
   },
 })
