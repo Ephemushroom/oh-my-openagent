@@ -1,0 +1,5 @@
+[0m
+> sisyphus · glm-4.7
+[0m→ [0mRead dummy.txt 
+> sisyphus · glm-4.7
+DONE.
