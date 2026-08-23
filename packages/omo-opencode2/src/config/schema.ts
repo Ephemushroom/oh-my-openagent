@@ -37,6 +37,10 @@ export const OpenCode2ModelFallbackSettingsSchema = z.object({
   max_retries: z.number().int().min(1).optional(),
 }).strip()
 
+export const OpenCode2TeamModeSettingsSchema = z.object({
+  enabled: z.boolean().optional(),
+}).strip()
+
 // Field names mirror v1's monitor block so an existing config carries over.
 // Default OFF, and with no allowed_commands the start tool refuses everything:
 // the tool spawns arbitrary processes and the model picks the command string.
@@ -69,6 +73,7 @@ export const OpenCode2ConfigSchema = z.object({
   monitor: OpenCode2MonitorSettingsSchema.optional(),
   btw: OpenCode2BtwSettingsSchema.optional(),
   model_fallback: OpenCode2ModelFallbackSettingsSchema.optional(),
+  team_mode: OpenCode2TeamModeSettingsSchema.optional(),
   codegraph: OpenCode2CodegraphSettingsSchema.optional(),
   disabled_hooks: z.array(z.string()).optional(),
   disabled_mcps: z.array(z.string()).optional(),
@@ -81,5 +86,6 @@ export type OpenCode2BoulderSettings = z.infer<typeof OpenCode2BoulderSettingsSc
 export type OpenCode2MonitorSettings = z.infer<typeof OpenCode2MonitorSettingsSchema>
 export type OpenCode2BtwSettings = z.infer<typeof OpenCode2BtwSettingsSchema>
 export type OpenCode2ModelFallbackSettings = z.infer<typeof OpenCode2ModelFallbackSettingsSchema>
+export type OpenCode2TeamModeSettings = z.infer<typeof OpenCode2TeamModeSettingsSchema>
 export type OpenCode2CodegraphSettings = z.infer<typeof OpenCode2CodegraphSettingsSchema>
 export type OpenCode2Config = z.infer<typeof OpenCode2ConfigSchema>

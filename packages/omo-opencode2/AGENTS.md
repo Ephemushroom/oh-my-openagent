@@ -28,7 +28,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 10 base + 7 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` |
+| Tools | 10 base + 19 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | MCP servers | 4 built-ins | `context7` + `grep_app` (remote), `lsp` + `codegraph` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
@@ -324,6 +324,37 @@ defaults to 1 and must be at least 1. `disabled_hooks` respects the name
   and emits `omo.model-fallback.skipped-child`. Delegated children retain their
   own retry path in `orchestration/child-session.ts`.
 
+## Team Mode
+
+`features/team-mode/` ports the first tool-driven Team Mode surface to v2. It is
+default-off and requires `[opencode2].team_mode.enabled=true`; `disabled_hooks`
+respects the name `team_mode`. When disabled, all 12 `team_*` tools are absent.
+
+The adapter reuses `@oh-my-opencode/team-core` for normalized/validated team
+specs, registry paths, runtime state, mailbox delivery, task claiming, and task
+status transitions. Project team specs are written to
+`<project>/.omo/teams/{name}/config.json`, so v1 and v2 can discover the same
+declared teams. Runtime/mailbox/task files use team-core's project-scoped
+`<project>/.omo/runtime/{teamRunId}/` layout by setting its base directory to the
+project `.omo` directory.
+
+The 12 tools are `team_create`, `team_delete`, `team_status`, `team_list`,
+`team_shutdown_request`, `team_approve_shutdown`, `team_reject_shutdown`,
+`team_send_message`, `team_task_create`, `team_task_list`, `team_task_get`, and
+`team_task_update`. Team creation inserts the current session as lead, then
+spawns at most 4 member sessions concurrently and at most 8 total participants.
+Members default to the registered `sisyphus-junior` agent; a v1-compatible
+`subagent_type` member overrides it, while category members run through
+`sisyphus-junior` with category guidance in their initial prompt.
+
+This first port is mailbox collaboration only. It deliberately has **no tmux
+layout** and **no per-member git worktrees**; both remain follow-ups. Member
+sessions are plugin-owned persistent children created through
+`ctx.session.create` plus one initial prompt. Explicit lead-to-member messages
+are individual queued synthetic turns and are not gated. A member-idle observer
+that wakes the live lead with unread mailbox summaries does take the single
+shared dispatch gate from `index.ts`.
+
 ## Session dispatch
 
 `orchestration/session-dispatch-gate.ts` is the shared gate, v2's equivalent of
@@ -358,6 +389,9 @@ and only one of them belongs to the gate:
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
 | `features/monitor/delivery.ts` | NO | Fires once per BATCH from one monitor. Two monitors flushing in the same tick are two distinct notifications; a per-session reservation would drop one and lose output. Deduped per batch instead. |
+| `features/team-mode/member-runtime.ts` | NO | Initial prompt to a plugin-owned child session. One write per spawned member, not an observed live-parent edge. |
+| `features/team-mode/mailbox.ts` direct delivery | NO | One queued turn per explicit lead-to-member message; gating would drop distinct concurrent messages. |
+| `features/team-mode/mailbox.ts` member-idle wake | yes | Observes a member idle edge and injects unread mailbox summaries into the live lead. Uses the same shared gate as goal/todo/boulder. |
 
 The pinned set is enforced by `src/orchestration/session-dispatch-audit.test.ts`,
 which fails the suite when any new dispatch call site or reference appears.
