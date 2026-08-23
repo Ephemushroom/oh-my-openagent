@@ -1,0 +1,9 @@
+bun test v1.4.0 (34cbb9a40)
+
+packages\omo-opencode2\src\tools\session-manager\store.test.ts:
+[session-store.test] could not remove C:\Users\Bryan\AppData\Local\Temp\oc2-store-test-cxe4dQ: Error: EBUSY: resource busy or locked, rm 'C:\Users\Bryan\AppData\Local\Temp\oc2-store-test-cxe4dQ'
+
+ 342 pass
+ 0 fail
+ 782 expect() calls
+Ran 342 tests across 58 files. [1.81s]

@@ -106,11 +106,10 @@ These are v2-API-specific and differ from v1. Read before editing.
   reader degrades to a reported message instead of throwing when the shape
   changes. Verified on `0.0.0-next-17444`; the beta-17793 additions
   (`switchAgent`/`switchModel`/`rename`/`wait`) do not change this.
-- **`session.hook("model.request")` is new in beta-17793 and is the fallback
-  interception point.** The event carries a mutable `baseURL?` and `headers`,
-  fires per provider dispatch, and unlike the `aisdk` domain it is not gated on
-  provider-plugin instantiation. Model fallback should be built here (or on
-  `http.request`/`http.response`), NOT on `aisdk.hook("sdk"|"language")`.
+- **`session.hook("model.request")` cannot proactively switch models.** The event
+  fires per provider dispatch, but its model field is readonly; only `baseURL?`
+  and `headers` are mutable. Runtime model fallback therefore reacts to the
+  durable `session.execution.failed` event and calls `session.switchModel`.
 - **`aisdk` hooks only fire for models the NATIVE map cannot resolve.** The
   `aisdk.hook("sdk" | "language")` domain exists in the plugin types, but core
   resolves in `model-resolver.ts` via `AISDKNative.map()` FIRST: nine major
@@ -291,6 +290,40 @@ model calls. Gated on `btw.enabled` under `[opencode2]` (default off);
   shared with `deps.waitChild`; the side completion never writes into the
   parent session directly.
 
+## Runtime model fallback
+
+`features/model-fallback/` provides default-off reactive model fallback. Enable
+it under `[opencode2]` with `model_fallback.enabled: true`; `max_retries`
+defaults to 1 and must be at least 1. `disabled_hooks` respects the name
+`model_fallback`.
+
+- **Reactive is the only supported design.** `session.hook("model.request")`
+  exposes a readonly model field, so the adapter cannot replace the model before
+  a request. The event pump waits for durable `session.execution.failed`, reuses
+  `@oh-my-opencode/model-core`'s provider-exhaustion classifier, and ignores
+  validation, abort, context-overflow, and other non-exhaustion errors.
+- **The failed main session is switched in place.** `Session.Info` exposes an
+  optional model and no active agent; live CLI builds may leave that model
+  absent. The feature records both active agent and model from
+  `session.hook("context")` on each turn, with `Session.Info.model` as a fallback.
+  It resolves the next entry with the same
+  `nextFallbackModel` helper used by delegated children, calls
+  `session.switchModel`, then queues a synthetic continuation so the new model
+  resumes from the existing conversation.
+- **The synthetic continuation uses the one plugin-wide dispatch gate.** A
+  failure is an observed terminal edge, so goal, todo, boulder, and fallback
+  must not race separate internal messages into the same live session. The
+  fallback feature receives the gate created in `index.ts`; it never creates,
+  releases, or disposes that shared gate itself.
+- **Retries are bounded per session and reset on execution success.** A fallback
+  attempt consumes one retry even if switching or redispatch later fails, which
+  prevents a broken provider chain from looping. Exhausted chains and retry
+  budgets emit trace events and stop.
+- **Task-engine children are excluded.** Every child session ID remains in the
+  shared `TaskRegistry`; fallback checks that registry before acquiring the gate
+  and emits `omo.model-fallback.skipped-child`. Delegated children retain their
+  own retry path in `orchestration/child-session.ts`.
+
 ## Session dispatch
 
 `orchestration/session-dispatch-gate.ts` is the shared gate, v2's equivalent of
@@ -321,6 +354,7 @@ and only one of them belongs to the gate:
 | `hooks/goal/register.ts` | yes | Idle continuation. Shares the one gate. |
 | `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does. |
 | `hooks/boulder-continuation/register.ts` | yes | The third idle injector (start-work). Same shared gate; re-reads the plan off disk on every idle. |
+| `features/model-fallback/register.ts` | yes | Reactive provider-exhaustion recovery on a main-session error edge. Same shared gate; child sessions are excluded first. |
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
 | `features/monitor/delivery.ts` | NO | Fires once per BATCH from one monitor. Two monitors flushing in the same tick are two distinct notifications; a per-session reservation would drop one and lose output. Deduped per batch instead. |

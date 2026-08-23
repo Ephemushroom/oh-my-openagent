@@ -25,6 +25,7 @@ import { createSessionModelRegistry, registerLookAtTool, LOOK_AT_AGENT } from ".
 import { registerSessionTools } from "./tools/session-manager"
 import { registerMonitorTools } from "./tools/monitor/register"
 import { registerBtwFeature } from "./features/btw/register"
+import { registerConfiguredModelFallback } from "./features/model-fallback"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
@@ -165,6 +166,13 @@ export default Plugin.define({
         await ctx.session.interrupt({ sessionID }).catch(() => undefined)
       },
     }
+
+    const modelFallback = await registerConfiguredModelFallback(ctx, {
+      directory: workspaceDirectory,
+      gate: sessionDispatchGate,
+      registry,
+      trace,
+    })
 
     const categoryModels = new Map<string, string>()
     const availableSubagents = [...subagents]
@@ -330,6 +338,7 @@ export default Plugin.define({
       goalFeature.dispose()
       todoContinuation.dispose()
       boulderContinuation.dispose()
+      modelFallback.dispose()
       engine.dispose()
       void monitor?.dispose()
       void btwFeature?.dispose()
