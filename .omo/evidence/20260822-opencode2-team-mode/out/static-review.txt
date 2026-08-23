@@ -1,0 +1,13 @@
+TypeScript no-excuse audit
+Command: bun run --bun <programming-skill>/scripts/typescript/check-no-excuse-rules.ts packages/omo-opencode2/src/features/team-mode packages/omo-opencode2/src/index.ts packages/omo-opencode2/src/config/schema.ts packages/omo-opencode2/src/orchestration/session-dispatch-audit.test.ts
+Observed: No violations in 20 file(s).
+
+File-size review
+Largest new production file: packages/omo-opencode2/src/features/team-mode/mailbox.ts (151 total lines).
+Largest new test file: packages/omo-opencode2/src/features/team-mode/register.test.ts (199 total lines).
+Every new Team Mode source and test file is at or below the repository's 200-line soft limit.
+
+LSP diagnostics
+Attempted on packages/omo-opencode2/src/features/team-mode.
+The TypeScript LSP is not installed and the prior user decision is recorded as declined, so no server was installed or host configuration changed.
+The repository tsgo type gate passed across all packages; see typecheck.txt.
