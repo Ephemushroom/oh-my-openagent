@@ -1,0 +1,8 @@
+{
+  "positive_primary": true,
+  "positive_subagent": true,
+  "positive_category": true,
+  "positive_default": true,
+  "negative_no_qa_models": true,
+  "negative_default": true
+}
