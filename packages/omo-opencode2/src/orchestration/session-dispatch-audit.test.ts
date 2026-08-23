@@ -64,6 +64,16 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // `monitor-output:<id>:batch-<seq>` in features/monitor/delivery.ts, which is
   // the correct granularity here.
   "features/monitor/delivery.ts": { synthetic: 1 },
+  // Team member bootstrap. The adapter creates and owns each child session,
+  // then submits its initial assignment once. This is not an observed edge and
+  // has no competing writer, so it remains outside the shared parent gate.
+  "features/team-mode/member-runtime.ts": { prompt: 1 },
+  // Team mailbox has two deliberately different writes. Lead-to-member direct
+  // delivery is one queued synthetic per explicit message to a plugin-owned
+  // child and is ungated. Member-idle wake observes a live edge and injects an
+  // unread summary into the lead, so that path takes the one shared gate from
+  // index.ts before calling synthetic.
+  "features/team-mode/mailbox.ts": { synthetic: 2 },
 }
 
 function collectSourceFiles(dir: string): string[] {

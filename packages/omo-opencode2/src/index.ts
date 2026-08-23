@@ -26,6 +26,7 @@ import { registerSessionTools } from "./tools/session-manager"
 import { registerMonitorTools } from "./tools/monitor/register"
 import { registerBtwFeature } from "./features/btw/register"
 import { registerConfiguredModelFallback } from "./features/model-fallback"
+import { registerTeamMode } from "./features/team-mode"
 import { registerWriteExistingFileGuard } from "./hooks/write-existing-file-guard"
 import { registerPrometheusMdOnly } from "./hooks/prometheus-md-only"
 import { registerCommentChecker } from "./hooks/comment-checker"
@@ -37,6 +38,12 @@ import { registerSharedSkills } from "./skills"
 import { registerBuiltinMcps } from "./mcp/register"
 
 type Trace = (event: string, detail?: Record<string, unknown>) => void
+
+function resolveToolSessionID(toolCtx: unknown): string | undefined {
+  if (typeof toolCtx !== "object" || toolCtx === null) return undefined
+  const sessionID = Reflect.get(toolCtx, "sessionID")
+  return typeof sessionID === "string" ? sessionID : undefined
+}
 
 function createTrace(): Trace {
   const file = process.env.OMO_SPIKE_TRACE
@@ -277,10 +284,14 @@ export default Plugin.define({
     const btwFeature = await registerBtwFeature(ctx, {
       cwd: workspaceDirectory,
       deps,
-      resolveSessionID: (toolCtx) => {
-        const record = typeof toolCtx === "object" && toolCtx !== null ? (toolCtx as Record<string, unknown>) : {}
-        return typeof record.sessionID === "string" ? record.sessionID : undefined
-      },
+      resolveSessionID: resolveToolSessionID,
+      trace,
+    })
+
+    const teamMode = await registerTeamMode(ctx, {
+      cwd: workspaceDirectory,
+      gate: sessionDispatchGate,
+      resolveSessionID: resolveToolSessionID,
       trace,
     })
 
@@ -288,10 +299,7 @@ export default Plugin.define({
     // does not apply. Default off, and with no allowed_commands it refuses.
     const monitor = await registerMonitorTools(ctx, {
       cwd: workspaceDirectory,
-      resolveSessionID: (toolCtx) => {
-        const record = typeof toolCtx === "object" && toolCtx !== null ? (toolCtx as Record<string, unknown>) : {}
-        return typeof record.sessionID === "string" ? record.sessionID : undefined
-      },
+      resolveSessionID: resolveToolSessionID,
       trace,
     })
 
@@ -342,6 +350,7 @@ export default Plugin.define({
       engine.dispose()
       void monitor?.dispose()
       void btwFeature?.dispose()
+      teamMode?.dispose()
     }
   },
 })
