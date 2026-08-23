@@ -2,7 +2,7 @@ running unit gate
 PASS  unit.gate  (bun test packages/omo-opencode2/src)
 running type gate
 PASS  typecheck.gate  (bun run typecheck)
-sandbox: /tmp/tmp.27x0slbLDP
+sandbox: /tmp/tmp.8DnXgAKrWm
 opencode2: opencode2 v0.0.0-beta-17941
 model: zhipuai/glm-4.7
 PASS  positive.run  (real enabled Team Mode session completed)

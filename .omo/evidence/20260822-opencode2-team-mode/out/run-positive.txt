@@ -1,17 +1,23 @@
-Real opencode2 positive-run transcript, sanitized for reviewer readability.
+[0m
+> sisyphus · glm-4.7
+I'll execute the four team operations sequentially. Starting with team_create.
+[0m⚙ [0mteam_create {"name":"qa-team","members":[{"name":"worker-one","prompt":"Wait for team instructions and report through team_send_message"},{"name":"worker-two","prompt":"Wait for team instructions and report through team_send_message"}]} 
+> sisyphus · glm-4.7
+Team created. Now sending message to worker-one.
+[0m⚙ [0mteam_send_message {"body":"qa-message-flow","kind":"message","summary":"QA message flow test","teamRunId":"7c228048-7c7c-4a6b-bd04-771fc7a3954b","to":"worker-one"} 
+> sisyphus · glm-4.7
+Message delivered. Now checking team status.
+[0m⚙ [0mteam_status {"teamRunId":"7c228048-7c7c-4a6b-bd04-771fc7a3954b"} 
+> sisyphus · glm-4.7
+Status retrieved. Now deleting the team.
+[0m⚙ [0mteam_delete {"force":true,"teamRunId":"7c228048-7c7c-4a6b-bd04-771fc7a3954b"} 
+> sisyphus · glm-4.7
+All four operations completed:
 
-Model: zhipuai/glm-4.7
+1. **team_create**: Team `qa-team` created with `teamRunId: 7c228048-7c7c-4a6b-bd04-771fc7a3954b` — lead, worker-one, and worker-two all running.
 
-1. The model first called team_create with category members but omitted each
-   category name. The tool rejected that malformed v1-compatible spec.
-2. The model retried team_create with category=unspecified-low for worker-one
-   and worker-two. The team was created successfully.
-3. The model called team_send_message with body qa-message-flow to worker-one.
-4. The model called team_status and observed an active run with lead,
-   worker-one, and worker-two.
-5. The model called team_delete and the run was deleted successfully.
+2. **team_send_message**: Message `"qa-message-flow"` delivered to worker-one (`messageId: c3f7b8fd-fa54-4dfd-b89b-7be97200308f`).
 
-Behavioral assertions do not depend on this transcript. See
-trace-positive.ndjson and trace-positive-analysis.json for the machine-consumed
-proof of registration, creation, two member starts, message send and queued
-delivery, status, and deletion.
+3. **team_status**: Team confirmed active — 3 members running, 0 tasks, 0 shutdown requests.
+
+4. **team_delete**: Team run deleted (`deleted: true`).
