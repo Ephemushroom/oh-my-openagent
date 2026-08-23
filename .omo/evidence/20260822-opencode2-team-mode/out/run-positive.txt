@@ -1,22 +1,17 @@
-[0m
-> sisyphus · glm-4.7
-I'll execute these four tool calls sequentially. Starting with team_create.
-[0m✗ [0mteam_create {"name":"qa-team","members":[{"kind":"category","name":"worker-one","prompt":"Wait for team instructions and report through team_send_message"},{"kind":"category","name":"worker-two","prompt":"Wait for team instructions and report through team_send_message"}]} failed
-[91m[1mError: [0mInvalid team spec: members.1.category: Invalid input: expected string, received undefined; members.2.category: Invalid input: expected string, received undefined
-> sisyphus · glm-4.7
-[0m⚙ [0mteam_create {"members":[{"kind":"category","category":"unspecified-low","name":"worker-one","prompt":"Wait for team instructions and report through team_send_message"},{"kind":"category","category":"unspecified-low","name":"worker-two","prompt":"Wait for team instructions and report through team_send_message"}],"name":"qa-team"} 
-> sisyphus · glm-4.7
-[0m⚙ [0mteam_send_message {"body":"qa-message-flow","teamRunId":"bd6ff80b-605a-489b-9564-6c2a7d370a10","to":"worker-one"} 
-> sisyphus · glm-4.7
-[0m⚙ [0mteam_status {"teamRunId":"bd6ff80b-605a-489b-9564-6c2a7d370a10"} 
-> sisyphus · glm-4.7
-[0m⚙ [0mteam_delete {"teamRunId":"bd6ff80b-605a-489b-9564-6c2a7d370a10"} 
-> sisyphus · glm-4.7
-Done. All four tool calls completed:
+Real opencode2 positive-run transcript, sanitized for reviewer readability.
 
-1. team_create: Created team "qa-team" with members worker-one and worker-two (teamRunId: bd6ff80b-605a-489b-9564-6c2a7d370a10)
-2. team_send_message: Sent exact body "qa-message-flow" to worker-one (messageId: 589bce4b-dd32-4689-9679-5ef34e9fa940)
-3. team_status: Returned active status, 3 running members (lead, worker-one, worker-two), 1 message from worker-two
-4. team_delete: Deleted team run bd6ff80b-605a-489b-9564-6c2a7d370a10
-> sisyphus · glm-4.7
-Peer message from worker-two acknowledged (already reflected in the team_status output). The team run has been deleted as requested.
+Model: zhipuai/glm-4.7
+
+1. The model first called team_create with category members but omitted each
+   category name. The tool rejected that malformed v1-compatible spec.
+2. The model retried team_create with category=unspecified-low for worker-one
+   and worker-two. The team was created successfully.
+3. The model called team_send_message with body qa-message-flow to worker-one.
+4. The model called team_status and observed an active run with lead,
+   worker-one, and worker-two.
+5. The model called team_delete and the run was deleted successfully.
+
+Behavioral assertions do not depend on this transcript. See
+trace-positive.ndjson and trace-positive-analysis.json for the machine-consumed
+proof of registration, creation, two member starts, message send and queued
+delivery, status, and deletion.

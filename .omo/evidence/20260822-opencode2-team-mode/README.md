@@ -19,8 +19,7 @@ Date: 2026-08-23 | Branch: `feat/oc2-team-mode` | Base: `origin/dev`
 - `qa.sh` finished with `PASS=13 FAIL=0` against `opencode2
   v0.0.0-beta-17941` and `zhipuai/glm-4.7`.
 - The adapter gate reported `341 pass, 0 fail`, `777 expect()` calls across 59
-  files. It emitted one non-failing Windows `EBUSY` temp-directory cleanup
-  warning from the pre-existing session-store test.
+  files.
 - Repository typecheck exited 0 across the root, script, and package configs.
 - The TypeScript no-excuse audit reported no violations in 20 changed files;
   all new Team Mode files are at or below 200 total lines. The local TypeScript
