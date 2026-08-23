@@ -1,0 +1,18 @@
+{
+  "event": "omo.model-fallback.triggered",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1787459603787,
+      "event": "omo.model-fallback.triggered",
+      "sessionID": "ses_fd31b0978ffecDDX2cx3AMddUi",
+      "agent": "sisyphus",
+      "currentModel": "openai/gpt-5.6-sol",
+      "nextModel": "zai-coding-plan/glm-5.2",
+      "retry": 1,
+      "signal": "quota_exceeded"
+    }
+  ]
+}
