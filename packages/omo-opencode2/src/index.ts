@@ -2,9 +2,7 @@ import { appendFileSync, mkdirSync } from "node:fs"
 import { dirname } from "node:path"
 import { Plugin } from "@opencode-ai/plugin"
 
-import { registerCategories } from "./agents/register-categories"
-import { registerPrimaries } from "./agents/register-primaries"
-import { registerSubagents } from "./agents/register-subagents"
+import { registerConfiguredAgents } from "./agents/register-configured"
 import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 import { registerBuiltinCommands } from "./commands"
@@ -103,13 +101,11 @@ export default Plugin.define({
     // Phase 1: register the real OMO agent catalog: 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
     // delegation categories as subagents. Default agent: sisyphus.
-    let capturedStaticSisyphusPrompt: string | undefined
-    const onSisyphusPrompt = (prompt: string): void => {
-      capturedStaticSisyphusPrompt = prompt
-    }
-    const subagents = await registerSubagents(ctx, { trace, catalog })
-    const primaries = await registerPrimaries(ctx, { trace, defaultAgent: "sisyphus", catalog, onSisyphusPrompt })
-    const categories = await registerCategories(ctx, { trace, catalog })
+    const { subagents, primaries, categories, sisyphusPrompt } = await registerConfiguredAgents(ctx, {
+      catalog,
+      directory: workspaceDirectory,
+      trace,
+    })
 
     // v2 applies agent.transform callbacks lazily (on first registry
     // materialization); force them now so the summary reflects what was actually
@@ -316,13 +312,13 @@ export default Plugin.define({
     // that system part per request.
     await registerContextHooks({
       ctx,
-      staticSisyphusPrompt: capturedStaticSisyphusPrompt ?? "",
+      staticSisyphusPrompt: sisyphusPrompt ?? "",
       workspaceDirectory,
       todoStore,
       sessionModels,
       trace,
     })
-    trace("omo.context-hooks.registered", { staticPromptLength: capturedStaticSisyphusPrompt?.length ?? 0 })
+    trace("omo.context-hooks.registered", { staticPromptLength: sisyphusPrompt?.length ?? 0 })
 
     let todoCleanupDisposed = false
     const todoCleanup = (async () => {
