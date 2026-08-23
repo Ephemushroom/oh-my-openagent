@@ -23,6 +23,7 @@
     "@oh-my-opencode/prompts-core": "workspace:*",
     "@oh-my-opencode/rules-engine": "workspace:*",
     "@oh-my-opencode/shared-skills": "workspace:*",
+    "@oh-my-opencode/team-core": "workspace:*",
     "@oh-my-opencode/utils": "workspace:*"
   }
 }

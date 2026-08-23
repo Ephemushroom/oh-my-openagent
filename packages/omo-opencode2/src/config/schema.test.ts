@@ -9,6 +9,7 @@ describe("OpenCode2ConfigSchema", () => {
       disabled_hooks: ["hashline", "write-existing-file-guard"],
       goal: { enabled: true },
       model_fallback: { enabled: true, max_retries: 2 },
+      team_mode: { enabled: true },
       agents: {
         sisyphus: {
           model: "openai/gpt-5.6-sol",
@@ -28,6 +29,7 @@ describe("OpenCode2ConfigSchema", () => {
     expect(result.data.disabled_hooks).toEqual(["hashline", "write-existing-file-guard"])
     expect(result.data.model_fallback).toEqual({ enabled: true, max_retries: 2 })
     expect(result.data.agents?.sisyphus?.model).toBe("openai/gpt-5.6-sol")
+    expect(result.data.team_mode?.enabled).toBe(true)
     expect("unknown_field" in (result.data.agents?.sisyphus ?? {})).toBe(false)
     expect("categories" in result.data).toBe(false)
   })
@@ -46,6 +48,17 @@ describe("OpenCode2ConfigSchema", () => {
   test("#given a model fallback retry bound below one #when parsed #then schema rejects it", () => {
     // given
     const raw = { model_fallback: { enabled: true, max_retries: 0 } }
+
+    // when
+    const result = OpenCode2ConfigSchema.safeParse(raw)
+
+    // then
+    expect(result.success).toBe(false)
+  })
+
+  test("#given a malformed team mode gate #when parsed #then the schema rejects it", () => {
+    // given
+    const raw = { team_mode: { enabled: "yes" } }
 
     // when
     const result = OpenCode2ConfigSchema.safeParse(raw)
