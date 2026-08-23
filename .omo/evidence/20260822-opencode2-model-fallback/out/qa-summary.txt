@@ -1,0 +1,19 @@
+## automated gates
+PASS  unit.gate  (full omo-opencode2 source suite)
+PASS  typecheck.gate  (workspace typecheck)
+PASS  typescript.audit  (changed TypeScript files pass the no-excuse audit)
+opencode2: opencode2 v0.0.0-beta-17941
+mock provider: 127.0.0.1:5770
+## enabled provider-exhaustion fallback
+PASS  enabled.registered  (live plugin enabled the fallback event pump)
+PASS  enabled.triggered  (forced 429 quota failure reached the reactive classifier)
+PASS  enabled.switched  (session switched and queued a synthetic continuation)
+PASS  enabled.not-disabled  (enabled case emitted no disabled trace)
+## disabled_hooks negative direction
+PASS  disabled.traced  (disabled_hooks won over enabled config)
+PASS  disabled.no-trigger  (forced failure emitted no trigger while disabled)
+PASS  disabled.no-switch  (forced failure emitted no switch while disabled)
+PASS  isolation.session-count  (host session_v2 count unchanged: 1135)
+PASS  isolation.sweep  (newer-than-marker sweep found no unexpected host-store writes)
+
+summary: PASS=12 FAIL=0
