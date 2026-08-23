@@ -1,0 +1,20 @@
+running unit gate
+PASS  unit.gate  (bun test packages/omo-opencode2/src)
+running type gate
+PASS  typecheck.gate  (bun run typecheck)
+sandbox: /tmp/tmp.27x0slbLDP
+opencode2: opencode2 v0.0.0-beta-17941
+model: zhipuai/glm-4.7
+PASS  positive.run  (real enabled Team Mode session completed)
+PASS  positive.team-dir  (project .omo/teams/qa-team exists)
+PASS  positive.registered  (trace reports all 12 team tools)
+PASS  positive.created  (trace reports qa-team creation)
+PASS  positive.member-started  (at least one real member session started)
+PASS  positive.message-flow  (lead message persisted and queued to worker-one)
+PASS  positive.status  (team_status observed three total participants)
+PASS  positive.deleted  (team_delete reached completion)
+PASS  negative.run  (real default-off session completed)
+PASS  negative.default-off  (disabled trace present and registration absent)
+PASS  isolation.session-count  (host session_v2 count unchanged (1135))
+
+summary: PASS=13 FAIL=0
