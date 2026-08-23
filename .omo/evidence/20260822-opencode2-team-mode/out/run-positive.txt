@@ -1,23 +1,39 @@
 [0m
 > sisyphus · glm-4.7
-I'll execute the four team operations sequentially. Starting with team_create.
+I'll execute the team workflow exactly as specified.
 [0m⚙ [0mteam_create {"name":"qa-team","members":[{"name":"worker-one","prompt":"Wait for team instructions and report through team_send_message"},{"name":"worker-two","prompt":"Wait for team instructions and report through team_send_message"}]} 
 > sisyphus · glm-4.7
-Team created. Now sending message to worker-one.
-[0m⚙ [0mteam_send_message {"body":"qa-message-flow","kind":"message","summary":"QA message flow test","teamRunId":"7c228048-7c7c-4a6b-bd04-771fc7a3954b","to":"worker-one"} 
 > sisyphus · glm-4.7
-Message delivered. Now checking team status.
-[0m⚙ [0mteam_status {"teamRunId":"7c228048-7c7c-4a6b-bd04-771fc7a3954b"} 
 > sisyphus · glm-4.7
-Status retrieved. Now deleting the team.
-[0m⚙ [0mteam_delete {"force":true,"teamRunId":"7c228048-7c7c-4a6b-bd04-771fc7a3954b"} 
+[0m⚙ [0mteam_send_message {"teamRunId":"0e183f8d-c123-40d3-ab34-8c274d79f75d","to":"worker-one","body":"qa-message-flow"} 
 > sisyphus · glm-4.7
-All four operations completed:
+[0m⚙ [0mteam_status {"teamRunId":"0e183f8d-c123-40d3-ab34-8c274d79f75d"} 
+> sisyphus · glm-4.7
+[0m⚙ [0mteam_delete {"teamRunId":"0e183f8d-c123-40d3-ab34-8c274d79f75d"} 
+> sisyphus · glm-4.7
+All four tool calls completed successfully:
 
-1. **team_create**: Team `qa-team` created with `teamRunId: 7c228048-7c7c-4a6b-bd04-771fc7a3954b` — lead, worker-one, and worker-two all running.
+1. **team_create**: Team "qa-team" created with teamRunId `0e183f8d-c123-40d3-ab34-8c274d79f75d` containing:
+   - lead (sisyphus)
+   - worker-one (sisyphus-junior)
+   - worker-two (sisyphus-junior)
 
-2. **team_send_message**: Message `"qa-message-flow"` delivered to worker-one (`messageId: c3f7b8fd-fa54-4dfd-b89b-7be97200308f`).
+2. **team_send_message**: Message "qa-message-flow" sent to worker-one (messageId: `fffce66f-0a58-4a7c-9085-947aabfd3466`), delivered successfully.
 
-3. **team_status**: Team confirmed active — 3 members running, 0 tasks, 0 shutdown requests.
+3. **team_status**: Team showed status `active` with all 3 members running. Worker-one had responded: "Worker-one ready and waiting for tasks. Checked team status - no pending tasks found. Awaiting instructions."
 
-4. **team_delete**: Team run deleted (`deleted: true`).
+4. **team_delete**: Team run `0e183f8d-c123-40d3-ab34-8c274d79f75d` deleted successfully.
+> sisyphus · glm-4.7
+All four tool calls completed as requested:
+
+1. ✅ **team_create**: Created team "qa-team" (ID: `0e183f8d-c123-40d3-ab34-8c274d79f75d`) with members:
+   - worker-one (sisyphus-junior)  
+   - worker-two (sisyphus-junior)
+
+2. ✅ **team_send_message**: Sent exact body "qa-message-flow" to worker-one (delivered, messageId: `fffce66f-0a58-4a7c-9085-947aabfd3466`)
+
+3. ✅ **team_status**: Retrieved team status showing active team with all members running
+
+4. ✅ **team_delete**: Successfully deleted team run `0e183f8d-c123-40d3-ab34-8c274d79f75d`
+
+The peer mailbox messages confirm worker-one received both the team instructions and the specific "qa-message-flow" message, acknowledging receipt and awaiting further instructions.
