@@ -1,0 +1,13 @@
+{
+  "event": "omo.model-fallback.disabled",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1787459608044,
+      "event": "omo.model-fallback.disabled",
+      "reason": "listed in disabled_hooks"
+    }
+  ]
+}
