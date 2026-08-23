@@ -1,0 +1,13 @@
+{
+  "event": "omo.model-fallback.registered",
+  "minCount": 1,
+  "observed": 1,
+  "ok": true,
+  "samples": [
+    {
+      "t": 1787459601741,
+      "event": "omo.model-fallback.registered",
+      "maxRetries": 1
+    }
+  ]
+}

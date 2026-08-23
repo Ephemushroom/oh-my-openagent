@@ -50,6 +50,12 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // Delivery of the side answer back to the parent rides the task engine's
   // waiter pump as a TOOL RESULT, not as a session write.
   "features/btw/tools.ts": { prompt: 2 },
+  // Reactive model fallback observes an execution failure on a live main
+  // session, switches that session to the next configured model, then queues a
+  // continuation. It MUST use the one plugin-wide gate because goal/todo/
+  // boulder may observe an adjacent terminal edge and otherwise inject too.
+  // Child sessions are excluded before this call site is reached.
+  "features/model-fallback/register.ts": { synthetic: 1 },
   // Monitor output delivery. NOT gated, for the same reason as background
   // completion: it fires once per BATCH, from a specific monitor. Two monitors
   // flushing in the same tick are two distinct notifications, and a per-session
