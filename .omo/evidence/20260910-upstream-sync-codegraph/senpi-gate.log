@@ -1,0 +1,415 @@
+$ bun run build:senpi-plugin && tsgo --noEmit -p packages/omo-senpi/tsconfig.json && bun test --timeout 20000 packages/omo-senpi && bun test ./.agents/skills/senpi-qa/scripts/resolve-evidence-dir.test.mjs
+$ bun run build:lsp-daemon && bun run build:ast-grep-mcp && bun run build:senpi-plugin:stage
+$ npm --prefix packages/lsp-daemon ci && npm --prefix packages/lsp-daemon run build
+
+added 52 packages, and audited 55 packages in 885ms
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/lsp-daemon@0.1.0 build
+> node scripts/build.mjs
+
+Bundled 83 modules in 7ms
+
+  cli.js     250.14 KB  (entry point)
+  index.js   231.14 KB  (entry point)
+  client.js  228.75 KB  (entry point)
+
+$ bun run --cwd packages/ast-grep-mcp build
+$ bun build src/cli.ts --outdir dist --target node --format esm
+Bundled 103 modules in 9ms
+
+  cli.js  85.14 KB  (entry point)
+
+$ bun run build:materialize-frontend && node packages/omo-senpi/plugin/scripts/stage-lsp-daemon-runtime.mjs && node packages/omo-senpi/plugin/scripts/stage-ast-grep-mcp-runtime.mjs && node packages/omo-senpi/plugin/scripts/stage-agent-toolkit.mjs && node packages/omo-senpi/plugin/scripts/stage-x-search-skill.mjs && node packages/omo-senpi/plugin/scripts/build-extension.mjs && node packages/omo-senpi/plugin/scripts/sync-skills.mjs && node packages/omo-senpi/plugin/scripts/embed-directive.mjs --check && node packages/omo-senpi/plugin/scripts/build-install.mjs
+$ node packages/omo-codex/plugin/scripts/materialize-shared-upstreams.mjs --strict
+[materialize] wrote 148 frontend reference files from submodules
+Staged Senpi LSP runtime: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/runtime/lsp-daemon/dist
+Staged Senpi ast-grep MCP runtime: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/runtime/ast-grep-mcp/cli.js
+Bundled 45 modules in 7ms
+
+  cli.js  189.29 KB  (entry point)
+
+Usage:
+  omo-agent-toolkit hook user-prompt-submit [--with-ultrawork]  (Codex UserPromptSubmit hook)
+  omo-agent-toolkit help | --help | -h                          (this message)
+  omo-agent-toolkit ulw-loop help
+  omo-agent-toolkit ulw-loop create-goals --brief "..." [--brief-file <path>] [--from-stdin] [--codex-goal-mode aggregate|per_story] [--validation-batch-json <json-or-path>] [--force] [--json]
+  omo-agent-toolkit ulw-loop status [--json]
+  omo-agent-toolkit ulw-loop complete-goals [--retry-failed] [--json]
+  omo-agent-toolkit ulw-loop criteria --goal-id <id> [--json]
+  omo-agent-toolkit ulw-loop record-evidence --goal-id <id> --criterion-id <id> --status pass|fail|blocked --evidence "..." [--notes "..."] [--json]
+  omo-agent-toolkit ulw-loop checkpoint --print-template [--goal-id <id>] [--json]
+  omo-agent-toolkit ulw-loop checkpoint --goal-id <id> --status complete|failed|blocked --evidence "..." --codex-goal-json <...> [--quality-gate-json <...>] [--no-advance] [--json]
+  omo-agent-toolkit ulw-loop steer --kind <kind> ... --evidence "..." --rationale "..." [--proposals-json <json-or-path>] [--json]
+  omo-agent-toolkit ulw-loop add-goal --title "..." --objective "..." [--json]
+  omo-agent-toolkit ulw-loop record-review-blockers --goal-id <id> --title "..." --objective "..." --evidence "..." --codex-goal-json <...> [--json]
+
+Every state subcommand needs a session scope: [--session-id <id>] or the session env (OMO_ULW_LOOP_SESSION_ID / CODEX_SESSION_ID / CODEX_THREAD_ID / PI_SESSION_ID); state lives under .omo/ulw-loop/<id>/ and the unscoped root is never used implicitly. status --json exposes the currentAttemptDir; put all quality-gate artifacts under it.
+Every subcommand accepts --help | -h to print its own usage line.
+Staged Senpi agent-toolkit runtime: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/runtime/agent-toolkit
+Staged x-search conditional skill: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/skills-conditional/x-search/SKILL.md
+Bundled 942 modules in 75ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 28ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 10ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 9ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 11ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Built omo-senpi extensions: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo.js, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo-task.js, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo-member.js, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/memory-run-supervisor.mjs, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo-init-deep-advisor.js
+synced omo-senpi skills to /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/skills
+generated directive is current: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/ultrawork/generated-directive.ts
+Bundled 7 modules in 6ms
+
+  install.mjs  20.87 KB  (entry point)
+
+Built omo-senpi installer: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/scripts/install.mjs
+bun test v1.4.2 (744846f84)
+Bundled 942 modules in 30ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 29ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 17ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 9ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 10ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Bundled 942 modules in 56ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 32ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 13ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 9ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 9ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Bundled 942 modules in 40ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 37ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 18ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 26ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 21ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Bundled 942 modules in 64ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 28ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 10ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 7ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 14ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Bundled 942 modules in 51ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 38ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 14ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 8ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 26ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Bundled 942 modules in 60ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 25ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 14ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 11ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 13ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+--help
+--help
+--help
+--help
+--help
+--help
+--help
+--help
+--help
+changed
+--help
+--help
+
+packages/omo-senpi/src/extension/index.test.ts:
+omo-senpi ulw-loop inactive; omo binary not found
+omo-senpi memory component skipped: missing ExtensionAPI capabilities {
+  missing: [ "appendEntry", "registerEntryRenderer" ],
+}
+config-watch skipped: events capability missing
+omo-senpi ulw-loop inactive; omo binary not found
+omo-senpi memory component skipped: missing ExtensionAPI capabilities {
+  missing: [ "appendEntry", "registerEntryRenderer" ],
+}
+config-watch skipped: events capability missing
+
+packages/omo-senpi/src/extension/compose.test.ts:
+omo-senpi component disabled by flag {
+  component: "beta",
+}
+
+packages/omo-senpi/src/components/ultrawork/ultrawork-arming.test.ts:
+omo-senpi memory component skipped: missing ExtensionAPI capabilities {
+  missing: [ "appendEntry", "registerEntryRenderer" ],
+}
+config-watch skipped: events capability missing
+omo-senpi memory component skipped: missing ExtensionAPI capabilities {
+  missing: [ "appendEntry", "registerEntryRenderer" ],
+}
+config-watch skipped: events capability missing
+Preparing worktree (new branch 'linked-branch')
+
+packages/omo-senpi/src/components/task/dag-runtime.test.ts:
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishDurableEvents (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:625:58)
+      at writeCheckpoint (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:121:9)
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:122:21)
+      at withLock (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/store.ts:590:12)
+      at appendPayload (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:98:32)
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/manager.ts:405:13)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:228:12)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:228:12)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+
+DAG runtime subscriber failed 683 |     cleanupRoots.push(cwd)
+684 |     const runner = new ScriptedRunner()
+685 |     const pi = Object.assign(new FakeExtensionAPI(), {
+686 |       rpc: {
+687 |         emit: (name: string) => {
+688 |           if (name === "omo.dag.event") throw new Error("subscriber exploded")
+                                                        ^
+error: subscriber exploded
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.test.ts:688:51)
+      at emit (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:70:13)
+      at forward (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-rpc-bridge.ts:100:5)
+      at deliverDurableEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:634:5)
+      at publishSchedulerEvent (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/src/components/task/dag-runtime.ts:162:65)
+      at deliver (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:258:11)
+      at drain (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/senpi-task/src/dag/journal.ts:246:13)
+
+
+ 3129 pass
+ 32 skip
+ 0 fail
+ 11027 expect() calls
+Ran 3161 tests across 405 files. [155.17s]
+bun test v1.4.2 (744846f84)
+
+ 10 pass
+ 0 fail
+ 31 expect() calls
+Ran 10 tests across 1 file. [659.00ms]

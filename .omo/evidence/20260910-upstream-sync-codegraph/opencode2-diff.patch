@@ -1,0 +1,464 @@
+diff --git a/packages/omo-opencode2/AGENTS.md b/packages/omo-opencode2/AGENTS.md
+index 6b880f6ad..cadaa84fe 100644
+--- a/packages/omo-opencode2/AGENTS.md
++++ b/packages/omo-opencode2/AGENTS.md
+@@ -30,7 +30,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
+ | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
+ | Tools | 10 base + 19 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` |
+ | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
+-| MCP servers | 4 built-ins | `context7` + `grep_app` (remote), `lsp` + `codegraph` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
++| MCP servers | 3 built-ins | `context7` + `grep_app` (remote), `lsp` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
+ | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
+ | Commands | builtin | slash commands via `registerBuiltinCommands` |
+ 
+@@ -146,7 +146,7 @@ injectors are configurations of `orchestration/idle-injector.ts`: the feature
+ supplies the predicate, the prompt, and the trace name; the busy/idle tracking,
+ settle delay, post-settle re-checks and gated dispatch are shared.
+ 
+-## Boulder (start-work) idle continuation
++## Boulder (ulw-execute) idle continuation
+ 
+ A third idle injector. When the session goes idle owning an active plan in
+ `.omo/boulder.json` with unchecked top-level tasks, it injects the next task and
+@@ -219,9 +219,9 @@ so a wide monitor cannot flood the context window.
+ 
+ ## Built-in MCP servers
+ 
+-`src/mcp/` registers four v1 built-ins through `ctx.mcp.transform` (the MCP
+-domain added in beta-17793): `context7` + `grep_app` (remote) and `lsp` +
+-`codegraph` (local stdio). **websearch is deliberately absent**: opencode2
++`src/mcp/` registers three v1 built-ins through `ctx.mcp.transform` (the MCP
++domain added in beta-17793): `context7` + `grep_app` (remote) and `lsp`
++(local stdio). **websearch is deliberately absent**: opencode2
+ ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
+ 
+ - **A user-defined server entry always wins.** The transform checks the draft
+@@ -240,9 +240,9 @@ ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
+   `package.json` is readable — the version feeds `OMO_LSP_DAEMON_VERSION`) →
+   self-building bootstrap script. User config paths are v2-layout
+   (`$XDG_CONFIG_HOME/opencode/lsp.json`).
+-- codegraph reuses `@oh-my-opencode/utils` resolvers (bundled / provisioned /
+-  PATH + node support + project exclusion). A failed resolution skips that one
+-  server; it never fails the whole registration.
++- CodeGraph is user-owned only. The adapter does not resolve or register it;
++  an explicit user MCP entry is preserved. Stale `[opencode2].codegraph`
++  settings are stripped by the adapter schema without discarding other settings.
+ 
+ ## Configuration keys live under `[opencode2]`, never at the root
+ 
+@@ -384,7 +384,7 @@ and only one of them belongs to the gate:
+ |---|---|---|
+ | `hooks/goal/register.ts` | yes | Idle continuation. Shares the one gate. |
+ | `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does. |
+-| `hooks/boulder-continuation/register.ts` | yes | The third idle injector (start-work). Same shared gate; re-reads the plan off disk on every idle. |
++| `hooks/boulder-continuation/register.ts` | yes | The third idle injector (ulw-execute). Same shared gate; re-reads the plan off disk on every idle. |
+ | `features/model-fallback/register.ts` | yes | Reactive provider-exhaustion recovery on a main-session error edge. Same shared gate; child sessions are excluded first. |
+ | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
+ | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
+diff --git a/packages/omo-opencode2/src/commands/builtin-command-definitions.ts b/packages/omo-opencode2/src/commands/builtin-command-definitions.ts
+index 9c9940540..bfe2760d6 100644
+--- a/packages/omo-opencode2/src/commands/builtin-command-definitions.ts
++++ b/packages/omo-opencode2/src/commands/builtin-command-definitions.ts
+@@ -24,11 +24,11 @@ $ARGUMENTS
+ </command-instruction>`,
+   },
+   {
+-    name: "start-work",
++    name: "ulw-execute",
+     description: "(builtin) Start Atlas work session from Prometheus plan",
+     agent: "atlas",
+     template: `<command-instruction>
+-Load the registered start-work skill, then execute the selected plan. Arguments: $ARGUMENTS
++Load the registered ulw-execute skill, then execute the selected plan. Arguments: $ARGUMENTS
+ Session ID: $SESSION_ID
+ Timestamp: $TIMESTAMP
+ </command-instruction>`,
+diff --git a/packages/omo-opencode2/src/commands/register-builtin-commands.test.ts b/packages/omo-opencode2/src/commands/register-builtin-commands.test.ts
+index 132ec1268..3788ed834 100644
+--- a/packages/omo-opencode2/src/commands/register-builtin-commands.test.ts
++++ b/packages/omo-opencode2/src/commands/register-builtin-commands.test.ts
+@@ -10,7 +10,7 @@ type CommandInfo = NonNullable<ReturnType<CommandDraft["get"]>>
+ const EXPECTED_COMMANDS = [
+   "goal",
+   "refactor",
+-  "start-work",
++  "ulw-execute",
+   "stop-continuation",
+   "handoff",
+   "remove-ai-slops",
+@@ -51,6 +51,6 @@ describe("registerBuiltinCommands", () => {
+       expect(command.template.length).toBeGreaterThan(0)
+       expect(command.description?.length).toBeGreaterThan(0)
+     }
+-    expect(commands.get("start-work")?.agent).toBe("atlas")
++    expect(commands.get("ulw-execute")?.agent).toBe("atlas")
+   })
+ })
+diff --git a/packages/omo-opencode2/src/config/schema-mcp.test.ts b/packages/omo-opencode2/src/config/schema-mcp.test.ts
+index 175cc80b8..23de6a139 100644
+--- a/packages/omo-opencode2/src/config/schema-mcp.test.ts
++++ b/packages/omo-opencode2/src/config/schema-mcp.test.ts
+@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test"
+ import { OpenCode2ConfigSchema } from "./schema"
+ 
+ describe("OpenCode2ConfigSchema disabled_mcps", () => {
+-  test("accepts known built-in names", () => {
++  test("accepts built-in and retired names", () => {
+     const parsed = OpenCode2ConfigSchema.safeParse({
+       disabled_mcps: ["context7", "grep_app", "lsp", "codegraph"],
+     })
+@@ -17,22 +17,27 @@ describe("OpenCode2ConfigSchema disabled_mcps", () => {
+ })
+ 
+ describe("OpenCode2ConfigSchema codegraph", () => {
+-  test("accepts the settings block", () => {
+-    const parsed = OpenCode2ConfigSchema.safeParse({
+-      codegraph: { daemon: false, install_dir: "/opt/cg", excluded_roots: ["/tmp"] },
+-    })
+-    expect(parsed.success).toBe(true)
+-    if (parsed.success) {
+-      expect(parsed.data.codegraph?.daemon).toBe(false)
+-      expect(parsed.data.codegraph?.install_dir).toBe("/opt/cg")
++  test.each([
++    { daemon: false, install_dir: "/opt/cg", excluded_roots: ["/tmp"] },
++    { daemon: "obsolete", install_dir: 17 },
++    "retired",
++  ])("#given stale CodeGraph config %j #when parsing #then unrelated settings survive and the retired block is stripped", (codegraph) => {
++    // given
++    const input = {
++      codegraph,
++      default_agent: "atlas",
++      agents: { atlas: { model: "custom/model" } },
++      disabled_mcps: ["grep_app", "codegraph"],
+     }
+-  })
+ 
+-  test("drops unknown codegraph fields", () => {
+-    const parsed = OpenCode2ConfigSchema.safeParse({ codegraph: { bogus: 1 } })
+-    expect(parsed.success).toBe(true)
+-    if (parsed.success) {
+-      expect(parsed.data.codegraph).toEqual({})
+-    }
++    // when
++    const parsed = OpenCode2ConfigSchema.parse(input)
++
++    // then
++    expect(parsed).toEqual({
++      default_agent: "atlas",
++      agents: { atlas: { model: "custom/model" } },
++      disabled_mcps: ["grep_app", "codegraph"],
++    })
+   })
+ })
+diff --git a/packages/omo-opencode2/src/config/schema.ts b/packages/omo-opencode2/src/config/schema.ts
+index 966c1fbc0..653c53230 100644
+--- a/packages/omo-opencode2/src/config/schema.ts
++++ b/packages/omo-opencode2/src/config/schema.ts
+@@ -58,12 +58,6 @@ export const OpenCode2MonitorSettingsSchema = z.object({
+   pattern_max_length: z.number().int().min(1).optional(),
+ }).strip()
+ 
+-export const OpenCode2CodegraphSettingsSchema = z.object({
+-  daemon: z.boolean().optional(),
+-  install_dir: z.string().optional(),
+-  excluded_roots: z.array(z.string()).optional(),
+-}).strip()
+-
+ export const OpenCode2ConfigSchema = z.object({
+   default_agent: z.string().optional(),
+   agents: z.record(z.string(), OpenCode2AgentOverrideSchema).optional(),
+@@ -74,7 +68,6 @@ export const OpenCode2ConfigSchema = z.object({
+   btw: OpenCode2BtwSettingsSchema.optional(),
+   model_fallback: OpenCode2ModelFallbackSettingsSchema.optional(),
+   team_mode: OpenCode2TeamModeSettingsSchema.optional(),
+-  codegraph: OpenCode2CodegraphSettingsSchema.optional(),
+   disabled_hooks: z.array(z.string()).optional(),
+   disabled_mcps: z.array(z.string()).optional(),
+ }).strip() // permissive: ignores all core root keys (categories, task, etc.)
+@@ -87,5 +80,4 @@ export type OpenCode2MonitorSettings = z.infer<typeof OpenCode2MonitorSettingsSc
+ export type OpenCode2BtwSettings = z.infer<typeof OpenCode2BtwSettingsSchema>
+ export type OpenCode2ModelFallbackSettings = z.infer<typeof OpenCode2ModelFallbackSettingsSchema>
+ export type OpenCode2TeamModeSettings = z.infer<typeof OpenCode2TeamModeSettingsSchema>
+-export type OpenCode2CodegraphSettings = z.infer<typeof OpenCode2CodegraphSettingsSchema>
+ export type OpenCode2Config = z.infer<typeof OpenCode2ConfigSchema>
+diff --git a/packages/omo-opencode2/src/hooks/prometheus-md-only/constants.ts b/packages/omo-opencode2/src/hooks/prometheus-md-only/constants.ts
+index e15ecf584..8c26e3d15 100644
+--- a/packages/omo-opencode2/src/hooks/prometheus-md-only/constants.ts
++++ b/packages/omo-opencode2/src/hooks/prometheus-md-only/constants.ts
+@@ -60,7 +60,7 @@ export const PROMETHEUS_WORKFLOW_REMINDER = `
+           - Key decisions made
+           - Scope IN/OUT
+           - Offer: "Start Work" vs "High Accuracy Review"
+-          - Guide to /start-work
++          - Guide to /ulw-execute
+ 
+ **DID YOU COMPLETE STEPS 1-2 BEFORE WRITING THIS PLAN?**
+ **AFTER WRITING, WILL YOU DO STEPS 4-5?**
+diff --git a/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts b/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts
+index 8959e3aba..20e9267a6 100644
+--- a/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts
++++ b/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts
+@@ -83,7 +83,7 @@ export async function registerPrometheusMdOnly(ctx: Context, trace?: Trace): Pro
+       throw new Error(
+         `[${HOOK_NAME}] Prometheus is a planning agent. File operations restricted to .omo/*.md plan files only. ` +
+         `Do NOT route this change through a subagent either - delegated implementation is still implementation. ` +
+-        `Record the intended change as a todo in the plan; implementation starts only when the user runs /start-work. ` +
++        `Record the intended change as a todo in the plan; implementation starts only when the user runs /ulw-execute. ` +
+         `Attempted to modify: ${filePath}.`
+       )
+     }
+diff --git a/packages/omo-opencode2/src/mcp/codegraph.ts b/packages/omo-opencode2/src/mcp/codegraph.ts
+deleted file mode 100644
+index f2abea30c..000000000
+--- a/packages/omo-opencode2/src/mcp/codegraph.ts
++++ /dev/null
+@@ -1,76 +0,0 @@
+-import { existsSync } from "node:fs"
+-import {
+-  buildCodegraphEnv,
+-  resolveCodegraphCommand,
+-  resolveCodegraphNodeSupport,
+-  shouldExcludeCodegraphProject,
+-} from "@oh-my-opencode/utils"
+-import { resolvePinnedCodegraphBin } from "@oh-my-opencode/utils/codegraph"
+-
+-import type { LocalMcpServerConfig } from "./types"
+-import type { OpenCode2CodegraphSettings } from "../config/schema"
+-
+-export type CodegraphMcpConfigOptions = {
+-  readonly cwd?: string
+-  readonly config?: OpenCode2CodegraphSettings
+-  readonly homeDir?: string
+-  readonly fileExists?: (path: string) => boolean
+-}
+-
+-type CodegraphEnvSource = {
+-  readonly CODEGRAPH_INSTALL_DIR?: string
+-} & Record<string, string | undefined>
+-
+-function codegraphEnv(config: OpenCode2CodegraphSettings | undefined, homeDir: string | undefined): Record<string, string> {
+-  const env = buildCodegraphEnv({ homeDir, daemon: config?.daemon !== false })
+-  return config?.install_dir === undefined ? env : { ...env, CODEGRAPH_INSTALL_DIR: config.install_dir }
+-}
+-
+-/**
+- * Local stdio MCP config for codegraph. Disabled unless the binary resolves
+- * (bundled / provisioned / PATH) and node support holds; v2 keeps v1's
+- * default-on-but-gated-on-binary semantics under [opencode2].codegraph.
+- */
+-export function createCodegraphMcpConfig(options: CodegraphMcpConfigOptions = {}): LocalMcpServerConfig | undefined {
+-  const fileExists = options.fileExists ?? existsSync
+-  const env = process.env as CodegraphEnvSource
+-  const which = (commandName: string): string | null => {
+-    // PATH lookup without a shell; resolveCodegraphCommand treats null as absent.
+-    const candidates = process.platform === "win32" ? [".exe", ".cmd", ".bat", ""] : [""]
+-    for (const candidate of candidates) {
+-      for (const dir of (process.env.PATH ?? "").split(process.platform === "win32" ? ";" : ":")) {
+-        if (dir.length === 0) continue
+-        const full = `${dir}${process.platform === "win32" ? "\\" : "/"}${commandName}${candidate}`
+-        if (fileExists(full)) return full
+-      }
+-    }
+-    return null
+-  }
+-
+-  const resolved = resolveCodegraphCommand({
+-    env,
+-    fileExists,
+-    homeDir: options.homeDir,
+-    provisioned: () => resolvePinnedCodegraphBin(options.config?.install_dir, { fileExists }),
+-    which,
+-  })
+-  if (!resolved.exists) return undefined
+-
+-  const nodeSupport = resolveCodegraphNodeSupport({ env, fileExists, which })
+-  const enabled = resolved.source === "bundled" || resolved.source === "env" || nodeSupport.supported
+-  if (!enabled) return undefined
+-
+-  const excluded = options.cwd
+-    ? shouldExcludeCodegraphProject(options.cwd, {
+-        homeDir: options.homeDir,
+-        ...(options.config?.excluded_roots === undefined ? {} : { excludedRoots: options.config.excluded_roots }),
+-      }).excluded
+-    : false
+-  if (excluded) return undefined
+-
+-  return {
+-    type: "local",
+-    command: [resolved.command, ...resolved.argsPrefix, "serve", "--mcp"],
+-    environment: codegraphEnv(options.config, options.homeDir),
+-  }
+-}
+diff --git a/packages/omo-opencode2/src/mcp/index.ts b/packages/omo-opencode2/src/mcp/index.ts
+index 8dcc2ea1b..5dd09e395 100644
+--- a/packages/omo-opencode2/src/mcp/index.ts
++++ b/packages/omo-opencode2/src/mcp/index.ts
+@@ -6,5 +6,3 @@ export { createContext7Config } from "./context7"
+ export { createGrepAppConfig } from "./grep-app"
+ export { createLspMcpConfig, resolveLspUserConfigDir } from "./lsp"
+ export type { LspMcpConfigOptions } from "./lsp"
+-export { createCodegraphMcpConfig } from "./codegraph"
+-export type { CodegraphMcpConfigOptions } from "./codegraph"
+diff --git a/packages/omo-opencode2/src/mcp/register.test.ts b/packages/omo-opencode2/src/mcp/register.test.ts
+index 432e6b78c..2538191d4 100644
+--- a/packages/omo-opencode2/src/mcp/register.test.ts
++++ b/packages/omo-opencode2/src/mcp/register.test.ts
+@@ -1,4 +1,7 @@
+ import { describe, expect, test } from "bun:test"
++import { mkdtempSync, rmSync } from "node:fs"
++import { tmpdir } from "node:os"
++import { join } from "node:path"
+ 
+ import { registerBuiltinMcps } from "./register"
+ import type { Context } from "@opencode-ai/plugin/promise/plugin"
+@@ -7,6 +10,7 @@ type DraftServer = [string, Record<string, unknown>]
+ 
+ function createContextWith(initial: DraftServer[]): {
+   ctx: Context
++  servers: () => DraftServer[]
+   set: (callback: (draft: { list(): DraftServer[]; set(name: string, config: unknown): void }) => void | Promise<void>) => Promise<unknown>
+ } {
+   let servers: DraftServer[] = [...initial]
+@@ -30,7 +34,7 @@ function createContextWith(initial: DraftServer[]): {
+     },
+     options: {},
+   }
+-  return { ctx: ctx as unknown as Context, set: async (cb) => Promise.all(registrations.push(Promise.resolve(cb)) as never) }
++  return { ctx: ctx as unknown as Context, servers: () => servers, set: async (cb) => Promise.all(registrations.push(Promise.resolve(cb)) as never) }
+ }
+ 
+ function writeOmoConfig(dir: string, config: Record<string, unknown>): void {
+@@ -40,17 +44,15 @@ function writeOmoConfig(dir: string, config: Record<string, unknown>): void {
+ }
+ 
+ describe("registerBuiltinMcps", () => {
+-  test("registers remote + lsp built-ins; codegraph only when the binary resolves", async () => {
++  test("#given an empty MCP catalog #when registering built-ins #then only remote servers and LSP are added", async () => {
++    // given
+     const dir = require("node:fs").mkdtempSync(require("node:path").join(require("node:os").tmpdir(), "oc2-mcp-"))
+-    const { ctx } = createContextWith([])
++    const { ctx, servers } = createContextWith([])
++    // when
+     const result = await registerBuiltinMcps(ctx, { cwd: dir, env: {} })
+-    // context7 / grep_app / lsp always register; codegraph depends on the
+-    // binary resolving in the temp environment, so assert it as a subset.
+-    expect(result.registered).toContain("context7")
+-    expect(result.registered).toContain("grep_app")
+-    expect(result.registered).toContain("lsp")
+-    expect(result.registered.length).toBeGreaterThanOrEqual(3)
+-    expect(result.registered.length).toBeLessThanOrEqual(4)
++    // then
++    expect(result.registered).toEqual(["context7", "grep_app", "lsp"])
++    expect(servers().map(([name]) => name)).toEqual(["context7", "grep_app", "lsp"])
+   })
+ 
+   test("never overwrites a user-defined server", async () => {
+@@ -61,12 +63,38 @@ describe("registerBuiltinMcps", () => {
+     expect(result.registered).not.toContain("context7")
+   })
+ 
+-  test("disabled_mcps removes built-ins entirely", async () => {
++  test("#given explicit user MCPs #when registering built-ins #then CodeGraph and remaining built-in overrides are preserved", async () => {
++    // given
++    const dir = mkdtempSync(join(tmpdir(), "oc2-mcp-"))
++    const initial: DraftServer[] = [
++      ["codegraph", { type: "local", command: ["user-codegraph", "serve"] }],
++      ["context7", { type: "remote", url: "https://user.example/context7" }],
++      ["grep_app", { type: "remote", url: "https://user.example/grep" }],
++      ["lsp", { type: "local", command: ["user-lsp"] }],
++      ["custom", { type: "remote", url: "https://user.example/custom" }],
++    ]
++    const { ctx, servers } = createContextWith(initial)
++
++    try {
++      // when
++      const result = await registerBuiltinMcps(ctx, { cwd: dir, env: {} })
++
++      // then
++      expect(result.registered).toEqual([])
++      expect(servers()).toEqual(initial)
++    } finally {
++      rmSync(dir, { recursive: true, force: true })
++    }
++  })
++
++  test("#given stale CodeGraph settings #when registering #then disabled_mcps still removes selected built-ins", async () => {
++    // given
+     const dir = require("node:fs").mkdtempSync(require("node:path").join(require("node:os").tmpdir(), "oc2-mcp-"))
+-    writeOmoConfig(dir, { "[opencode2]": { disabled_mcps: ["context7", "grep_app"] } })
++    writeOmoConfig(dir, { "[opencode2]": { codegraph: { daemon: "obsolete" }, disabled_mcps: ["context7", "grep_app"] } })
+     const { ctx } = createContextWith([])
++    // when
+     const result = await registerBuiltinMcps(ctx, { cwd: dir, env: {} })
+-    expect(result.registered).not.toContain("context7")
+-    expect(result.registered).not.toContain("grep_app")
++    // then
++    expect(result.registered).toEqual(["lsp"])
+   })
+ })
+diff --git a/packages/omo-opencode2/src/mcp/register.ts b/packages/omo-opencode2/src/mcp/register.ts
+index 11613c052..67d4962f1 100644
+--- a/packages/omo-opencode2/src/mcp/register.ts
++++ b/packages/omo-opencode2/src/mcp/register.ts
+@@ -3,7 +3,6 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
+ import { createContext7Config } from "./context7"
+ import { createGrepAppConfig } from "./grep-app"
+ import { createLspMcpConfig } from "./lsp"
+-import { createCodegraphMcpConfig } from "./codegraph"
+ import { isBuiltinMcpName, toServerConfig, userDefinedNames, type BuiltinMcpServerConfig } from "./types"
+ import { loadOpenCode2Config } from "../config"
+ 
+@@ -20,8 +19,8 @@ export interface BuiltinMcpsRegistration {
+ }
+ 
+ /**
+- * Registers the four built-in MCP servers (context7, grep_app remote; lsp,
+- * codegraph local stdio) through ctx.mcp.transform, added in beta-17793.
++ * Registers three built-in MCP servers (context7, grep_app remote; lsp local
++ * stdio) through ctx.mcp.transform, added in beta-17793.
+  *
+  * Invariants:
+  * - A server the user already defined is NEVER overwritten; the built-in
+@@ -29,8 +28,6 @@ export interface BuiltinMcpsRegistration {
+  * - `disabled_mcps` (under [opencode2]) removes a built-in entirely.
+  * - websearch is intentionally absent: opencode2 ships a native
+  *   ctx.websearch domain, so a remote Exa/Tavily MCP adds nothing.
+- * - codegraph resolving to nothing (no binary, excluded project, no node
+- *   support) skips that one server, not the whole registration.
+  */
+ export async function registerBuiltinMcps(
+   ctx: Context,
+@@ -44,7 +41,6 @@ export async function registerBuiltinMcps(
+     { name: "context7", config: createContext7Config(env) },
+     { name: "grep_app", config: createGrepAppConfig() },
+     { name: "lsp", config: createLspMcpConfig({ cwd: options.cwd }) },
+-    { name: "codegraph", config: createCodegraphMcpConfig({ cwd: options.cwd, config: loaded.config.codegraph }) },
+   ]
+ 
+   const deferred: string[] = []
+diff --git a/packages/omo-opencode2/src/mcp/types.ts b/packages/omo-opencode2/src/mcp/types.ts
+index 36606cb33..3511495c3 100644
+--- a/packages/omo-opencode2/src/mcp/types.ts
++++ b/packages/omo-opencode2/src/mcp/types.ts
+@@ -20,7 +20,7 @@ export type RemoteMcpServerConfig = {
+ 
+ export type BuiltinMcpServerConfig = LocalMcpServerConfig | RemoteMcpServerConfig
+ 
+-export const BUILTIN_MCP_NAMES = ["context7", "grep_app", "lsp", "codegraph"] as const
++export const BUILTIN_MCP_NAMES = ["context7", "grep_app", "lsp"] as const
+ export type BuiltinMcpName = (typeof BUILTIN_MCP_NAMES)[number]
+ 
+ export function isBuiltinMcpName(value: string): value is BuiltinMcpName {
+diff --git a/packages/omo-opencode2/src/skills/register-shared-skills.test.ts b/packages/omo-opencode2/src/skills/register-shared-skills.test.ts
+index 925e9dd83..9ac0bf14c 100644
+--- a/packages/omo-opencode2/src/skills/register-shared-skills.test.ts
++++ b/packages/omo-opencode2/src/skills/register-shared-skills.test.ts
+@@ -36,6 +36,8 @@ describe("registerSharedSkills", () => {
+     const ids = added.map((skill) => skill.id)
+     expect(ids).toContain("programming")
+     expect(ids).toContain("git-master")
++    expect(ids).toContain("ulw-execute")
++    expect(ids).not.toContain("start-work")
+     expect(new Set(ids).size).toBe(ids.length)
+   })
+ 

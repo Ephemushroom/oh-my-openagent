@@ -1,0 +1,28 @@
+
+ oMoMoMoMo... Install 
+
+
+┌─ Installation Complete ────┐
+│ Configuration Summary       │
+│                             │
+│   [i] Platform: opencode2   │
+└─────────────────────────────┘
+
+* Installation complete!
+
+[i] Installing OpenCode2 MCP servers and OMO plugin...
+[OK] OpenCode2 config -> /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/tmp.TqGJEjFfcj/config/opencode/opencode.json (added MCP: context7, grep_app, added OMO plugin)
+
+[i] Anonymous telemetry is enabled by default. Disable it with OMO_SEND_ANONYMOUS_TELEMETRY=0 or OMO_DISABLE_POSTHOG=1.
+[i] Docs: docs/legal/privacy-policy.md and docs/legal/terms-of-service.md
+
+
+┌─ The Magic Word ─────────────────────────────────────────────────┐
+│ Pro Tip: Include ultrawork (or ulw) in your prompt.               │
+│ All features work like magic-parallel agents, background tasks,   │
+│ deep exploration, and relentless execution until completion.      │
+└───────────────────────────────────────────────────────────────────┘
+
+oMoMoMoMo... Enjoy!
+
+{"names":["context7","grep_app"],"repeatChanged":false,"pluginCount":1,"isolated":true}

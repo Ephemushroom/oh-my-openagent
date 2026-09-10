@@ -1,0 +1,90 @@
+{
+  "results": [
+    {
+      "mode": "enabled",
+      "status": "passed"
+    },
+    {
+      "mode": "disabled",
+      "status": "passed"
+    }
+  ],
+  "requests": [
+    {
+      "model": "gpt-5.4-nano",
+      "tools": []
+    },
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "apply_patch",
+        "background_cancel",
+        "background_output",
+        "bash",
+        "context7_query-docs",
+        "context7_resolve-library-id",
+        "glob",
+        "grep",
+        "grep_app_searchGitHub",
+        "interactive_bash",
+        "list_mcp_resource_templates",
+        "list_mcp_resources",
+        "look_at",
+        "read",
+        "read_mcp_resource",
+        "session_info",
+        "session_list",
+        "session_read",
+        "session_search",
+        "skill",
+        "skill_mcp",
+        "task",
+        "todowrite",
+        "webfetch"
+      ]
+    },
+    {
+      "model": "gpt-5.4-nano",
+      "tools": []
+    },
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "apply_patch",
+        "background_cancel",
+        "background_output",
+        "bash",
+        "glob",
+        "grep",
+        "interactive_bash",
+        "look_at",
+        "read",
+        "session_info",
+        "session_list",
+        "session_read",
+        "session_search",
+        "skill",
+        "skill_mcp",
+        "task",
+        "todowrite",
+        "webfetch"
+      ]
+    }
+  ],
+  "before": {
+    "configDigest": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": {
+      "session": 2686,
+      "session_v2": 2335
+    }
+  },
+  "after": {
+    "configDigest": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": {
+      "session": 2686,
+      "session_v2": 2335
+    }
+  },
+  "sandboxRemoved": true,
+  "mockClosed": true
+}

@@ -1,0 +1,823 @@
+$ bun run build:codex-install && bun run build:git-bash-mcp && bun run build:lsp-tools-mcp && bun run build:lsp-daemon && npm --prefix packages/lsp-tools-mcp test && npm --prefix packages/omo-codex/plugin ci && npm --prefix packages/omo-codex/plugin/components/ulw-loop test && bun run --cwd packages/omo-codex/plugin build && node scripts/check-third-party-notices.mjs --ship && bun test --timeout 20000 packages/omo-opencode/src/cli/cli-installer.platform.test.ts packages/omo-codex/src/install/codex-cache.test.ts packages/omo-codex/src/install/codex-cleanup.test.ts packages/omo-codex/src/install/codex-config-agent-cleanup.test.ts packages/omo-codex/src/install/codex-config-autonomous-features.test.ts packages/omo-codex/src/install/codex-config-reasoning.test.ts packages/omo-codex/src/install/codex-config-toml.test.ts packages/omo-codex/src/install/codex-project-local-cleanup.test.ts packages/omo-codex/src/install/install-codex-project-local-cleanup.test.ts packages/omo-codex/src/install/install-codex.test.ts packages/omo-codex/src/install/install-codex-packaged.test.ts packages/omo-codex/src/install/link-cached-plugin-agents.test.ts packages/omo-codex/src/**/*.test.ts packages/utils/src/jsonc-parser.test.ts packages/utils/src/frontmatter.test.ts packages/hashline-core/src/hash-computation.test.ts packages/hashline-core/src/smoke-untested-modules.test.ts packages/rules-engine/src/index.test.ts packages/rules-engine/src/security-boundary.test.ts packages/agents-md-core/src/injector.test.ts packages/omo-codex/plugin/components/lsp/test/package-smoke.test.ts && node --test packages/omo-codex/plugin/test/*.test.mjs packages/omo-codex/scripts/install-cache-copy.test.mjs packages/omo-codex/scripts/install-cli-args.test.mjs packages/omo-codex/scripts/install-delegated-command.test.mjs packages/omo-codex/scripts/install-config-autonomous-features.test.mjs packages/omo-codex/scripts/install-config-autonomous.test.mjs packages/omo-codex/scripts/install-config-reasoning.test.mjs packages/omo-codex/scripts/install-config.test.mjs packages/omo-codex/scripts/install-hook-targets.test.mjs packages/omo-codex/scripts/install-project-local-cleanup.test.mjs packages/omo-codex/scripts/install-lazycodex-version-stamp.test.mjs packages/omo-codex/scripts/install-local-entrypoint.test.mjs packages/omo-codex/scripts/install-local-git-bash-preflight.test.mjs packages/omo-codex/scripts/install-local.test.mjs packages/omo-codex/scripts/install-marketplace-cache.test.mjs packages/omo-codex/scripts/install-mcp-context7-runtime.test.mjs packages/omo-codex/scripts/install-mcp-runtime.test.mjs packages/omo-codex/scripts/install-packaged-local.test.mjs packages/omo-codex/scripts/install-generated-bundle.test.mjs packages/omo-codex/scripts/install-agent-links.test.mjs packages/omo-codex/scripts/install-bin-links.test.mjs
+$ bun run script/build-codex-install.ts
+$ bun run --cwd packages/git-bash-mcp build
+$ bun build src/cli.ts --outdir dist --target node --format esm
+Bundled 15 modules in 7ms
+
+  cli.js  22.68 KB  (entry point)
+
+$ npm --prefix packages/lsp-tools-mcp ci && npm --prefix packages/lsp-tools-mcp run build
+
+added 52 packages, and audited 55 packages in 966ms
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/lsp-tools-mcp@0.1.0 build
+> node scripts/ensure-core-links.mjs && node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && tsc -p tsconfig.build.json --emitDeclarationOnly && bun build src/cli.ts src/mcp.ts src/tools.ts src/request-context.ts src/lsp/manager.ts --outdir dist --target node --format esm
+
+Bundled 70 modules in 7ms
+
+  cli.js               195.16 KB  (entry point)
+  mcp.js               194.64 KB  (entry point)
+  tools.js             182.85 KB  (entry point)
+  request-context.js   7.47 KB    (entry point)
+  lsp/manager.js       109.45 KB  (entry point)
+
+$ npm --prefix packages/lsp-daemon ci && npm --prefix packages/lsp-daemon run build
+
+added 52 packages, and audited 55 packages in 780ms
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/lsp-daemon@0.1.0 build
+> node scripts/build.mjs
+
+Bundled 83 modules in 6ms
+
+  cli.js     250.14 KB  (entry point)
+  index.js   231.14 KB  (entry point)
+  client.js  228.75 KB  (entry point)
+
+
+> @code-yeongyu/lsp-tools-mcp@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.8 /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/lsp-tools-mcp
+
+
+ Test Files  25 passed (25)
+      Tests  97 passed (97)
+   Start at  22:09:45
+   Duration  1.23s (transform 2.31s, setup 0ms, import 3.19s, tests 1.28s, environment 2ms)
+
+
+added 71 packages, and audited 89 packages in 1s
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @code-yeongyu/comment-checker@0.8.0 (postinstall: node postinstall.js)
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/codex-ulw-loop@5.0.0-beta.52 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/components/ulw-loop
+
+
+ Test Files  54 passed (54)
+      Tests  548 passed (548)
+   Start at  22:09:48
+   Duration  2.12s (transform 1.80s, setup 0ms, import 4.02s, tests 6.47s, environment 5ms)
+
+$ node scripts/sync-version.mjs && node scripts/sync-hook-status-messages.mjs && node scripts/build-bundled-mcp-runtimes.mjs && node scripts/materialize-shared-upstreams.mjs --strict && node scripts/sync-skills.mjs && node scripts/build-components.mjs
+Synced OMO Codex manifests to version 5.0.0-beta.52 (0 updated)
+Using bundled lsp-tools-mcp dist
+Using bundled lsp-daemon dist
+Using bundled git-bash-mcp dist
+[materialize] wrote 148 frontend reference files from submodules
+Building components/comment-checker
+
+> @code-yeongyu/codex-comment-checker@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 10 modules in 8ms
+
+  cli.js  19.25 KB  (entry point)
+
+Building components/teammode
+
+> @sisyphuslabs/codex-teammode@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 2 modules in 4ms
+
+  cli.js  4.18 KB  (entry point)
+
+Building components/lazycodex-executor-verify
+
+> @code-yeongyu/codex-lazycodex-executor-verify@5.0.0-beta.52 build
+> tsc -p tsconfig.build.json
+
+Building components/git-bash
+
+> @sisyphuslabs/codex-git-bash-hook@5.0.0-beta.52 build
+> tsc -p tsconfig.build.json
+
+Bundling components/comment-checker/dist/cli.js
+Bundled 10 modules in 13ms
+
+  cli.js  19.43 KB  (entry point)
+
+Building components/ulw-execute-continuation
+
+> @code-yeongyu/codex-ulw-execute-continuation@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 5 modules in 11ms
+
+  cli.js  14.52 KB  (entry point)
+
+Building components/rules
+
+> @code-yeongyu/codex-rules@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 51 modules in 23ms
+
+  cli.js  156.17 KB  (entry point)
+
+Bundling components/teammode/dist/cli.js
+Bundled 2 modules in 7ms
+
+  cli.js  4.22 KB  (entry point)
+
+Building components/telemetry
+
+> @code-yeongyu/codex-telemetry@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js && bun build src/posthog.ts --target node --format esm --outfile dist/posthog.js
+
+Bundled 97 modules in 28ms
+
+  cli.js  0.28 MB  (entry point)
+
+Bundled 95 modules in 17ms
+
+  posthog.js  0.27 MB  (entry point)
+
+Bundling components/git-bash/dist/cli.js
+Bundled 2 modules in 4ms
+
+  cli.js  6.1 KB  (entry point)
+
+Bundling components/lazycodex-executor-verify/dist/cli.js
+Bundled 5 modules in 3ms
+
+  cli.js  8.79 KB  (entry point)
+
+Building components/ultrawork
+
+> @code-yeongyu/codex-ultrawork@5.0.0-beta.52 build
+> node scripts/sync-directive.mjs && node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 5 modules in 5ms
+
+  cli.js  35.17 KB  (entry point)
+
+Building components/ulw-loop
+
+> @code-yeongyu/codex-ulw-loop@5.0.0-beta.52 build
+> tsc -p tsconfig.build.json && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 45 modules in 6ms
+
+  cli.js  187.0 KB  (entry point)
+
+Bundling components/ulw-execute-continuation/dist/cli.js
+Bundled 5 modules in 4ms
+
+  cli.js  14.77 KB  (entry point)
+
+Building components/bootstrap
+
+> @sisyphuslabs/codex-bootstrap@5.0.0-beta.52 build
+> node scripts/build.mjs
+
+
+  dist/cli.js  149.6kb
+
+⚡ Done in 14ms
+Bundling components/rules/dist/cli.js
+Bundled 51 modules in 7ms
+
+  cli.js  156.38 KB  (entry point)
+
+Bundling components/telemetry/dist/cli.js
+Bundled 97 modules in 10ms
+
+  cli.js  0.28 MB  (entry point)
+
+Building components/lsp
+
+> @code-yeongyu/codex-lsp@5.0.0-beta.52 prebuild
+> node scripts/build-lsp-tools.mjs && node scripts/build-lsp-daemon.mjs
+
+
+> @code-yeongyu/codex-lsp@5.0.0-beta.52 build
+> node scripts/build-runtime.mjs
+
+Bundling components/ultrawork/dist/cli.js
+Bundled 5 modules in 5ms
+
+  cli.js  35.34 KB  (entry point)
+
+Bundling components/ulw-loop/dist/cli.js
+Bundled 45 modules in 5ms
+
+  cli.js  188.0 KB  (entry point)
+
+Bundling components/bootstrap/dist/cli.js
+Bundled 49 modules in 5ms
+
+  cli.js  154.1 KB  (entry point)
+
+ship verification passed: 16 notice/license files present in root npm pack payload
+bun test v1.4.2 (744846f84)
+
+ 469 pass
+ 1 skip
+ 0 fail
+ 1414 expect() calls
+Ran 470 tests across 66 files. [12.05s]
+✔ #given bundled Codex agents #when components/ultrawork/agents directory is scanned #then planner support TOMLs are present and match expected schema keys (47.291791ms)
+✔ #given bundled agent TOMLs #when nickname_candidates are inspected #then they use only the codex-accepted charset (19.546917ms)
+✔ #given lazycodex agent prompts #when inspected #then each role pins model effort and evidence discipline (8.105708ms)
+✔ #given aggregate plugin build script #when inspected #then generated assets run before workspace builds (13.287625ms)
+✔ #given omo-codex package build script #when inspected #then delegates to the aggregate plugin package (0.77625ms)
+✔ #given a component-owned runtime manifest #when aggregate component build script is inspected #then it preserves bundled bytes (1.517792ms)
+✔ #given isolated components #when hooks are inspected #then commands stay inside component roots (25.622166ms)
+✔ #given aggregate Stop hooks #when inspected #then ulw-execute continuation and ulw-loop resume are separate groups (5.000958ms)
+✔ #given aggregate SubagentStop hooks #when inspected #then only LazyCodex executor verification remains (2.181708ms)
+✔ #given aggregate PostCompact hooks #when hooks are inspected #then LSP diagnostics cache reset is registered (1.2855ms)
+✔ #given aggregate hook commands #when inspected #then every command exposes a Codex status message (4.022792ms)
+✔ #given aggregate hook commands #when inspected #then commands stay Node-based and platform-neutral (1.690709ms)
+✔ #given component hook commands #when inspected #then standalone packages expose Codex status messages (10.996208ms)
+✔ #given aggregate OMO plugin is enabled #when hooks are inspected #then shell guidance and ulw-loop guard are registered (24.820666ms)
+✔ #given aggregate OMO plugin has a dedicated ultrawork trigger #when hooks are inspected #then ulw-loop does not duplicate ultrawork injection (6.23975ms)
+✔ #given aggregate SessionStart hooks #when inspected #then LazyCodex auto-update is registered (5.339542ms)
+✔ #given aggregate SessionStart hooks #when inspected #then cold-start-prone hooks carry 15s timeout headroom (2.379208ms)
+✔ #given aggregate PostToolUse hooks #when inspected #then thread title hygiene is registered for created Codex threads (5.955208ms)
+✔ #given aggregate plugin packaging #when inspected #then hooks and compatibility sentinels stay Python-free (11.83125ms)
+✔ #given aggregate plugin manifest #when inspected #then it owns the omo namespace (6.575917ms)
+✔ #given aggregate plugin metadata #when inspected #then ulw-loop is the public loop name (0.977167ms)
+✔ #given component directories #when scanned #then only intentional resource roots declare plugin manifests (6.674917ms)
+✔ #given aggregate MCP config #when inspected #then code MCPs reference package runtimes without package names (14.800459ms)
+✔ #given package-level MCP CLIs #when package metadata is inspected #then bin names use the omo prefix (2.360583ms)
+✔ #given bundled model catalog #when inspected #then default verifier and worker roles are pinned (7.926ms)
+✔ #given bundled model catalog #when inspected #then no role or managed preset uses pure GPT-5.4 (2.014209ms)
+✔ #given Codex-facing orchestration surfaces #when inspected #then retired ChatGPT-account model names are not recommended (6.056334ms)
+✔ #given suffixed spawn-like identifiers #when parsed #then they are not spawn calls (0.737542ms)
+✔ #given nested spawn calls and isolation-like message text #when parsed #then only structural isolation arguments count (3.415541ms)
+✔ #given spawn parameter mutations and role-like prose #when parsed #then only unsupported machine arguments are rejected (0.222416ms)
+✔ #given shipped generated skills and Hephaestus rules #when spawn calls are scanned #then every call disables parent context (139.697833ms)
+✔ #given shipped generated skills and Hephaestus rules #when spawn parameters are scanned #then unsupported role and model arguments are absent (146.441583ms)
+✔ #given newer version with release notes #when running check #then selected notes are escaped inside one tag pair (67.324541ms)
+✔ #given marketplace install and hanging npm latest lookup #when running check #then update state fails closed within timeout (41.463042ms)
+✔ #given stale marketplace cache repair #when formatting notice #then release notes are escaped without leaking commands (0.394416ms)
+✔ #given a newer version #when resolving auto update plan #then plan carries current and latest versions (0.887625ms)
+✔ #given SessionStart migration removes unsupported root multi-agent mode #when startup check runs #then emits cleanup notice (17.776708ms)
+✔ #given a newer version #when waited update succeeds #then returns update-started notice and persists pendingNotice (32.329084ms)
+✔ #given completed pending update #when startup check is throttled #then emits completed notice and clears pendingNotice (1.88675ms)
+✔ #given incomplete pending update #when startup check runs #then no notice and pendingNotice retained (0.878709ms)
+✔ #given waited update fails #then no notice and no pendingNotice (43.041041ms)
+✔ #given malformed pendingNotice toVersion #when check runs #then pendingNotice dropped silently (42.628958ms)
+✔ #given completed pending update #when hook session-start runs as CLI #then prints one SessionStart JSON line (105.213583ms)
+✔ #given the script reached through a symlinked directory #when hook session-start runs as CLI #then the entry guard still fires (57.325708ms)
+✔ #given lazycodex is up to date #when running check #then persists checked success state (13.782584ms)
+✔ #given auto update is disabled #when resolving plan #then no command is scheduled (0.513417ms)
+✔ #given SessionStart payload with model #when reading stdin #then returns the model (1.215208ms)
+✔ #given empty or malformed stdin #when reading session model #then returns null (1.070709ms)
+✔ #given a TTY stdin #when reading session model #then returns null without waiting (0.834416ms)
+✔ #given stale state #when resolving plan #then installer update command is scheduled (0.871584ms)
+✔ #given Windows npm shims #when resolving spawn commands #then cmd shims are used (0.122042ms)
+✔ #given current version #when resolving update plan #then skips installer (0.051542ms)
+✔ #given latest version is newer #when resolving update plan #then schedules installer (0.048916ms)
+✔ #given current version is a prerelease of latest #when resolving update plan #then schedules stable installer (0.067291ms)
+✔ #given malformed latest version #when resolving update plan #then fails closed without scheduling (0.0865ms)
+✔ #given current version #when resolving auto update plan #then no command is scheduled (0.198167ms)
+✔ #given recent state #when resolving plan #then update is throttled (0.121084ms)
+✔ #given installed lazycodex version snapshot #when resolving auto update plan #then uses distribution version (3.022292ms)
+✔ #given test command override #when running check #then records state and launches command (89.912042ms)
+✔ #given failed waited update #when retry window passes #then next update is not blocked by success throttle (122.346833ms)
+✔ #given active lock #when running check #then skips concurrent update (14.238292ms)
+✔ #given stale lock #when running check #then removes lock and runs update (67.670541ms)
+✔ #given marketplace plugin root without install snapshot #when running check #then skips npx update with marketplace-flow log and upgrade notice (8.168458ms)
+✔ #given marketplace flow with stale local cache state #when running check #then starts npx repair instead of marketplace skip (54.865583ms)
+✔ #given stale marketplace cache and recent success state #when resolving plan #then repair bypasses success throttle (9.328792ms)
+✔ #given stale marketplace cache and recent started state #when resolving plan #then repair honors retry throttle (8.1665ms)
+✔ #given marketplace flow with stale Windows generated shim #when resolving plan #then starts local repair (14.671833ms)
+✔ #given marketplace flow with non-managed stale cache-shaped bin #when resolving plan #then skips local repair (24.713208ms)
+✔ #given install snapshot at plugin root #when running check #then npx update behavior is unchanged (67.321167ms)
+✔ #given marketplace skip already recorded #when next session is within interval #then throttled without repeated notice (4.098958ms)
+✔ #given unreadable install snapshot #when running check #then conservatively keeps npx flow and logs unknown detection (43.568458ms)
+✔ #given install flow fixtures #when detecting install flow #then discriminates on the install snapshot (1.396083ms)
+✔ #given workspace tree without install snapshot #when detecting install flow #then stays npx-local (1.33275ms)
+✔ #given snapshot path that is not a regular file #when detecting install flow #then reports unknown (0.6315ms)
+✔ #given LAZYCODEX_INSTALLED_VERSION_PATH override #when detecting install flow #then honors the override path (1.018125ms)
+✔ #given throttled updater and stale Codex config #when running check #then config migration still runs (4.311041ms)
+✔ #given two versioned plugin roots #when the worker setup runs against each in turn #then bin links re-point to the new root and none resolve under the old (77.335958ms)
+✔ #given a completed v1 marker #when the worker runs against a v2 root #then the version change re-runs setup and re-points stale links (177.735542ms)
+✔ #given platform win32 #when the worker setup links bins #then component bins become .cmd shims and the canonical wrapper is omo-agent-toolkit.cmd (81.888ms)
+✔ #given a legacy payload without root CLI dist #when the worker setup runs #then it records degraded omo-agent-toolkit and leaves no broken link (76.239125ms)
+✔ #given a payload shipping dist/cli #when the worker setup runs with no bin-dir override #then the omo-agent-toolkit wrapper lands in <codexHome>/bin without a degraded entry (149.242083ms)
+✔ #given ulw-loop aliases in the plugin payload #when worker setup links bins #then public ULW commands point at the current component without adding SessionStart hooks (23.199416ms)
+✔ #given every hooks.json under the plugin #when handlers are inspected #then no entry opts into unsupported async execution (67.698875ms)
+✔ #given aggregate and component hook manifests #when command targets are resolved #then every command and commandWindows target exists (14.842167ms)
+✔ #given aggregate hook manifests #when command handlers are inspected #then each has a Windows dispatcher (1.333416ms)
+✔ #given the bootstrap component #when its SessionStart registration is inspected #then aggregate and component entries declare both platform commands (2.440584ms)
+✔ #given non-bootstrap aggregate hook manifests #when commandWindows entries are read #then they launch the managed Node dispatcher (1.239292ms)
+✔ #given the built bootstrap bundle #when its module references are inspected #then it depends on Node built-ins only (1.068ms)
+✔ #given a fresh PLUGIN_DATA #when the session-start hook runs #then it spawns the detached worker and emits the restart notice (5.52675ms)
+✔ #given a completed marker for the current version #when the hook runs #then it exits 0 silently without spawning (2.565833ms)
+✔ #given a marker stamped for an older plugin version #when the hook runs #then the version bump re-spawns the worker (68.12275ms)
+✔ #given a fresh bootstrap lock held by another process #when the hook runs #then it exits 0 without spawning (27.012125ms)
+✔ #given a stale bootstrap lock #when the hook runs #then it spawns anyway (64.433292ms)
+✔ #given PLUGIN_DATA or PLUGIN_ROOT missing #when the hook runs #then it exits 0 silently (4.393125ms)
+✔ #given an unreadable plugin version manifest #when the hook runs #then it exits 0 without spawning (4.054375ms)
+✔ #given the public hook runner #when every branch resolves #then it always returns exit code 0 (8.490583ms)
+✔ #given a fresh state #when the worker runs #then steps execute and the versioned success marker is persisted (21.708584ms)
+✔ #given a marker written between hook and worker start #when the worker re-checks under lock #then it honors the marker (TOCTOU) (31.2485ms)
+✔ #given both locks already held #when the worker starts #then it is refused without writing state (16.644875ms)
+✔ #given throwing and degraded steps #when the worker runs #then degraded reasons are persisted and the worker still exits cleanly (26.079417ms)
+✔ #given a completed marker #when the worker runs with --once #then the marker is bypassed and steps run again (12.667292ms)
+✔ #given --only names an injected custom step #when the worker runs #then only the matching step executes (39.612084ms)
+✔ #given an unknown --only value #when the worker starts #then it rejects before steps or bootstrap artifacts (9.744916ms)
+✔ #given worker CLI flags #when parsed #then --codex-home/--once/--only/--manifest-dir are recognized and unknown flags throw (0.210583ms)
+✔ #given a missing plugin version in the worker #when it runs #then it records a degraded state instead of crashing (74.755125ms)
+✔ #given bootstrap.ps1 #when the download preamble is inspected #then it forces TLS 1.2 on ServicePointManager (3.319042ms)
+✔ #given bootstrap.ps1 #when scanned for pwsh-7-only syntax #then Windows PowerShell 5.1 can parse every line (1.353542ms)
+✔ #given bootstrap.ps1 #when environment writes are scanned #then no Machine-scope target appears (1.326208ms)
+✔ #given bootstrap.ps1 #when dependency discovery misses #then it never invokes winget or mutates user PATH (0.993667ms)
+✔ #given bootstrap.ps1 #when resolving Node #then Codex NODE_REPL_NODE_PATH is checked before PATH (0.770083ms)
+✔ #given bootstrap.ps1 #when execution policy mutations are scanned #then Set-ExecutionPolicy is never invoked (0.826333ms)
+✔ #given bootstrap.ps1 #when the final executable statement is located #then it is `exit 0` so sessions are never blocked (0.491625ms)
+✔ #given bootstrap.ps1 #when every character is inspected #then the script is ASCII-only for cp949-safe consoles (1.172333ms)
+✔ #given the aggregate and bootstrap component hook manifests #when commandWindows entries are read #then the bootstrap SessionStart hook launches bootstrap.ps1 (3.25575ms)
+✔ #given a marketplace-flow CODEX_HOME #when the worker setup runs #then config gains plugin, hook-state, and agent blocks without permissions keys (158.947375ms)
+✔ #given an existing git marketplace source #when the worker setup runs #then the [marketplaces.sisyphuslabs] block stays byte-identical (53.405917ms)
+✔ #given a completed first run #when the worker setup runs again #then config.toml is byte-identical (idempotent) (149.228292ms)
+✔ #given a config.toml that already declares [agents.explorer] at a different path (Orca mirror) #when the worker setup runs #then no second colliding registration is added for that role (92.603708ms)
+✔ #given a config.toml with no pre-existing agent entries #when the worker setup runs #then all bundled registrations are written (32.807ms)
+✔ #given bootstrap-managed staging #when agents are linked #then nothing is persisted under PLUGIN_ROOT (19.513833ms)
+✔ #given user-tuned reasoning and service tier on an installed agent #when agents are re-linked #then both are preserved (18.576ms)
+✔ #given an unwritable config.toml #when the worker setup runs #then it degrades naming config.toml and leaves the file untouched (109.947ms)
+✔ #given win32 without Git Bash #when the worker setup runs #then it degrades instead of throwing and disables the git_bash MCP (99.733458ms)
+✔ #given win32 with Git Bash and OMO_CODEX_GIT_BASH_PATH #when the worker setup runs #then git_bash is enabled and the MCP env is stamped (178.474625ms)
+✔ #given the shipped plugin model catalog #when the worker setup stamps reasoning config #then the bundled fallback has not drifted from it (48.066ms)
+✔ #given the default worker step list #when the worker runs end to end #then the setup step updates config and records a success marker (53.347542ms)
+✔ #given a repo checkout #when resolving the ultrawork directive #then the checkout copy wins over a plugin-internal copy (52.351917ms)
+✔ #given the flattened plugin cache #when the repo-relative directive is absent #then the plugin-internal copy is resolved (47.244208ms)
+✔ #given aggregate component package metadata #when bin names are inspected #then component CLIs expose documented commands (3.501541ms)
+✔ #given component CLI sources #when usage text is inspected #then user-facing command names use OMO names (18.925083ms)
+✔ #given required component CLI contracts #when workspaces are inspected #then every contract component is covered (2.281541ms)
+✔ #given built workspace component CLIs #when import specifiers are inspected #then each CLI is self-contained except node builtins (6.869792ms)
+✔ #given built workspace component CLIs #when dynamically imported with hook argv and empty stdin #then each CLI loads without external module resolution (403.539458ms)
+✔ #given representative component hook payloads #when executed through dist CLI contract #then current hook behavior is preserved (668.884042ms)
+✔ #given bundled LSP hook CLI in installed layout #when diagnostics run #then it spawns sibling daemon target (290.964875ms)
+✔ #given malformed comment-checker stdin #when executed through dist CLI contract #then it exits successfully without output (72.627583ms)
+✔ #given aggregate hook manifest #when command hooks are inspected #then component CLI invocation contract is unchanged (2.789ms)
+✔ #given Codex plugin hooks #when plugin metadata is inspected #then hook keys contain human-readable hook slugs (13.816833ms)
+✔ #given Codex plugin skills #when skill metadata is inspected #then every skill has an OmO display name (21.394125ms)
+✔ #given hook status label #when formatting #then prefixes OmO display namespace and version (3.439125ms)
+✔ #given hook status label with blank version #when formatting #then uses local OmO display version (0.183167ms)
+✔ #given loose legacy status label #when normalizing #then removes OMO wording and title-cases label (1.333208ms)
+✔ #given LazyCodex appears inside hook label #when normalizing #then product casing is preserved (0.919875ms)
+✔ #given MCP appears inside hook label #when normalizing #then protocol casing is preserved (0.135042ms)
+✔ #given versioned OmO status label #when normalizing #then it does not duplicate display prefix (0.398333ms)
+✔ #given aggregate comment-checker hook #when status is inspected #then it uses OmO comments label (88.096417ms)
+✔ #given aggregate and component hooks #when status messages are inspected #then all use the OmO formatter (41.953375ms)
+✔ #given aggregate build scripts #when inspected #then component CLIs are bundled with Bun (2.547083ms)
+✔ #given aggregate build scripts #when inspected #then npm subprocesses resolve on Windows (0.856875ms)
+✔ #given bundled MCP runtime builds #when a locked runtime has no node_modules #then npm ci bootstraps it before build (0.578916ms)
+✔ #given lcx skills #when frontmatter is inspected #then each exposes the loader-parsed skill name (2.733375ms)
+✔ #given complete bug-fix evidence #when creating a PR body #then evidence and machine label are emitted (1.047166ms)
+✔ #given missing bug-fix evidence #when creating a PR body #then the script rejects the incomplete payload (2.299083ms)
+✔ #given a JSON payload path #when running the PR body script #then markdown is written to the requested file (41.06575ms)
+✔ #given the installed cache layout #when running build-lsp-tools #then uses the bundled dist and exits 0 (56.870667ms)
+✔ #given the installed cache layout #when running build-lsp-daemon #then uses the bundled dist and exits 0 (57.201083ms)
+lsp-tools-mcp package metadata is missing at /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/lsp-tools-mcp/package.json; build packages/lsp-tools-mcp before codex-lsp
+probed: /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/lsp-tools-mcp/package.json, /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/lsp-prebuild-none-kAAL65/components/lsp-tools-mcp/package.json
+✔ #given neither layout #when running build-lsp-tools #then fails listing every probed path (46.008958ms)
+✔ #given the repo sibling layout with fresh outputs #when running build-lsp-tools #then exits 0 without building (57.084833ms)
+✔ #given aggregate MCP config #when inspected #then registers research MCPs without ast-grep MCP (4.409625ms)
+✔ #given stale root reasoning config #when ensuring config #then replaces stale values without duplicate keys (0.921125ms)
+✔ #given section settings reuse managed root keys #when ensuring config #then section settings are preserved (0.16875ms)
+✔ #given project .codex is a symlink #when migrating #then project config is skipped (13.781917ms)
+✔ #given project config.toml is a symlink #when migrating #then project config is skipped (9.266417ms)
+✔ #given global and project-local stale Codex configs #when migrating #then both configs are forced to current defaults (16.496208ms)
+✔ #given model catalog is unavailable and stale 272k config #when migrating #then fallback catalog still upgrades it (8.273ms)
+✔ #given model catalog is malformed and stale config #when migrating #then fallback catalog still upgrades it (16.197333ms)
+✔ #given user-customized Codex model config #when migrating #then user values are preserved without root multi-agent mode (20.96875ms)
+✔ #given managed config state is malformed #when migrating #then migration ignores stale state safely (13.583458ms)
+✔ #given managed config state path has surrounding whitespace #when migrating #then trimmed state path is used (11.544958ms)
+✔ #given managed catalog state #when catalog version advances #then only previously managed config is updated (20.744667ms)
+✔ #given config already matches current catalog #when catalog version advances for role-only changes #then managed state is preserved (6.88025ms)
+✔ #given stale Context7 placeholder MCP config #when migrating #then removes it and keeps plugin policy (9.22125ms)
+✔ #given real Context7 API key and placeholder comment #when migrating #then preserves user server settings (17.869875ms)
+✔ #given multi_agent_v2 enabled #when forcing disable #then flips the flag to false (0.170833ms)
+✔ #given no multi_agent_v2 section #when forcing disable #then appends a disabled section (0.121291ms)
+✔ #given multi_agent_v2 section without enabled key #when forcing disable #then inserts enabled = false (0.047833ms)
+✔ #given [features] boolean shorthand multi_agent_v2 = true #when forcing disable #then removes it and appends a disabled section (0.106542ms)
+✔ #given multi_agent_v2 enabled #when forcing disable #then annotates the managed section with the upstream issue and opt-out (0.696917ms)
+✔ #given no multi_agent_v2 section #when forcing disable #then annotates the appended section (0.375042ms)
+✔ #given an annotated managed section #when forcing disable runs again #then does not duplicate the comment (0.305208ms)
+✔ #given [features] boolean shorthand multi_agent_v2 = false #when forcing disable #then rewrites to the non-conflicting disabled table (133.867416ms)
+✔ #given multi_agent_v2 already disabled #when forcing disable #then returns config unchanged (0.252542ms)
+✔ #given global config without multi_agent_v2 section #when full migration runs #then writes a disabled section on disk (11.323625ms)
+✔ #given global config starts with inline-comment features table #when full migration runs #then managed root settings stay at TOML root (86.278875ms)
+✔ #given queue multi-agent mode #when removing unsupported root key #then deletes root setting (0.298375ms)
+✔ #given proactive multi-agent mode #when removing unsupported root key #then deletes root setting (0.061416ms)
+✔ #given inline-comment features table #when removing unsupported root key #then config stays unchanged (77.057792ms)
+✔ #given indented root proactive mode #when removing unsupported root key #then no root setting remains (0.36875ms)
+✔ #given global config with forced multi_agent_v2 #when full migration runs #then disables it on disk (4.513291ms)
+✔ #given enabled = true with an inline comment #when forcing disable #then flips to false and preserves the comment (0.257916ms)
+✔ #given a section header with an inline comment #when forcing disable #then patches in place without duplicating the table (0.084709ms)
+✔ #given an already-guarded commented config #when re-running #then output is byte-identical (0.088791ms)
+✔ #given user-disabled with an inline comment #when forcing disable #then returns config unchanged (0.029958ms)
+✔ #given [features] shorthand true with an inline comment #when forcing disable #then removes the shorthand and appends one disabled table (0.073083ms)
+✔ #given a following section header with an inline comment #when inserting enabled=false #then does not leak into the next section (0.070083ms)
+✔ #given gpt-5.6-terra with managed disable #when model catalog prefers v2 #then clears enabled=false and managed comments (0.130458ms)
+✔ #given gpt-5.6 v2 model with hide_spawn_agent_metadata=false #when clearing #then removes the stale metadata override (0.075041ms)
+✔ #given gpt-5.6 v2 model with hide_spawn_agent_metadata=true #when clearing #then leaves the default-matching value alone (0.0475ms)
+✔ #given v1 model with hide_spawn_agent_metadata=false #when forcing disable #then keeps the metadata override (0.035833ms)
+✔ #given gpt-5.6-sol with no multi_agent_v2 section #when model catalog prefers v2 #then does not append a disable (0.042333ms)
+✔ #given gpt-5.6-terra managed disable #when full migration sees models_cache v2 #then clears disable and drops agents.max_threads (4.401375ms)
+✔ #given config default gpt-5.5 #when SessionStart model is gpt-5.6-terra #then prefers session model and clears disable (0.145083ms)
+✔ #given SessionStart without model #when requireSessionModel is set #then skips legacy force-disable (0.047375ms)
+✔ #given legacy [features] shorthand #when requireSessionModel skips force-disable #then still removes the shorthand (0.036708ms)
+✔ #given legacy [features] shorthand #when session model has no catalog entry #then still removes the shorthand (0.031458ms)
+✔ #given legacy shorthand and no session model on hook path #when full migration runs #then output stays valid TOML (74.080041ms)
+✔ #given SoT migration failure #when hook migration runs #then config.toml repair still happens (12.664583ms)
+✔ #given config default gpt-5.5 #when full migration gets SessionStart gpt-5.6-terra #then clears disable using session model (3.391625ms)
+✔ #given no session model and no root model #when forcing disable #then leaves the enable state untouched (0.1655ms)
+✔ #given no session model and no root model #when config has no multi_agent_v2 section #then does not append a disable (0.31775ms)
+✔ #given user-modified config without root model #when full non-hook migration runs #then writes no disable and no new agents.max_threads (3.138958ms)
+✔ #given model_catalog_json declares a v2 model as v1 #when full migration runs #then keeps the managed disable and max_threads (13.967083ms)
+✔ #given model_catalog_json declares a model as v2 #when full migration runs #then clears the managed disable (15.725ms)
+✔ #given relative model_catalog_json declares gpt-5.6 model as v1 #when migrating #then resolves catalog from config directory (9.14225ms)
+✔ #given no SessionStart model and root gpt-5.6 model without catalog #when migrating #then clears stale V2 disable (8.113ms)
+✔ #given Codex Light install docs #when inspected #then lazycodex is npm-first and Bun-free (3.832458ms)
+✔ payload-equivalence: #given telemetry-core and component shim #when session_start is captured #then payload schema matches telemetry-core (37.50775ms)
+✔ payload-equivalence: #given built telemetry CLI #when inspected #then telemetry-core is bundled without runtime package imports (1.486333ms)
+✔ #given resolveSafeOmoPath #when the target escapes .omo or the workspace #then it is refused (the script never escapes .omo) (2.510042ms)
+✔ #given scaffold #when .omo/plans is a symlink outside the workspace #then it refuses before the plan write escapes (21.259958ms)
+✔ #given scaffold #when .omo/drafts is a symlink outside the workspace #then it refuses before the draft write escapes (10.518542ms)
+✔ #given parseArgs #when the slug is missing or unsafe #then it throws, and valid flags parse (0.61225ms)
+✔ #given an explicit review modifier at startup #when draft-only scaffold runs #then the first durable write contains the complete pending review request (13.612042ms)
+✔ #given automatic review for non-Trivial UNCLEAR intent #when draft-only scaffold runs #then the first durable write contains the complete pending review request (11.388834ms)
+✔ #given Trivial UNCLEAR pre-approval planning #when draft-only scaffold runs #then it creates a review-optional draft without creating a plan (11.156459ms)
+✔ #given an already-scaffolded plan #when the script is re-run plain #then it is a no-op that preserves appended todos (resume-safe, no crash, no clobber) (8.222542ms)
+✔ #given a hand-edited plan #when --reset is used #then it refuses without --force and overwrites with --force (12.760292ms)
+✔ #given bare thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (794.424167ms)
+✔ #given V2 and an incompatible bare agents cap #when migrating #then removes only the cap assignment (135.858666ms)
+✔ #given double-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (704.0145ms)
+✔ #given V2 and an incompatible double-quoted agents cap #when migrating #then removes only the cap assignment (119.423583ms)
+✔ #given single-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (535.69025ms)
+✔ #given V2 and an incompatible single-quoted agents cap #when migrating #then removes only the cap assignment (101.8625ms)
+✔ #given escaped-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (493.761833ms)
+✔ #given V2 and an incompatible escaped-quoted agents cap #when migrating #then removes only the cap assignment (96.507625ms)
+✔ #given verify-a4 quoted agents.max_threads=1000 #when SessionStart migrates under V2 #then removes the cap idempotently (52.936792ms)
+✔ #given SessionStart migration sees an inline-commented V2 cap #when migrating twice #then preserves the line and ordering byte-for-byte (2.624167ms)
+✔ #given SessionStart migration sees equivalent V2 header ["features"."multi_agent_v2"] #when migrating twice #then preserves one valid table and the explicit cap (51.874083ms)
+✔ #given SessionStart migration sees equivalent V2 header [ features . multi_agent_v2 ] #when migrating twice #then preserves one valid table and the explicit cap (51.696042ms)
+✔ #given SessionStart migration sees equivalent V2 header ["features"."multi_agent_v\u0032"] #when migrating twice #then preserves one valid table and the explicit cap (51.877667ms)
+✔ #given SessionStart migration sees a quoted cap key #when migrating twice #then preserves the semantic cap without duplication (55.402291ms)
+✔ #given SessionStart migration sees a escaped quoted cap key #when migrating twice #then preserves the semantic cap without duplication (71.791ms)
+✔ #given SessionStart migration sees a dotted cap key #when migrating twice #then preserves the semantic cap without duplication (53.44775ms)
+✔ #given SessionStart migration sees a root-qualified dotted cap key #when migrating twice #then preserves the semantic cap without duplication (51.483833ms)
+✔ #given multiline string contains V2 cap lookalikes #when SessionStart migrates #then leaves the semantic cap absent (51.7025ms)
+✔ #given V2 section multiline value contains a cap lookalike #when SessionStart migrates #then leaves the cap absent (51.076833ms)
+✔ #given V2 root-dotted disable and cap #when gpt-5.6 SessionStart migrates #then removes disable and V1 agents cap (53.012167ms)
+✔ #given quoted dotted V1 keys under features #when SessionStart migrates #then replaces enabled without a duplicate (50.98025ms)
+✔ #given multiline string closes after an escaped quote #when SessionStart migrates #then preserves the following explicit cap (49.456708ms)
+✔ #given gpt-5.6 session model with no models_cache and an explicit V2 cap #when migrating #then removes agents.max_threads but preserves the cap (1.09725ms)
+✔ #given SessionStart config migration has no V2 cap #when migrating #then leaves the cap unset (0.666292ms)
+✔ #given config without any model #when migrating #then does not introduce agents.max_threads (0.949167ms)
+✔ #given todo 4 cap cases #when migrating #then removes managed caps, preserves user caps, and detects gpt-6 V2 (1.974125ms)
+✔ #given config without any model but an existing low cap #when migrating #then preserves the existing cap (0.50725ms)
+✔ #given source package versions and component without hooks #when hook status messages sync #then source versions are preserved (36.579416ms)
+✔ #given release version override #when hook status messages sync #then aggregate hooks use release version (8.213458ms)
+✔ #given sentinel OpenCode tool content #when compatibility guidance is inserted #then the production artifact is placed after frontmatter and before the tool token (0.576583ms)
+✔ #given shared skill source anchors #when Codex overlays are applied #then exact anchors transform and match the generated artifacts (6.449125ms)
+✔ #given already transformed sentinel content #when compatibility guidance is inserted again #then the transform is idempotent (0.172791ms)
+✔ #given a stale generated compatibility block #when guidance is inserted #then the production artifact replaces it (0.0715ms)
+✔ #given a custom compatibility block before an OpenCode tool token #when guidance is inserted #then the custom block is preserved (0.0665ms)
+✔ #given an exported template wrapper containing an OpenCode tool token #when guidance is inserted #then wrapper bytes are preserved (0.046958ms)
+✔ #given real shared skills that need Codex translation #when aggregate skills are synced #then each generated skill injects the production compatibility artifact once before any remaining OpenCode tool token (17.179375ms)
+✔ #given the aggregate sync implementation #when its skill adaptation pipeline is inspected #then it still applies compatibility guidance before overlays (0.612208ms)
+✔ #given the flattened plugin cache the Codex installer produces #when sync-skills runs inside it #then it resolves shared skills through the linked package and writes the skill tree (1923.23625ms)
+✔ #given synced aggregate Codex skills #when inspected #then component and shared skills are present (18.206458ms)
+✔ #given reference-only designpowers frontend files #when synced for Codex #then nested SKILL.md files are not packaged (11.075541ms)
+✔ #given aggregate Codex skills #when source wiring is inspected #then shared skills are imported from the shared-skills package (1.658708ms)
+✔ #given shared skill package source #when aggregate Codex shared skills are inspected #then generated copies have no hand-authored drift (10.412292ms)
+✔ #given a shared skill name collides with a Codex component skill #when aggregate skills are inspected #then the component skill wins (1.511625ms)
+✔ #given shared skill source tests #when aggregate Codex skills are synced #then source tests are not packaged (15.823458ms)
+✔ #given component skill sources #when aggregate Codex component skills are inspected #then generated copies have no hand-authored drift (10.72125ms)
+✔ #given the canonical prompts-core directive #when the aggregate ultrawork skill is inspected #then it wraps the canonical bytes in skill frontmatter (0.567ms)
+✔ #given synced ulw-loop skill #when Codex hint metadata is inspected #then ulw-loop surfaces the ulw-loop alias (0.860083ms)
+✔ #given synced ulw-loop skill #when Codex hint metadata is inspected #then ulw-loop remains discoverable as an alias (0.463458ms)
+✔ #given shipped Codex skill payloads #when legacy ultraresearch alias is inspected #then it is not packaged (690.568875ms)
+✔ #given synced git-master skill #when inspected #then commits and git history route through it (1.213709ms)
+✔ #given packaged Codex ulw-plan surfaces #when inspected #then dangerous sandbox bypass guidance is not shipped (1.487709ms)
+✔ #given LAZYCODEX_RELEASE_VERSION env #when resolving authoritative version #then the env value wins (0.986042ms)
+✔ #given no env override #when resolving authoritative version #then root package.json version is used (2.310042ms)
+✔ #given drifted Codex manifests #when syncing version from root #then all versioned manifests match and version-less files are left alone (163.532959ms)
+✔ #given already coherent manifests #when syncing again #then nothing is rewritten (46.818541ms)
+✔ #given app-thread archival is blocked by an ambiguous id #when archive runs with a note #then team state is archived and keeps the blocker in the log (313.69825ms)
+✔ #given a bound team #when the member field manual renders #then it names the cross-thread tool and the team.json address book (267.035459ms)
+✔ #given a member bootstrap trigger #when it is generated #then it names the cross-thread push tool (363.9835ms)
+✔ #given guide.md is a symlink #when guide is regenerated #then the outside target stays untouched (131.943792ms)
+✔ #given member A exists #when add-member receives A with trailing space #then state is not partially mutated (168.014583ms)
+✔ #given two add-member commands run concurrently #then both successful mutations are preserved (126.47125ms)
+✔ #given another command holds the team lock #when add-member times out #then it fails without mutating team state (134.911167ms)
+✔ #given member focus already exists #when add-member receives same focus with different spacing and case #then state is not partially mutated (218.685667ms)
+✔ #given only one member exists #when bind-thread runs #then member is not activated (295.816ms)
+✔ #given persisted paths are mutated outside trusted team dir #when guide is regenerated #then outside file stays untouched (95.764833ms)
+✔ #given team dir is swapped to a symlink #when status reads team state #then command refuses the symlink (80.851875ms)
+✔ #given teams root is a symlink #when delete runs #then outside team state stays untouched (34.191ms)
+✔ #given a worktree-backed team has bound member threads #when guide and status render #then they include codex thread links (390.342125ms)
+✔ #given two members with distinct names #when added #then each thread title is per-member and the two never collide (171.059167ms)
+✔ #given a member added without an explicit name #when state is read #then the title falls back to the focus, never a shared session name (171.982625ms)
+✔ #given a member name already exists #when add-member receives the same name with different spacing and case #then state is not partially mutated (153.395958ms)
+✔ #given persisted team.json has duplicate member names #when a command loads the team #then stale state is rejected (268.100833ms)
+✔ #given persisted team.json has duplicate thread titles with distinct member names #when bind-thread runs #then state is rejected before activation (226.406916ms)
+✔ #given MultiAgentV2 transport #when members are added and bound #then task names and canonical agent paths form the address book (456.348209ms)
+✔ #given codex_app transport #when members bind threads #then the existing thread address book and deep links remain (390.299583ms)
+✔ #given an unsupported transport #when init runs #then it fails before creating team state (37.593208ms)
+✔ #given --transport without a value #when init runs #then it fails before creating team state (39.972709ms)
+✔ #given an existing team #when init re-runs with a conflicting transport #then it fails and state is unchanged (139.360291ms)
+✔ #given a V2 team #when the whole team is archived without a note #then no output claims runtime members were closed (164.400583ms)
+✔ #given a V2 team #when one member is archived #then output scopes the archive to team state, not the runtime agent (164.77275ms)
+✔ #given a codex_app team #when one member is archived #then the existing wording is preserved (164.956166ms)
+✔ #given a transport-specific team #when the wrong bind command runs #then it fails without changing team.json (317.460375ms)
+✔ #given V2 expected task identity #when bind-agent receives another path #then it fails without activating the member (147.863125ms)
+✔ #given a V2 member has no valid task name #when add-member runs #then state remains unchanged (111.532541ms)
+✔ #given legacy schemaVersion 2 state with existing members #when a mutation succeeds #then it upgrades in place as codex_app (184.976916ms)
+✔ #given a worktree team #when worktree-add A #then a real git worktree on a derived branch is created and recorded (580.9095ms)
+✔ #given worktree-add ran #when the field manual is regenerated #then it shows the member's derived worktree branch (476.809458ms)
+✔ #given a team initialized WITHOUT --worktree #when worktree-add is called mid-run #then it auto-enables isolation (conflict-triggered) (384.812708ms)
+✔ #given an existing member worktree #when worktree-add runs again #then it is a safe no-op that reports the existing worktree (372.831417ms)
+✔ #given a member worktree #when worktree-remove A #then git drops it and team.json clears the path (353.873625ms)
+✔ #given a member committed work in its worktree #when integrate --id A #then the base branch gets a NO-FF merge commit (398.947292ms)
+✔ #given two members edited the same line #when integrate hits the conflict #then it stops, reports the conflicting member, and exits non-zero (601.56925ms)
+✔ #given a member branch that cannot be merged #when integrate runs #then it surfaces git's real reason, not a fake conflict (338.273125ms)
+✔ #given a member id that is not a safe path segment #when worktree-add runs #then it refuses instead of escaping the team dir (178.088708ms)
+✔ #given synced skills #when the ultrawork skill is inspected #then it carries the full directive body (1.473291ms)
+✔ #given the built ultrawork CLI #when a ulw prompt is submitted #then a compact skill pointer is emitted (44.628ms)
+✔ #given the built ultrawork and ulw-loop CLIs #when both emit the pointer #then the payloads match byte for byte (79.609042ms)
+✔ #given shared OpenCode #when deeper review becomes required before plan completion #then durable request state covers explicit and automatic review without inventing a digest (6.115584ms)
+✔ #given a complete shared OpenCode plan #when a fresh review round starts #then both lanes persist literal workspace and artifact bindings (1.83725ms)
+✔ #given a shared OpenCode review round #when launch, interruption, completion, or compaction occurs #then the durable transition table fails closed (1.155584ms)
+✔ #given shared OpenCode round R2 replaced R1 #when a delayed R1 launch or receipt arrives #then identity-bound CAS leaves R2 unchanged (1.387542ms)
+✔ #given shared OpenCode independent reviewers #when exact-path retrieval drifts #then intake fails closed without alternate artifact recovery (0.687375ms)
+✔ #given Codex #when deeper review becomes required before plan completion #then durable request state covers explicit and automatic review without inventing a digest (0.55775ms)
+✔ #given a complete Codex plan #when a fresh review round starts #then both lanes persist literal workspace and artifact bindings (1.434708ms)
+✔ #given a Codex review round #when launch, interruption, completion, or compaction occurs #then the durable transition table fails closed (2.535791ms)
+✔ #given Codex round R2 replaced R1 #when a delayed R1 launch or receipt arrives #then identity-bound CAS leaves R2 unchanged (4.54475ms)
+✔ #given Codex independent reviewers #when exact-path retrieval drifts #then intake fails closed without alternate artifact recovery (2.582958ms)
+✔ #given ulw-plan skill copies #when component source and packaged copy are compared #then they are byte-identical and expose the loader-parsed name (8.172625ms)
+✔ #given ulw-research skill copies #when frontmatter is inspected #then the loader-parsed name is ulw-research (3.539542ms)
+✔ #given ulw-research skill copies #when scanned for non-English content #then they contain no Hangul (13.896042ms)
+✔ #given bundled agent roles and stale legacy links #when installing locally #then installs durable Codex agent files (497.44325ms)
+✔ #given local sisyphuslabs install #when plugin cache is pruned #then agent files still resolve from Codex home (178.291875ms)
+✔ #given local sisyphuslabs install #when temporary marketplace snapshot is removed #then agent files still resolve from Codex home (97.254208ms)
+✔ #given bundled ultrawork plan #when installing locally #then fresh installs write bundled default xhigh (44.632792ms)
+✔ #given bundled ultrawork plan #when reinstalling without edits #then bundled xhigh stays intact (184.83325ms)
+✔ #given user edited installed ultrawork plan #when reinstalling after snapshot refresh #then high survives (73.029416ms)
+✔ #given user removed installed ultrawork service tier #when reinstalling after snapshot refresh #then removal survives (97.750709ms)
+✔ #given user edited installed ultrawork plan #when reinstalling after snapshot refresh #then bundled snapshot target retains xhigh (129.399958ms)
+✔ #given the generated installer #when linking the root runtime #then writes only the canonical wrapper with marker and edition exports (51.311917ms)
+✔ #given a marker-bearing legacy omo #when linking the root runtime #then deletes it (33.355958ms)
+✔ #given an unmarked user-owned omo #when linking twice #then preserves it byte-identical and remains idempotent (27.725708ms)
+✔ #given bun absent from PATH but present in ~/.bun/bin #when running the omo-agent-toolkit runtime wrapper #then resolves the bun fallback (61.1275ms)
+✖ #given bun absent everywhere #when running the omo runtime wrapper #then fails with an actionable install hint (24.185459ms)
+✔ #given OMO_RUNTIME=node and a node CLI bundle #when running the omo runtime wrapper #then executes the node CLI (61.241292ms)
+✖ #given bun absent everywhere and a node CLI bundle #when running the omo runtime wrapper #then falls back to node (52.147458ms)
+✖ #given bun absent and no node CLI bundle #when running the omo runtime wrapper #then the error names both runtimes (37.012167ms)
+✔ #given Windows platform #when writing the omo runtime wrapper #then embeds the node fallback chain (12.370541ms)
+✔ #given Windows platform #when writing the omo runtime wrapper #then embeds the bun fallback chain (22.600458ms)
+✔ #given Windows platform #when linking cached plugin bins #then writes command shims (30.524166ms)
+✔ #given existing custom Windows command shim #when linking bins #then rejects without overwriting (13.598958ms)
+✔ #given managed legacy Codex component symlink #when linking bins #then removes stale symlink and writes OMO bin (33.920833ms)
+✔ #given managed legacy Codex LSP symlink #when linking bins #then removes stale lsp symlink (15.82925ms)
+✔ #given nested component declares reserved omo bin #when linking bins #then skips the nested top-level command (28.20225ms)
+✔ #given stale managed ulw-loop omo symlink #when linking bins #then removes it without touching user-owned omo (15.947583ms)
+✔ #given stale local-source ulw-loop omo symlink #when linking bins #then removes it (14.319125ms)
+✔ #given user-owned legacy Codex symlink #when linking bins #then preserves the user symlink (16.71625ms)
+✔ #given user-owned legacy Codex symlink with component-like target #when linking bins #then preserves it (20.247375ms)
+✔ #given package bin name escapes bin directory #when linking bins #then rejects without writing outside link (9.431708ms)
+✔ #given package bin target escapes plugin root #when linking bins #then rejects without linking outside target (5.167125ms)
+✔ #given source plugin has an npm lockfile #when caching plugin #then lockfile is preserved for deterministic install (18.076792ms)
+✔ #given cached file dependency is rewritten #when lockfile exists #then package lock stays in sync (190.202416ms)
+✔ #given npm creates workspace bin shims in the cache #when caching plugin #then plugin-owned shims are removed (85.485292ms)
+✔ #given packaged root CLI runtimes #when caching omo plugin #then root dist is materialized into the plugin cache (99.35125ms)
+✔ #given packaged prompts-core directive #when caching omo plugin #then the ultrawork directive is materialized into the plugin cache (44.502292ms)
+✔ #given existing cache #when npm install fails #then previous active cache is preserved (20.852084ms)
+✔ #given existing cache #when final promotion fails #then previous active cache is restored (17.913209ms)
+✔ #given lazycodex install flags #when parsing Node installer argv #then keeps Codex autonomous intent (0.743625ms)
+✔ #given unsupported OpenCode platform override #when parsing Node installer argv #then rejects the Bun-backed path (0.167167ms)
+✔ #given missing platform value #when parsing Node installer argv #then rejects the incomplete option (0.065459ms)
+✔ #given repo root equals option #when parsing Node installer argv #then keeps the explicit path (0.048583ms)
+✔ #given unknown positional command #when parsing Node installer argv #then rejects instead of treating it as a repo root (0.061958ms)
+✔ #given install help flag #when parsing Node installer argv #then returns help (0.042625ms)
+✔ #given installer help #when formatting usage #then includes uninstall (0.073459ms)
+✔ #given installer help #when formatting usage #then advertises every supported command (0.065666ms)
+✔ #given installer help #when formatting usage #then documents update and version entry points (0.053167ms)
+✔ #given dry-run install with codex autonomy flags #when parsing Node installer argv #then keeps delegated install command and dry-run intent (0.779709ms)
+✔ #given dry-run doctor command #when parsing Node installer argv #then returns delegated doctor command (0.061125ms)
+✔ #given update command #when parsing Node installer argv #then returns lazycodex update intent (0.069833ms)
+✔ #given dry-run update with repo root #when parsing Node installer argv #then keeps local update intent (0.038208ms)
+✔ #given dry-run cleanup command #when parsing Node installer argv #then returns delegated codex cleanup command (0.038875ms)
+✔ #given uninstall command #when parsing Node installer argv #then returns delegated codex cleanup command (0.035917ms)
+✔ #given doctor flags #when parsing Node installer argv #then preserves pass-through arguments (0.253083ms)
+✔ #given autonomous permissions requested #when script installer updates config #then enables Codex autonomy feature flags (34.075834ms)
+✔ #given autonomous permissions disabled #when script installer updates config #then keeps native Codex feature flags enabled (6.318208ms)
+✔ #given existing child_agents_md setting #when script installer updates config #then preserves it without stamping unsupported values (4.391083ms)
+✔ #given config without child_agents_md #when script installer updates config #then does not add unsupported feature key (4.086083ms)
+✔ #given autonomous permissions requested #when script installer updates config #then enables full Codex autonomy (13.171875ms)
+✔ #given empty Codex config #when script installer updates config #then sets worker model and reasoning defaults (7.644375ms)
+✔ #given existing model and reasoning config #when script installer updates config #then replaces stale defaults without duplicate keys (4.691792ms)
+✔ #given user-customized model config #when script installer updates config #then preserves user reasoning values (2.193584ms)
+✔ #given bundled model catalog #when script installer updates config #then reads defaults from catalog (2.713666ms)
+✔ #given fallback model catalog #when catalog file is unavailable #then no managed preset uses pure GPT-5.4 (0.628708ms)
+✔ #given empty Codex config #when script installer updates config #then leaves thread limits unset without forcing MultiAgentV2 (35.443542ms)
+✔ #given queue multi-agent mode #when script installer updates config #then removes unsupported root key (31.138583ms)
+✔ #given indented steering mode and inline-comment features table #when script installer updates config #then removes root key and keeps one features table (37.234333ms)
+✔ #given empty Codex config #when script installer updates config #then leaves Context7 to the plugin MCP manifest (13.519666ms)
+✔ #given sisyphuslabs omo install #when script installer updates config #then enables Context7 plugin mcp policy (6.134625ms)
+✔ #given existing Context7 MCP config #when script installer updates config #then leaves user setup untouched (11.142542ms)
+✔ #given real Context7 API key and placeholder comment #when script installer updates config #then preserves user setup (22.699792ms)
+✔ #given stale Context7 placeholder MCP config #when script installer updates config #then removes it for plugin MCP (15.382042ms)
+✔ #given Codex config is a symlink #when script installer updates config #then writes through the target (18.986666ms)
+✔ #given sisyphuslabs config without explicit source #when script installer updates config #then uses local marketplace (4.497542ms)
+✔ #given existing MultiAgentV2 table #when script installer updates config #then preserves unrelated tuning while setting subagent thread limits (6.7935ms)
+✔ #given empty Codex config #when script installer updates config #then sets the generated MultiAgentV2 thread limit (12.590375ms)
+✔ #given user config hiding spawn_agent metadata #when script installer updates config #then preserves the generated source behavior (11.802792ms)
+✔ #given legacy boolean MultiAgentV2 flag and table #when script installer updates config #then normalizes to table config (9.545791ms)
+✔ #given legacy boolean MultiAgentV2 flag false #when script installer updates config #then normalizes to a disabled table config (6.084375ms)
+✔ #given legacy agents max_threads #when script installer updates config #then preserves the user root subagent thread cap (4.605917ms)
+✔ #given managed agent role sections #when script installer updates config #then preserves role config without raising root agents max_threads (10.138ms)
+✔ #given existing trust and lsp blocks #when updating config #then existing blocks are preserved (7.085209ms)
+✔ #given a lazycodex passthrough command #when delegating to omo-agent-toolkit #then resets OMO_INVOCATION_NAME so the delegate does not re-enter the lazycodex path (0.841666ms)
+✔ #given OMO_INVOCATION_NAME=lazycodex in the parent env #when delegating a cleanup passthrough #then the child env overrides it to omo-agent-toolkit (0.161625ms)
+✔ #given a dry-run doctor #when delegating #then routes to the Codex LazyCodex doctor workflow (0.308333ms)
+✔ #given doctor without model override #when delegating #then uses the configured Codex default model (0.0685ms)
+✔ #given explicit doctor model override #when delegating #then passes only that model to Codex exec (0.070917ms)
+✔ #given doctor source-root override #when delegating #then passes it to the Codex workflow environment (0.062959ms)
+✔ #given dry-run install without explicit platform #when delegating #then logs one Windows-safe Codex install command (0.065083ms)
+✔ #given doctor recursion guard is active #when lazycodex doctor delegates #then rejects before launching Codex (0.209458ms)
+✔ #given a dry-run doctor with JSON output #when delegating #then asks the Codex workflow to return JSON (0.083583ms)
+✔ #given dry-run args with shell metacharacters #when delegating #then logs a shell-safe command (0.103708ms)
+✔ #given the stable installer entrypoint #when inspecting imports #then it delegates to generated output (82.376417ms)
+✔ #given generated installer output #when importing install-local #then public installer API comes from the bundle (2.616708ms)
+✔ #given generated installer output #when importing direct bundle #then compatibility helper APIs are exported (4.91125ms)
+✔ #given no root model #when generated bundle updates config #then it does not introduce agents max_threads (20.382167ms)
+✔ #given an inline-commented V2 thread cap #when generated bundle updates config twice #then preserves the line and ordering byte-for-byte (29.713291ms)
+✔ #given explicit v1 model_catalog_json and stale models_cache v2 #when generated bundle updates config #then explicit catalog preserves disable and cap (11.622958ms)
+✔ #given explicit v2 model_catalog_json and stale models_cache v1 #when generated bundle updates config #then explicit catalog clears managed disable and cap (19.983417ms)
+✔ #given a hook command target missing from the payload #when scanning #then exactly that path is reported (24.833458ms)
+✔ #given a Windows hook command target missing from the payload #when scanning #then the backslash path is reported (20.387625ms)
+✔ #given a Windows hook command target exists in the payload #when scanning #then nothing is missing (20.324625ms)
+✔ #given a complete payload #when scanning #then nothing is missing (15.79725ms)
+✔ #given hook manifests declared as an array #when scanning #then missing targets are reported (35.164334ms)
+✔ #given hook manifests declared as an array and complete payload #when scanning #then nothing is missing (21.451917ms)
+✔ #given no hooks manifest #when scanning #then nothing is missing (1.067541ms)
+✔ #given a broken payload #when asserting #then the error names the missing target and the plugin root (25.989625ms)
+✔ #given a complete payload #when asserting #then it resolves (8.242083ms)
+✔ #given sisyphuslabs lazycodex install #when installing locally #then stamps the distribution version (273.954791ms)
+lazycodex-ai installs the Codex Light edition only. Use the omo installer for OpenCode or both-platform installs.
+Refusing recursive lazycodex doctor invocation from inside $omo:lcx-doctor
+✔ #given published lazycodex bin runs outside the package #when resolving default repo root #then uses installer location (0.480292ms)
+✔ #given lazycodex version flag #when running the Node installer entrypoint #then prints the package version (65.900208ms)
+✔ #given lazycodex runs through an npm bin symlink #when running the Node installer entrypoint #then it still executes main (42.586041ms)
+✔ #given dry-run install flags #when running the Node installer entrypoint #then prints delegated autonomous codex install command (46.40525ms)
+✔ #given dry-run install opt-out #when running the Node installer entrypoint #then preserves existing Codex permission settings (41.40525ms)
+✔ #given explicit non-Codex dry-run platform #when running the Node installer entrypoint #then rejects it (41.946166ms)
+✔ #given dry-run doctor #when running the Node installer entrypoint #then prints Codex LazyCodex doctor workflow command (41.508458ms)
+✔ #given recursive doctor env #when running the Node installer entrypoint #then refuses to re-enter doctor (41.040791ms)
+✔ #given dry-run cleanup path needs quoting #when running the Node installer entrypoint #then prints shell-safe command (41.738375ms)
+✔ #given dry-run cleanup #when running the Node installer entrypoint #then prints delegated codex cleanup command (41.323417ms)
+✔ #given dry-run uninstall #when running the Node installer entrypoint #then prints delegated codex cleanup command (42.515458ms)
+✔ #given stale lazycodex version #when running update dry-run #then prints the latest installer command (41.630125ms)
+✔ #given bun global lazycodex wrapper #when running update dry-run #then prints bun global update command (41.379834ms)
+✔ #given bun global lazycodex wrapper and untrusted known scripts #when update runs noninteractively #then prints manual scoped trust command (66.313125ms)
+✔ #given current lazycodex version #when running update dry-run #then reports already current (39.294375ms)
+✔ #given dry-run ulw-loop #when running the Node installer entrypoint #then prints delegated ulw-loop command (45.703875ms)
+✔ #given the invoking argv path disappears #when importing the Node installer module #then the entrypoint guard does not throw (40.965791ms)
+✔ #given Windows without Git Bash #when installing local marketplace #then rejects before marketplace or config mutation (2.572375ms)
+✔ #given Windows without Git Bash #when installing local marketplace #then winget is not run and install stops with guidance (1.111292ms)
+✔ #given non-Windows install #when running installer #then winget is never called (1482.379ms)
+✔ #given Windows env override resolves Git Bash #when installing local marketplace #then install continues (936.812125ms)
+✔ #given Windows env override in installer options #when no custom resolver is provided #then default resolver uses it (768.514333ms)
+✔ #given non-Windows local install #when resolver would fail #then installer keeps existing behavior (747.260083ms)
+✔ #given default CODEX_HOME #when resolving local installer bin dir without override #then preserves user local bin precedence (0.508042ms)
+✔ #given custom CODEX_HOME #when resolving local installer bin dir without override #then keeps generated omo inside that Codex home (0.086458ms)
+✔ #given custom CODEX_HOME and PATH without omo #when installing locally without bin override #then bootstraps via local CLI when omo is absent (221.049125ms)
+✔ #given repoRoot without root CLI dist #when installing locally #then warns about the skipped omo runtime wrapper (104.464917ms)
+✔ #given explicit CODEX_LOCAL_BIN_DIR #when resolving local installer bin dir #then preserves installed omo precedence (0.192167ms)
+✔ #given CODEX_LOCAL_BIN_DIR with surrounding whitespace #when resolving local installer bin dir #then trims the env value before use (0.069833ms)
+✔ #given omo plugin source #when inspecting identity #then uses sisyphuslabs omo metadata (0.619916ms)
+✔ #given plugin hooks #when installing #then records trusted hook hashes (48.801583ms)
+✔ #given bad plugin source path #when installing #then rejects traversal (1.852708ms)
+✔ #given local marketplace #when installing #then copies versioned plugins and enables config (178.50525ms)
+✔ #given sisyphuslabs marketplace #when installing #then registers the local built marketplace cache (148.797333ms)
+✔ #given Context7 placeholder auth in generated installer path #when installing cached plugin #then placeholder auth is stripped (15.420708ms)
+✔ #given real Context7 auth in generated installer path #when installing cached plugin #then user auth is preserved (18.689458ms)
+✔ #given env-only Context7 placeholder auth in generated installer path #when installing cached plugin #then placeholder env is stripped (14.787667ms)
+✔ #given dangling Context7 api-key flag in generated installer path #when installing cached plugin #then blank auth flag is stripped (21.835791ms)
+✔ #given external MCP package runtime #when installing cached plugin #then runtime is copied into the plugin cache (74.628125ms)
+✔ #given plugin-local MCP runtime #when installing cached plugin #then manifest args point at the cached plugin dist (50.672166ms)
+✔ #given external MCP package not in the generated bundled runtime set #when installing cached plugin #then manifest args point at source (33.085208ms)
+✔ #given packaged bundled MCP runtime has only dist files #when installing cached plugin #then runtime is copied into the plugin cache (41.539459ms)
+✔ #given packaged lazycodex adapter #when installing locally #then uses bundled artifacts without source builds (191.594083ms)
+✔ #given stale project-local Codex config #when Node installer runs #then repairs the local conflict (80.97175ms)
+✔ #given root and nested project-local Codex configs #when script cleanup runs #then it repairs every loaded project layer (5.784792ms)
+✔ #given no project-local config and CODEX_HOME in the parent chain #when script cleanup runs #then global Codex config is not treated as project state (3.008875ms)
+✔ #given project-local config is a symlink to CODEX_HOME #when script cleanup runs #then it skips the link without mutating the target (2.0125ms)
+✔ #given project-local Codex config is a symlink #when script cleanup runs #then symlink target is not modified (2.729625ms)
+✔ #given project-local .codex directory is a symlink #when script cleanup runs #then symlink target is not modified (1.975416ms)
+✔ #given malformed project directory from the environment #when script cleanup runs #then it skips project-local cleanup without failing install (0.280667ms)
+✔ #given absent project directory from the script surface #when script cleanup runs #then it skips project-local cleanup without throwing (0.145584ms)
+✔ #given project cleanup hits a filesystem edge #when Node installer runs #then install succeeds and reports skipped cleanup (41.980083ms)
+ℹ tests 496
+ℹ suites 0
+ℹ pass 493
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5587.535625
+
+✖ failing tests:
+
+test at packages/omo-codex/scripts/install-bin-links.test.mjs:99:1
+✖ #given bun absent everywhere #when running the omo runtime wrapper #then fails with an actionable install hint (24.185459ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/scripts/install-bin-links.test.mjs:108:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/scripts/install-bin-links.test.mjs:126:1
+✖ #given bun absent everywhere and a node CLI bundle #when running the omo runtime wrapper #then falls back to node (52.147458ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /OMO_NODE_OK --version/. Input:
+  
+  ''
+  
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/scripts/install-bin-links.test.mjs:136:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: /OMO_NODE_OK --version/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/scripts/install-bin-links.test.mjs:139:1
+✖ #given bun absent and no node CLI bundle #when running the omo runtime wrapper #then the error names both runtimes (37.012167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/scripts/install-bin-links.test.mjs:148:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+error: script "test:codex" exited with code 1

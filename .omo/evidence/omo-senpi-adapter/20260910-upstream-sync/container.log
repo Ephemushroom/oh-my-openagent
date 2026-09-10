@@ -1,0 +1,33 @@
+Unable to find image 'node:24-bookworm-slim' locally
+24-bookworm-slim: Pulling from library/node
+56ee9ff3d678: Pulling fs layer
+75782e20ea1f: Pulling fs layer
+552633c16762: Pulling fs layer
+2a39367545e5: Pulling fs layer
+8e61afb24d69: Pulling fs layer
+8e61afb24d69: Download complete
+56ee9ff3d678: Download complete
+2a39367545e5: Download complete
+e7cfd29ec2a8: Download complete
+0c1366319f63: Download complete
+75782e20ea1f: Download complete
+8e61afb24d69: Pull complete
+75782e20ea1f: Pull complete
+552633c16762: Download complete
+552633c16762: Pull complete
+56ee9ff3d678: Pull complete
+2a39367545e5: Pull complete
+Digest: sha256:2fe369e969550cde8e867afc3fe370b260140cab4a23d467074295b42163d553
+Status: Downloaded newer image for node:24-bookworm-slim
+
+added 4 packages in 20s
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   @code-yeongyu/comment-checker@0.8.0 (postinstall: node postinstall.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.0.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+npm notice To update run: npm install -g npm@12.0.2
+npm notice
+Linux live QA and isolation passed

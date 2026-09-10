@@ -1,0 +1,21 @@
+Bundled 942 modules in 49ms
+
+  omo.js  1.63 MB  (entry point)
+
+Bundled 691 modules in 42ms
+
+  omo-task.js  0.99 MB  (entry point)
+
+Bundled 213 modules in 10ms
+
+  omo-member.js  170.24 KB  (entry point)
+
+Bundled 142 modules in 8ms
+
+  memory-run-supervisor.mjs  39.57 KB  (entry point)
+
+Bundled 161 modules in 8ms
+
+  omo-init-deep-advisor.js  85.0 KB  (entry point)
+
+Built omo-senpi extensions: /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo.js, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo-task.js, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo-member.js, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/memory-run-supervisor.mjs, /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-senpi/plugin/extensions/omo-init-deep-advisor.js

@@ -1,0 +1,90 @@
+{
+  "results": [
+    {
+      "mode": "enabled",
+      "status": "passed"
+    },
+    {
+      "mode": "disabled",
+      "status": "passed"
+    }
+  ],
+  "requests": [
+    {
+      "model": "gpt-5.6-luna",
+      "tools": []
+    },
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "background_cancel",
+        "background_output",
+        "glob",
+        "grep",
+        "hashline_edit",
+        "look_at",
+        "patch",
+        "question",
+        "read",
+        "session_info",
+        "session_list",
+        "session_read",
+        "session_search",
+        "shell",
+        "skill",
+        "subagent",
+        "task",
+        "todowrite",
+        "webfetch",
+        "websearch",
+        "execute"
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "tools": []
+    },
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "background_cancel",
+        "background_output",
+        "glob",
+        "grep",
+        "hashline_edit",
+        "look_at",
+        "patch",
+        "question",
+        "read",
+        "session_info",
+        "session_list",
+        "session_read",
+        "session_search",
+        "shell",
+        "skill",
+        "subagent",
+        "task",
+        "todowrite",
+        "webfetch",
+        "websearch",
+        "execute"
+      ]
+    }
+  ],
+  "before": {
+    "configDigest": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": {
+      "session": 2686,
+      "session_v2": 2335
+    }
+  },
+  "after": {
+    "configDigest": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": {
+      "session": 2686,
+      "session_v2": 2335
+    }
+  },
+  "sandboxRemoved": true,
+  "mockClosed": true
+}

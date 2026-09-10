@@ -1,0 +1,678 @@
+diff --git a/packages/agents-core/src/dynamic-agent-category-skills-guide.ts b/packages/agents-core/src/dynamic-agent-category-skills-guide.ts
+index 40794e41f..229ce8aee 100644
+--- a/packages/agents-core/src/dynamic-agent-category-skills-guide.ts
++++ b/packages/agents-core/src/dynamic-agent-category-skills-guide.ts
+@@ -102,14 +102,14 @@ Check the \`skill\` tool for available skills and their descriptions. For EVERY
+ task(
+   category="[selected-category]",
+   load_skills=["skill-1", "skill-2"],  // Include ALL relevant skills - ESPECIALLY user-installed ones
+-  run_in_background=false,
++  run_in_background=true,
+   prompt="..."
+ )
+ \`\`\`
+ 
+ **ANTI-PATTERN (will produce poor results):**
+ \`\`\`typescript
+-task(category="...", load_skills=[], run_in_background=false, prompt="...")  // Empty load_skills without justification
++task(category="...", load_skills=[], run_in_background=true, prompt="...")  // Empty load_skills without justification
+ \`\`\`
+ 
+ ---
+@@ -118,23 +118,23 @@ task(category="...", load_skills=[], run_in_background=false, prompt="...")  //
+ 
+ Every delegation MUST use the category that matches the task's domain. Mismatched categories produce measurably worse output because each category runs on a model optimized for that specific domain.
+ 
+-**VISUAL WORK = ALWAYS \`visual-engineering\`. NO EXCEPTIONS.**
++**ANY VISUAL DESIGN RELATION = ALWAYS \`visual-engineering\`. NO EXCEPTIONS.**
+ 
+-Any task involving UI, UX, CSS, styling, layout, animation, design, or frontend components MUST go to \`visual-engineering\`. Never delegate visual work to \`quick\`, \`unspecified-*\`, or any other category.
++Any task with even a minor visual-design relationship - including UI, UX, CSS, styling, layout, animation, design systems, frontend components, screenshots, diagrams, visual polish, or presentation - MUST go to \`visual-engineering\`. Never delegate it to \`quick\`, \`unspecified-*\`, or any other category.
+ 
+ \`\`\`typescript
+ // CORRECT: Visual work → visual-engineering category
+-task(category="visual-engineering", load_skills=["frontend"], run_in_background=false, prompt="Redesign the sidebar layout with new spacing...")
++task(category="visual-engineering", load_skills=["frontend"], run_in_background=true, prompt="Redesign the sidebar layout with new spacing...")
+ 
+ // WRONG: Visual work in wrong category - WILL PRODUCE INFERIOR RESULTS
+-task(category="quick", load_skills=[], run_in_background=false, prompt="Redesign the sidebar layout with new spacing...")
++task(category="quick", load_skills=[], run_in_background=true, prompt="Redesign the sidebar layout with new spacing...")
+ \`\`\`
+ 
+ | Task Domain | MUST Use Category |
+ |---|---|
+-| UI, styling, animations, layout, design | \`visual-engineering\` |
+-| Hard logic, architecture decisions, algorithms | \`ultrabrain\` |
+-| Autonomous research + end-to-end implementation | \`deep\` |
++| Visual design, UI, styling, animations, layout, design systems | \`visual-engineering\` |
++| Hard logic and architecture decisions | \`ultrabrain\` |
++| 3D graphics, computer use, browser use, backend, logic, algorithms, CAPTCHA solving, multimodal, autonomous research + end-to-end implementation | \`deep\` |
+ | Single-file typo, trivial config change | \`quick\` |
+ 
+ **When in doubt about category, it is almost never \`quick\` or \`unspecified-*\`. Match the domain.**`
+diff --git a/packages/agents-core/src/gpt-prompt-identity.ts b/packages/agents-core/src/gpt-prompt-identity.ts
+index b927ac780..560f9f5eb 100644
+--- a/packages/agents-core/src/gpt-prompt-identity.ts
++++ b/packages/agents-core/src/gpt-prompt-identity.ts
+@@ -1,14 +1,18 @@
+-export type GptPromptIdentityKey = "gpt-5.5" | "gpt-5.6-sol" | "gpt-family"
++export type GptPromptIdentityKey = "gpt-5.5" | "gpt-5.6-sol" | "gpt-6-astra" | "gpt-family"
+ 
+ const GPT_PROMPT_IDENTITIES: Record<GptPromptIdentityKey, string> = {
+   "gpt-5.5": "GPT-5.5",
+   "gpt-5.6-sol": "GPT-5.6 Sol",
++  "gpt-6-astra": "GPT-6 Astra",
+   "gpt-family": "a GPT-family model",
+ }
+ 
+ export function getGptPromptIdentityKey(model?: string): GptPromptIdentityKey {
+   const modelID = model?.split("/").at(-1)?.toLowerCase()
+ 
++  if (modelID?.includes("gpt-6-astra")) {
++    return "gpt-6-astra"
++  }
+   if (modelID?.includes("gpt-5.6-sol") || modelID?.includes("gpt-5-6-sol")) {
+     return "gpt-5.6-sol"
+   }
+diff --git a/packages/agents-core/src/hephaestus/prompt-router.ts b/packages/agents-core/src/hephaestus/prompt-router.ts
+index f89af87e0..61eba5bc5 100644
+--- a/packages/agents-core/src/hephaestus/prompt-router.ts
++++ b/packages/agents-core/src/hephaestus/prompt-router.ts
+@@ -6,7 +6,7 @@
+  * harness-coupled agent-config factory lives in the adapter layer.
+  */
+ 
+-import { isGpt5_5Model, isGpt5_6Model } from "../types";
++import { isGpt5_5Model, isGpt5_6Model, isGpt6Model } from "../types";
+ import type {
+   AvailableAgent,
+   AvailableTool,
+@@ -24,6 +24,7 @@ const GPT_5_3_CODEX_RE = /^gpt-5[.-]3-codex(?:$|[.-])/i;
+ const GPT_5_4_RE = /^gpt-5[.-]4(?:$|[.-])/i;
+ const GPT_5_5_RE = /^gpt-5[.-]5(?:$|[.-])/i;
+ const GPT_5_6_RE = /^gpt-5[.-]6(?:$|[.-])/i;
++const GPT_6_RE = /^gpt-6(?:$|[.-])/i;
+ const HOSTED_VENDOR_PREFIX_RE = /^(?:[^./]+\.)+(gpt-5[.-].*)$/i;
+ 
+ export type HephaestusPromptSource = "gpt-5-6" | "gpt-5-5" | "gpt-5-4" | "gpt";
+@@ -52,7 +53,8 @@ export function isHephaestusSupportedModel(model: string | undefined): boolean {
+     GPT_5_3_CODEX_RE.test(modelName) ||
+     GPT_5_4_RE.test(modelName) ||
+     GPT_5_5_RE.test(modelName) ||
+-    GPT_5_6_RE.test(modelName)
++    GPT_5_6_RE.test(modelName) ||
++    GPT_6_RE.test(modelName)
+   );
+ }
+ 
+@@ -66,7 +68,7 @@ export function getHephaestusPromptSource(
+   model?: string,
+ ): HephaestusPromptSource {
+   assertHephaestusSupportedModel(model);
+-  if (model && isGpt5_6Model(model)) {
++  if (model && (isGpt5_6Model(model) || isGpt6Model(model))) {
+     return "gpt-5-6";
+   }
+   if (model && isGpt5_5Model(model)) {
+diff --git a/packages/agents-core/src/sisyphus-dynamic-prompt-execution.ts b/packages/agents-core/src/sisyphus-dynamic-prompt-execution.ts
+index 5b0f401fc..fb80a0ac7 100644
+--- a/packages/agents-core/src/sisyphus-dynamic-prompt-execution.ts
++++ b/packages/agents-core/src/sisyphus-dynamic-prompt-execution.ts
+@@ -58,10 +58,10 @@ Every \`task()\` output exposes a continuation session ID (\`ses_...\`). Pass it
+ 
+ \`\`\`typescript
+ // WRONG: Starting fresh loses all context
+-task(category="quick", load_skills=[], run_in_background=false, description="Fix type error", prompt="Fix the type error in auth.ts...")
++task(category="quick", load_skills=[], run_in_background=true, description="Fix type error", prompt="Fix the type error in auth.ts...")
+ 
+ // CORRECT: Resume preserves everything
+-task(task_id="ses_abc123", load_skills=[], run_in_background=false, description="Fix type error", prompt="Fix: Type error on line 42")
++task(task_id="ses_abc123", load_skills=[], run_in_background=true, description="Fix type error", prompt="Fix: Type error on line 42")
+ \`\`\`
+ 
+ **After EVERY delegation, STORE the \`ses_...\` continuation ID for potential continuation.**
+diff --git a/packages/agents-core/src/sisyphus-junior/gpt-5-5.ts b/packages/agents-core/src/sisyphus-junior/gpt-5-5.ts
+index b9bb771e2..af86f6989 100644
+--- a/packages/agents-core/src/sisyphus-junior/gpt-5-5.ts
++++ b/packages/agents-core/src/sisyphus-junior/gpt-5-5.ts
+@@ -267,7 +267,7 @@ You may invoke \`task()\` with \`subagent_type\` set to \`explore\`, \`librarian
+ 
+ - \`explore\`: internal codebase pattern search with synthesis. Parallel batches of 2-5 with \`run_in_background=true\`.
+ - \`librarian\`: external docs, open-source code, web references. Same pattern.
+-- \`oracle\`: high-reasoning consultant. \`run_in_background=false\` when their answer blocks your next step; \`true\` when you can continue productively while they think.
++- \`oracle\`: high-reasoning consultant. Run it in the background; continue with work that does not depend on the answer and never ship what it was asked to decide before the result arrives.
+ 
+ Every \`task()\` call needs \`load_skills\` (empty array \`[]\` is valid). Reuse \`task_id\` for follow-ups to preserve sub-agent context.
+ 
+diff --git a/packages/agents-core/src/sisyphus-junior/prompt-router.ts b/packages/agents-core/src/sisyphus-junior/prompt-router.ts
+index fd43af55b..c49e95294 100644
+--- a/packages/agents-core/src/sisyphus-junior/prompt-router.ts
++++ b/packages/agents-core/src/sisyphus-junior/prompt-router.ts
+@@ -11,7 +11,7 @@
+  * 7. Default (Claude, etc.) -> default.ts (Claude-optimized)
+  */
+ 
+-import { isGlmModel, isGpt5_5Model, isGpt5_6Model, isGptModel, isGeminiModel, isKimiK2Model, isKimiK27Model, isKimiK3Model } from "../types"
++import { isGlmModel, isGpt5_5Model, isGpt5_6Model, isGpt6Model, isGptModel, isGeminiModel, isKimiK2Model, isKimiK27Model, isKimiK3Model } from "../types"
+ 
+ import { buildDefaultSisyphusJuniorPrompt } from "./default"
+ import { buildKimiK26SisyphusJuniorPrompt } from "./kimi-k2-6"
+@@ -44,7 +44,7 @@ export function getSisyphusJuniorPromptSource(model?: string): SisyphusJuniorPro
+   if (model && isKimiK27Model(model)) return "kimi-k2-7"
+   if (model && isKimiK2Model(model)) return "kimi-k2"
+   if (model && isGptModel(model)) {
+-    if (isGpt5_5Model(model) || isGpt5_6Model(model)) return "gpt-5-5"
++    if (isGpt5_5Model(model) || isGpt5_6Model(model) || isGpt6Model(model)) return "gpt-5-5"
+     const lower = model.toLowerCase()
+     if (lower.includes("gpt-5.4") || lower.includes("gpt-5-4")) return "gpt-5-4"
+     return "gpt"
+diff --git a/packages/agents-core/src/sisyphus/default.ts b/packages/agents-core/src/sisyphus/default.ts
+index d024a13d6..3fd9e886d 100644
+--- a/packages/agents-core/src/sisyphus/default.ts
++++ b/packages/agents-core/src/sisyphus/default.ts
+@@ -408,10 +408,10 @@ Every \`task()\` output exposes a continuation session ID (\`ses_...\`). Pass it
+ 
+ \`\`\`typescript
+ // WRONG: Starting fresh loses all context
+-task(category="quick", load_skills=[], run_in_background=false, description="Fix type error", prompt="Fix the type error in auth.ts...")
++task(category="quick", load_skills=[], run_in_background=true, description="Fix type error", prompt="Fix the type error in auth.ts...")
+ 
+ // CORRECT: Resume preserves everything
+-task(task_id="ses_abc123", load_skills=[], run_in_background=false, description="Fix type error", prompt="Fix: Type error on line 42")
++task(task_id="ses_abc123", load_skills=[], run_in_background=true, description="Fix type error", prompt="Fix: Type error on line 42")
+ \`\`\`
+ 
+ **After EVERY delegation, STORE the \`ses_...\` continuation ID for potential continuation.**
+diff --git a/packages/agents-core/src/sisyphus/gemini.ts b/packages/agents-core/src/sisyphus/gemini.ts
+index 567ebc54a..68921f62b 100644
+--- a/packages/agents-core/src/sisyphus/gemini.ts
++++ b/packages/agents-core/src/sisyphus/gemini.ts
+@@ -142,7 +142,7 @@ export function buildGeminiToolCallExamples(): string {
+ **User**: "Add a new /health endpoint to the API"
+ **CORRECT**:
+ \`\`\`
+-→ Call Task(category="quick", load_skills=["typescript-programmer"], run_in_background=false, prompt="...")
++→ Call Task(category="quick", load_skills=["typescript-programmer"], run_in_background=true, prompt="...")
+ → (After agent completes) Read changed files to verify
+ → Call LspDiagnostics on changed files
+ → Report
+diff --git a/packages/agents-core/src/sisyphus/gpt-5-5.ts b/packages/agents-core/src/sisyphus/gpt-5-5.ts
+index de6fd4f92..4be681c0e 100644
+--- a/packages/agents-core/src/sisyphus/gpt-5-5.ts
++++ b/packages/agents-core/src/sisyphus/gpt-5-5.ts
+@@ -373,7 +373,7 @@ Don't narrate every tool call, but don't go silent for long stretches on complex
+ 
+ Parameters to always think about:
+ 
+-- \`run_in_background\`: \`true\` for parallel research (\`explore\`, \`librarian\`), \`false\` for synchronous work where the next step depends on the result.
++- \`run_in_background\`: \`true\` is the standard spawn; the completion notification delivers the result while you keep working or end the response. \`false\` blocks this response until the child finishes; use it only for a short child whose result gates your very next call.
+ - \`load_skills\`: evaluate every available skill before each delegation. Err toward loading when the skill's domain even loosely connects to the task.
+ - \`task_id\`: reuse for follow-ups. Do not start fresh sessions on continuations.
+ - \`description\`: a 3-5 word label. Optional but improves observability.
+@@ -384,7 +384,7 @@ Both are background pattern search with narrative synthesis. Always fire them wi
+ 
+ ## oracle
+ 
+-Read-only consultant. Synchronous (\`run_in_background=false\`) when its answer blocks your next step. Background (\`run_in_background=true\`) only for long-running architectural reviews you are happy to return to later. Never proceed with work Oracle was asked to decide before its result arrives.
++Read-only consultant. Run it in the background and continue with work that does not depend on its answer; never proceed with work Oracle was asked to decide before its result arrives.
+ 
+ ## skill loading
+ 
+diff --git a/packages/agents-core/src/specialists/librarian-prompt.ts b/packages/agents-core/src/specialists/librarian-prompt.ts
+index 55d4c5b8f..78ea94756 100644
+--- a/packages/agents-core/src/specialists/librarian-prompt.ts
++++ b/packages/agents-core/src/specialists/librarian-prompt.ts
+@@ -143,7 +143,7 @@ Step 4: Construct permalink
+ Tool 1: gh repo clone owner/repo \${TMPDIR:-/tmp}/repo -- --depth 1
+ Tool 2: grep_app_searchGitHub(query: "function_name", repo: "owner/repo")
+ Tool 3: gh api repos/owner/repo/commits/HEAD --jq '.sha'
+-Tool 4: context7_get-library-docs(id, topic: "relevant-api")
++Tool 4: context7_query-docs(libraryId: id, query: "relevant-api")
+ \`\`\`
+ 
+ ---
+@@ -264,7 +264,6 @@ Use OS-appropriate temp directory:
+ - **TYPE B (Implementation)**: Suggested Calls 2-3 - Doc Discovery Required NO
+ - **TYPE C (Context)**: Suggested Calls 2-3 - Doc Discovery Required NO
+ - **TYPE D (Comprehensive)**: Suggested Calls 3-5 - Doc Discovery Required YES (Phase 0.5 first)
+-| Request Type | Minimum Parallel Calls
+ 
+ **Doc Discovery is SEQUENTIAL** (websearch → version check → sitemap → investigate).
+ **Main phase is PARALLEL** once you know where to look.
+diff --git a/packages/agents-core/src/specialists/momus-prompt.ts b/packages/agents-core/src/specialists/momus-prompt.ts
+index 670318ed3..0bfec839d 100644
+--- a/packages/agents-core/src/specialists/momus-prompt.ts
++++ b/packages/agents-core/src/specialists/momus-prompt.ts
+@@ -1,5 +1,5 @@
+ import type { AgentPromptMetadata } from "../types";
+-import { isGpt5_6Model, isGptModel } from "../types";
++import { isGpt5_6Model, isGpt6Model, isGptModel } from "../types";
+ import { MOMUS_GPT_5_6_PROMPT } from "./momus-gpt-5-6";
+ 
+ /**
+@@ -289,7 +289,7 @@ export interface MomusPromptSelection {
+  * verbosity extras. Harness-agnostic; the adapter maps these onto its config.
+  */
+ export function getMomusPromptSelection(model: string): MomusPromptSelection {
+-  if (isGpt5_6Model(model)) {
++  if (isGpt5_6Model(model) || isGpt6Model(model)) {
+     return { prompt: MOMUS_GPT_5_6_PROMPT, reasoningEffort: "high", textVerbosity: "high" };
+   }
+   if (isGptModel(model)) {
+diff --git a/packages/agents-core/src/specialists/oracle-prompt.ts b/packages/agents-core/src/specialists/oracle-prompt.ts
+index f7bf958c9..8195d9e79 100644
+--- a/packages/agents-core/src/specialists/oracle-prompt.ts
++++ b/packages/agents-core/src/specialists/oracle-prompt.ts
+@@ -1,5 +1,5 @@
+ import type { AgentPromptMetadata } from "../types";
+-import { isGpt5_5Model, isGpt5_6Model, isGptModel } from "../types";
++import { isGpt5_5Model, isGpt5_6Model, isGpt6Model, isGptModel } from "../types";
+ 
+ export const ORACLE_PROMPT_METADATA: AgentPromptMetadata = {
+   category: "advisor",
+@@ -418,7 +418,7 @@ export interface OraclePromptSelection {
+  * verbosity extras. Harness-agnostic; the adapter maps these onto its config.
+  */
+ export function getOraclePromptSelection(model: string): OraclePromptSelection {
+-  if (isGpt5_6Model(model)) {
++  if (isGpt5_6Model(model) || isGpt6Model(model)) {
+     return { prompt: ORACLE_GPT_5_5_PROMPT, reasoningEffort: "xhigh", textVerbosity: "high" };
+   }
+   if (isGpt5_5Model(model)) {
+diff --git a/packages/agents-core/src/types.ts b/packages/agents-core/src/types.ts
+index f91948a0a..25df3eb15 100644
+--- a/packages/agents-core/src/types.ts
++++ b/packages/agents-core/src/types.ts
+@@ -138,6 +138,11 @@ export function isGpt5_6Model(model: string): boolean {
+   return modelName.includes("gpt-5.6") || modelName.includes("gpt-5-6");
+ }
+ 
++export function isGpt6Model(model: string): boolean {
++  const modelName = extractModelName(model).toLowerCase();
++  return modelName.includes("gpt-6");
++}
++
+ export type BuiltinAgentName =
+   | "sisyphus"
+   | "hephaestus"
+diff --git a/packages/omo-opencode/src/agents/AGENTS.md b/packages/omo-opencode/src/agents/AGENTS.md
+index 4dd2b040c..126a15b8c 100644
+--- a/packages/omo-opencode/src/agents/AGENTS.md
++++ b/packages/omo-opencode/src/agents/AGENTS.md
+@@ -20,10 +20,10 @@ Modes verified from each agent file's `const MODE: AgentMode = ...` and (for Pro
+ | Agent | Default Model | Temp | Mode | Fallback (after default) | Purpose |
+ |-------|---------------|------|------|--------------------------|---------|
+ | **Sisyphus** | claude-opus-5 max | (model default) | primary | kimi-k3 → gpt-5.6-sol medium → glm-5.2 → big-pickle | Main orchestrator, plans + delegates; `thinking: { type: "enabled", budgetTokens: 32000 }` |
+-| **Hephaestus** | gpt-5.6-sol medium | (model default) | primary | GPT-5.6 Sol only (`requiresProvider`: openai \| github-copilot \| opencode \| vercel) | Autonomous deep worker |
++| **Hephaestus** | gpt-5.6-sol medium | (model default) | primary | GPT-5.6 Sol only (`requiresProvider`: openai \| openai-codex \| github-copilot \| opencode) | Autonomous deep worker |
+ | **Oracle** | gpt-5.6-sol xhigh (high on Copilot) | 0.1 | subagent | gemini-3.1-pro high → claude-opus-5 max → glm-5.2 | Read-only consultation |
+-| **Librarian** | gpt-5.6-luna-fast | 0.1 | subagent | qwen3.7-plus → minimax-m2.7-highspeed → minimax-m3 → minimax-m2.7 → claude-haiku-4-5 → gpt-5.4-nano | External docs/code search |
+-| **Explore** | gpt-5.6-luna-fast | 0.1 | subagent | qwen3.7-plus → minimax-m2.7-highspeed → minimax-m3 → minimax-m2.7 → claude-haiku-4-5 → gpt-5.4-nano | Contextual grep |
++| **Librarian** | gpt-5.6-luna-fast | 0.1 | subagent | qwen3.7-plus → minimax-m3 → minimax-m2.7 → claude-haiku-4-5 → gpt-5.4-nano | External docs/code search |
++| **Explore** | gpt-5.6-luna-fast | 0.1 | subagent | qwen3.7-plus → minimax-m3 → minimax-m2.7 → claude-haiku-4-5 → gpt-5.4-nano | Contextual grep |
+ | **Multimodal-Looker** | gpt-5.6-sol low | 0.1 | subagent | kimi-k3 → glm-4.6v → gpt-5-nano | PDF/image analysis |
+ | **Metis** | claude-opus-5 high | **0.3** | subagent | kimi-k3 low | Pre-planning consultant |
+ | **Momus** | gpt-5.6-terra high | 0.1 | subagent | gpt-5.6-sol xhigh (high on Copilot) → claude-opus-5 max → gemini-3.1-pro high → glm-5.2 | Plan reviewer |
+@@ -93,12 +93,18 @@ agents/
+ const createXXXAgent: AgentFactory = (model: string) => ({
+   instructions: "...",
+   model,
+-  temperature: 0.1,
++  // Set temperature only when this agent pins a role-specific default.
+   // ...config
+ })
+ createXXXAgent.mode = "subagent" // or "primary" or "all"
+ ```
+ 
++Temperature is opt-in per agent. Most consultant and helper agents pin
++`0.1`, Metis pins `0.3`, and coordinator / role agents intentionally
++leave temperature unset when they should use the selected model's
++default. Sisyphus, Hephaestus, and Prometheus leave temperature unset
++unless an override or category config supplies one.
++
+ Model resolution: 4-step pipeline → override → category-default → provider-fallback → system-default. Defined in [`shared/model-resolution-pipeline.ts`](../shared/model-resolution-pipeline.ts).
+ 
+ ## MODES
+diff --git a/packages/omo-opencode/src/agents/atlas/prompt-section-builder.ts b/packages/omo-opencode/src/agents/atlas/prompt-section-builder.ts
+index 70f031748..75bc51032 100644
+--- a/packages/omo-opencode/src/agents/atlas/prompt-section-builder.ts
++++ b/packages/omo-opencode/src/agents/atlas/prompt-section-builder.ts
+@@ -46,7 +46,7 @@ Categories spawn \`Sisyphus-Junior-{category}\` with optimized settings:
+ ${categoryRows.join("\n")}
+ 
+ \`\`\`typescript
+-task(category="[category-name]", load_skills=[...], run_in_background=false, prompt="...")
++task(category="[category-name]", load_skills=[...], run_in_background=true, prompt="...")
+ \`\`\``
+ }
+ 
+@@ -73,7 +73,7 @@ Read each skill's description in the section below and ask: "Does this skill's d
+ 
+ **Usage:**
+ \`\`\`typescript
+-task(category="[category]", load_skills=["skill-1", "skill-2"], run_in_background=false, prompt="...")
++task(category="[category]", load_skills=["skill-1", "skill-2"], run_in_background=true, prompt="...")
+ \`\`\`
+ 
+ **IMPORTANT:**
+diff --git a/packages/omo-opencode/src/agents/builtin-agents/available-skills.ts b/packages/omo-opencode/src/agents/builtin-agents/available-skills.ts
+index b13c75bf0..fff337334 100644
+--- a/packages/omo-opencode/src/agents/builtin-agents/available-skills.ts
++++ b/packages/omo-opencode/src/agents/builtin-agents/available-skills.ts
+@@ -2,7 +2,7 @@ import type { AvailableSkill } from "../dynamic-agent-prompt-builder"
+ import type { BrowserAutomationProvider } from "../../config/schema"
+ import type { LoadedSkill, SkillScope } from "../../features/opencode-skill-loader/types"
+ import { isDisabledSkillAlias } from "../../features/opencode-skill-loader"
+-import { createBuiltinSkills } from "../../features/builtin-skills"
++import { createBuiltinSkills } from "@oh-my-opencode/skills-loader-core/builtin-skills"
+ 
+ function mapScopeToLocation(scope: SkillScope): AvailableSkill["location"] {
+   if (scope === "user" || scope === "opencode") return "user"
+diff --git a/packages/omo-opencode/src/agents/frontier-tool-schema-guard.ts b/packages/omo-opencode/src/agents/frontier-tool-schema-guard.ts
+index d7d5b9f7f..71a205d54 100644
+--- a/packages/omo-opencode/src/agents/frontier-tool-schema-guard.ts
++++ b/packages/omo-opencode/src/agents/frontier-tool-schema-guard.ts
+@@ -1,12 +1,12 @@
+ import type { AgentConfig } from "@opencode-ai/sdk"
+-import { isClaudeOpus47OrLaterModel, isGpt5_5Model, isGpt5_6Model } from "./types"
++import { isClaudeOpus47OrLaterModel, isGpt5_5Model, isGpt5_6Model, isGpt6Model } from "./types"
+ import type { PermissionValue } from "../shared/permission-compat"
+ 
+ const FRONTIER_TOOL_SCHEMA_NAMES = ["grep", "glob"] as const
+ type MutablePermission = Record<string, PermissionValue | Record<string, PermissionValue>>
+ 
+ export function getFrontierToolSchemaPermission(model: string): Record<string, "deny"> {
+-  return isClaudeOpus47OrLaterModel(model) || isGpt5_5Model(model) || isGpt5_6Model(model)
++  return isClaudeOpus47OrLaterModel(model) || isGpt5_5Model(model) || isGpt5_6Model(model) || isGpt6Model(model)
+     ? { grep: "deny" as const, glob: "deny" as const }
+     : {}
+ }
+diff --git a/packages/omo-opencode/src/agents/gpt-5.6-warm-cache-registration.test.ts b/packages/omo-opencode/src/agents/gpt-5.6-warm-cache-registration.test.ts
+index 9251863dd..17edae099 100644
+--- a/packages/omo-opencode/src/agents/gpt-5.6-warm-cache-registration.test.ts
++++ b/packages/omo-opencode/src/agents/gpt-5.6-warm-cache-registration.test.ts
+@@ -6,12 +6,12 @@ import { createMomusAgent } from "./momus"
+ 
+ type AgentSources = Parameters<typeof collectPendingBuiltinAgents>[0]["agentSources"]
+ 
+-describe("Momus GPT-5.6 warm-cache registration", () => {
+-  test("registers transformed Vercel terra ahead of Copilot terra", () => {
++describe("Momus GPT-6 Astra warm-cache registration", () => {
++  test("registers Copilot astra ahead of transformed Vercel astra", () => {
+     // given
+     const availableModels = new Set([
+-      "github-copilot/gpt-5.6-terra",
+-      "vercel/openai/gpt-5.6-terra",
++      "github-copilot/gpt-6-astra",
++      "vercel/openai/gpt-6-astra",
+     ])
+ 
+     // when
+@@ -27,7 +27,7 @@ describe("Momus GPT-5.6 warm-cache registration", () => {
+     const config = pendingAgentConfigs.get("momus")
+ 
+     // then
+-    expect(config?.model).toBe("vercel/openai/gpt-5.6-terra")
++    expect(config?.model).toBe("github-copilot/gpt-6-astra")
+     expect(config?.variant).toBe("high")
+   })
+ })
+diff --git a/packages/omo-opencode/src/agents/gpt-shared-prompt-identity.test.ts b/packages/omo-opencode/src/agents/gpt-shared-prompt-identity.test.ts
+index 2355497e9..6e86f05ed 100644
+--- a/packages/omo-opencode/src/agents/gpt-shared-prompt-identity.test.ts
++++ b/packages/omo-opencode/src/agents/gpt-shared-prompt-identity.test.ts
+@@ -8,6 +8,7 @@ describe("shared GPT prompt identities", () => {
+   for (const [model, identityKey] of [
+     ["openai/gpt-5.5", "gpt-5.5"],
+     ["openai/gpt-5.6-sol", "gpt-5.6-sol"],
++    ["github-copilot/gpt-6-astra", "gpt-6-astra"],
+   ] as const) {
+     test(`selects the ${identityKey} identity contract`, () => {
+       // given a supported GPT model routed through the shared prompt family
+@@ -20,7 +21,7 @@ describe("shared GPT prompt identities", () => {
+     })
+   }
+ 
+-  for (const model of ["openai/gpt-5.5", "openai/gpt-5.6-sol"]) {
++  for (const model of ["openai/gpt-5.5", "openai/gpt-5.6-sol", "github-copilot/gpt-6-astra"]) {
+     test(`routes ${model} through the shared Atlas GPT prompt source`, () => {
+       // given a supported GPT model
+ 
+diff --git a/packages/omo-opencode/src/agents/hephaestus/agent.test.ts b/packages/omo-opencode/src/agents/hephaestus/agent.test.ts
+index 5783cd9de..d70ccbd3d 100644
+--- a/packages/omo-opencode/src/agents/hephaestus/agent.test.ts
++++ b/packages/omo-opencode/src/agents/hephaestus/agent.test.ts
+@@ -135,6 +135,11 @@ describe("getHephaestusPromptSource", () => {
+     expect(source2).toBe("gpt-5-5");
+   });
+ 
++  test("returns 'gpt-5-6' for GPT-6 Astra models", () => {
++    expect(getHephaestusPromptSource("openai/gpt-6-astra")).toBe("gpt-5-6")
++    expect(getHephaestusPromptSource("github-copilot/gpt-6-astra-fast")).toBe("gpt-5-6")
++  })
++
+   test("returns 'gpt-5-6' for gpt-5.6 family models", () => {
+     // given
+     const model1 = "openai/gpt-5.6";
+diff --git a/packages/omo-opencode/src/agents/momus.test.ts b/packages/omo-opencode/src/agents/momus.test.ts
+index 9954013db..d7a725920 100644
+--- a/packages/omo-opencode/src/agents/momus.test.ts
++++ b/packages/omo-opencode/src/agents/momus.test.ts
+@@ -2,6 +2,29 @@ import { describe, expect, test } from "bun:test";
+ import { createMomusAgent } from "./momus";
+ 
+ describe("createMomusAgent", () => {
++  test("uses the GPT-5.6-class prompt and high reasoning for GPT-6 Astra", () => {
++    const agent = createMomusAgent("openai/gpt-6-astra")
++    expect(agent.reasoningEffort).toBe("high")
++    expect(agent.prompt).toBe(createMomusAgent("openai/gpt-5.6-sol").prompt)
++  })
++
++  test("keeps the GPT-5.6-class prompt for the Copilot and fast Astra ids momus now resolves to", () => {
++    // given
++    const solConfig = createMomusAgent("openai/gpt-5.6-sol")
++    const genericGptConfig = createMomusAgent("openai/gpt-5.5")
++
++    // when
++    const copilotConfig = createMomusAgent("github-copilot/gpt-6-astra")
++    const fastConfig = createMomusAgent("openai/gpt-6-astra-fast")
++
++    // then
++    for (const config of [copilotConfig, fastConfig]) {
++      expect(config.prompt).toBe(solConfig.prompt)
++      expect(config.prompt).not.toBe(genericGptConfig.prompt)
++      expect(config.reasoningEffort).toBe("high")
++      expect(config.textVerbosity).toBe("high")
++    }
++  })
+   describe("#given a GPT-5.6 family model", () => {
+     test("#when creating the agent #then it runs high reasoning with a GPT-5.6 tuned prompt", () => {
+       // given
+diff --git a/packages/omo-opencode/src/agents/oracle.test.ts b/packages/omo-opencode/src/agents/oracle.test.ts
+index f968e97aa..8c1c376f7 100644
+--- a/packages/omo-opencode/src/agents/oracle.test.ts
++++ b/packages/omo-opencode/src/agents/oracle.test.ts
+@@ -14,6 +14,10 @@ describe("createOracleAgent", () => {
+     expect(agent.reasoningEffort).toBe("xhigh")
+   })
+ 
++  test("uses xhigh reasoning effort for GPT-6 Astra frontier routing", () => {
++    expect(createOracleAgent("github-copilot/gpt-6-astra").reasoningEffort).toBe("xhigh")
++  })
++
+   test("preserves medium reasoning effort for gpt-5.5 fallback", () => {
+     // given
+     const model = "openai/gpt-5.5"
+diff --git a/packages/omo-opencode/src/agents/prometheus/AGENTS.md b/packages/omo-opencode/src/agents/prometheus/AGENTS.md
+index 7a04239ce..af6308daa 100644
+--- a/packages/omo-opencode/src/agents/prometheus/AGENTS.md
++++ b/packages/omo-opencode/src/agents/prometheus/AGENTS.md
+@@ -43,7 +43,7 @@ The prompt requires Prometheus to load `ulw-plan` as its first action with the s
+ - High-accuracy review expectations
+ - Worker-ready task graphs and verification criteria
+ 
+-Prometheus itself stays a planner. It reads, searches, and writes planning artifacts only; implementation belongs to downstream workers after explicit start-work approval.
++Prometheus itself stays a planner. It reads, searches, and writes planning artifacts only; implementation belongs to downstream workers after explicit ulw-execute approval.
+ 
+ ## KEY CONSTRAINTS
+ 
+diff --git a/packages/omo-opencode/src/agents/prometheus/system-prompt.test.ts b/packages/omo-opencode/src/agents/prometheus/system-prompt.test.ts
+index 614baa1ab..d53f69788 100644
+--- a/packages/omo-opencode/src/agents/prometheus/system-prompt.test.ts
++++ b/packages/omo-opencode/src/agents/prometheus/system-prompt.test.ts
+@@ -6,7 +6,7 @@ import { getPrometheusPrompt } from "./system-prompt"
+ const MODEL_IDS = [
+   undefined,
+   "anthropic/claude-opus-4-8",
+-  "anthropic/claude-fable-5",
++  "anthropic/claude-fable-5-1",
+   "gpt-5.5",
+   "gemini-3.1-pro",
+   "opencode-go/kimi-k2.7",
+diff --git a/packages/omo-opencode/src/agents/sisyphus-agent-factory.ts b/packages/omo-opencode/src/agents/sisyphus-agent-factory.ts
+index 4ae8cb851..6ff8bb602 100644
+--- a/packages/omo-opencode/src/agents/sisyphus-agent-factory.ts
++++ b/packages/omo-opencode/src/agents/sisyphus-agent-factory.ts
+@@ -32,6 +32,7 @@ import {
+   isGlmModel,
+   isGpt5_5Model,
+   isGpt5_6Model,
++  isGpt6Model,
+   isGptModel,
+   isGptNativeSisyphusModel,
+   isGrok45Model,
+@@ -68,7 +69,7 @@ export function resolveSisyphusPromptFamily(model: string): SisyphusPromptFamily
+   if (isKimiK3Model(model)) return "kimi-k3";
+   if (isKimiK27Model(model)) return "kimi-k2-7";
+   if (isKimiK2Model(model)) return "kimi-k2-6";
+-  if (isGpt5_5Model(model) || isGpt5_6Model(model)) return "gpt-5-5";
++  if (isGpt5_5Model(model) || isGpt5_6Model(model) || isGpt6Model(model)) return "gpt-5-5";
+   if (isGptNativeSisyphusModel(model)) return "gpt-5-4";
+   if (isClaudeFable5Model(model)) return "claude-fable-5";
+   if (isClaudeOpus5Model(model)) return "claude-opus-5";
+diff --git a/packages/omo-opencode/src/agents/sisyphus-junior/AGENTS.md b/packages/omo-opencode/src/agents/sisyphus-junior/AGENTS.md
+index eec9d92f2..1581d0f87 100644
+--- a/packages/omo-opencode/src/agents/sisyphus-junior/AGENTS.md
++++ b/packages/omo-opencode/src/agents/sisyphus-junior/AGENTS.md
+@@ -9,7 +9,7 @@ description: Developer reference for the Sisyphus-Junior category-spawned execut
+ 
+ ## OVERVIEW
+ 
+-10 files. Sisyphus-Junior is a focused task executor spawned by `delegate-task` when category routing requires it. Runs in subagent mode with its own fallback chain. Does not delegate further; executes directly.
++12 files. Sisyphus-Junior is a focused task executor spawned by `delegate-task` when category routing requires it. Runs in subagent mode with its own fallback chain. Does not delegate further; executes directly.
+ 
+ ## FILES
+ 
+@@ -25,6 +25,7 @@ description: Developer reference for the Sisyphus-Junior category-spawned execut
+ | `kimi-k2-6.ts` | Kimi K2.6 prompt variant |
+ | `kimi-k2-7.ts` | Kimi K2.7-native prompt variant |
+ | `kimi-k3.ts` | Kimi K3-native prompt variant (reasoning depth with built-in stop conditions) |
++| `glm-5-2.ts` | GLM-5.2-native prompt variant |
+ | `index.test.ts` | Unit tests |
+ 
+ ## VARIANT SELECTION
+@@ -37,7 +38,8 @@ Parent `agent.ts` selects prompt variant by model name:
+ - Contains "gpt-5.4" -> `gpt-5-4.ts`
+ - Contains "gpt" -> `gpt.ts`
+ - Contains "gemini" -> `gemini.ts`
+-- Default -> `default.ts` (Claude, GLM, etc.)
++- Contains "glm" -> `glm-5-2.ts`
++- Default -> `default.ts` (Claude, etc.)
+ 
+ ## KEY BEHAVIORS
+ 
+diff --git a/packages/omo-opencode/src/agents/types.ts b/packages/omo-opencode/src/agents/types.ts
+index eef70804c..41c01a22c 100644
+--- a/packages/omo-opencode/src/agents/types.ts
++++ b/packages/omo-opencode/src/agents/types.ts
+@@ -21,6 +21,7 @@ export {
+   isGptNativeSisyphusModel,
+   isGpt5_5Model,
+   isGpt5_6Model,
++  isGpt6Model,
+ } from "@oh-my-opencode/agents-core";
+ 
+ export type {
+diff --git a/packages/omo-opencode/src/agents/utils.test.ts b/packages/omo-opencode/src/agents/utils.test.ts
+index f09b13bbb..03d79ddaa 100644
+--- a/packages/omo-opencode/src/agents/utils.test.ts
++++ b/packages/omo-opencode/src/agents/utils.test.ts
+@@ -1165,7 +1165,7 @@ describe("buildAgent with category and skills", () => {
+     const agent = resolveAgentSkills(buildAgent(source["test-agent"], TEST_MODEL))
+ 
+     // #then - category's built-in model is applied
+-    expect(agent.model).toBe("anthropic/claude-opus-5")
++    expect(agent.model).toBe("anthropic/claude-fable-5-1")
+   })
+ 
+   test("agent with category and existing model keeps existing model", () => {
+@@ -1284,8 +1284,8 @@ describe("buildAgent with category and skills", () => {
+     const agent = resolveAgentSkills(buildAgent(source["test-agent"], TEST_MODEL))
+ 
+     // #then - category's built-in model and skills are applied
+-    expect(agent.model).toBe("openai/gpt-5.6-sol")
+-    expect(agent.variant).toBe("xhigh")
++    expect(agent.model).toBe("openai/gpt-6-astra")
++    expect(agent.variant).toBe("max")
+     const prompt = agent.prompt ?? ""
+     const skillContent = frontendSkillContent()
+     expect(prompt).toContain(skillContent)
+@@ -1431,16 +1431,16 @@ describe("override.category expansion in createBuiltinAgents", () => {
+     // #when
+     const agents = await createBuiltinAgents([], overrides, undefined, TEST_DEFAULT_MODEL)
+ 
+-    // #then - ultrabrain category: model=openai/gpt-5.6-sol, variant=xhigh
++    // #then - ultrabrain category: model=openai/gpt-6-astra, variant=max
+     expect(agents.oracle).toBeDefined()
+-    expect(agents.oracle.model).toBe("openai/gpt-5.6-sol")
+-    expect(agents.oracle.variant).toBe("xhigh")
++    expect(agents.oracle.model).toBe("openai/gpt-6-astra")
++    expect(agents.oracle.variant).toBe("max")
+   })
+ 
+   test("standard agent override with category AND direct variant - direct wins", async () => {
+-    // #given - ultrabrain has variant=xhigh, but direct override says "max"
++    // #given - ultrabrain has variant=max, but direct override says "high"
+     const overrides = {
+-      oracle: { category: "ultrabrain", variant: "max" },
++      oracle: { category: "ultrabrain", variant: "high" },
+     }
+ 
+     // #when
+@@ -1448,7 +1448,7 @@ describe("override.category expansion in createBuiltinAgents", () => {
+ 
+     // #then - direct variant overrides category variant
+     expect(agents.oracle).toBeDefined()
+-    expect(agents.oracle.variant).toBe("max")
++    expect(agents.oracle.variant).toBe("high")
+   })
+ 
+   test("standard agent override with category AND direct reasoningEffort - direct wins", async () => {
+@@ -1500,10 +1500,10 @@ describe("override.category expansion in createBuiltinAgents", () => {
+     // #when
+     const agents = await createBuiltinAgents([], overrides, undefined, TEST_DEFAULT_MODEL)
+ 
+-    // #then - ultrabrain category: model=openai/gpt-5.6-sol, variant=xhigh
++    // #then - ultrabrain category: model=openai/gpt-6-astra, variant=max
+     expect(agents.sisyphus).toBeDefined()
+-    expect(agents.sisyphus.model).toBe("openai/gpt-5.6-sol")
+-    expect(agents.sisyphus.variant).toBe("xhigh")
++    expect(agents.sisyphus.model).toBe("openai/gpt-6-astra")
++    expect(agents.sisyphus.variant).toBe("max")
+   })
+ 
+   test("atlas override with category expands category properties", async () => {
+@@ -1515,10 +1515,10 @@ describe("override.category expansion in createBuiltinAgents", () => {
+     // #when
+     const agents = await createBuiltinAgents([], overrides, undefined, TEST_DEFAULT_MODEL)
+ 
+-    // #then - ultrabrain category: model=openai/gpt-5.6-sol, variant=xhigh
++    // #then - ultrabrain category: model=openai/gpt-6-astra, variant=max
+     expect(agents.atlas).toBeDefined()
+-    expect(agents.atlas.model).toBe("openai/gpt-5.6-sol")
+-    expect(agents.atlas.variant).toBe("xhigh")
++    expect(agents.atlas.model).toBe("openai/gpt-6-astra")
++    expect(agents.atlas.variant).toBe("max")
+   })
+ 
+   test("override with non-existent category has no effect on config", async () => {
