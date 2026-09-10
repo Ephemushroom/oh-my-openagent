@@ -1,5 +1,5 @@
 import type { AgentPromptMetadata } from "../types";
-import { isGpt5_5Model, isGpt5_6Model, isGptModel } from "../types";
+import { isGpt5_5Model, isGpt5_6Model, isGpt6Model, isGptModel } from "../types";
 
 export const ORACLE_PROMPT_METADATA: AgentPromptMetadata = {
   category: "advisor",
@@ -418,7 +418,7 @@ export interface OraclePromptSelection {
  * verbosity extras. Harness-agnostic; the adapter maps these onto its config.
  */
 export function getOraclePromptSelection(model: string): OraclePromptSelection {
-  if (isGpt5_6Model(model)) {
+  if (isGpt5_6Model(model) || isGpt6Model(model)) {
     return { prompt: ORACLE_GPT_5_5_PROMPT, reasoningEffort: "xhigh", textVerbosity: "high" };
   }
   if (isGpt5_5Model(model)) {

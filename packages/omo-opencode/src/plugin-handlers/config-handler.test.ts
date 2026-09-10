@@ -13,7 +13,7 @@ import * as builtinCommands from "../features/builtin-commands"
 import * as skillLoader from "../features/opencode-skill-loader"
 import * as agentLoader from "../features/claude-code-agent-loader"
 import * as mcpLoader from "../features/claude-code-mcp-loader"
-import * as pluginLoader from "../features/claude-code-plugin-loader"
+import * as pluginLoader from "@oh-my-opencode/claude-code-compat-core/claude-code-plugin-loader"
 import * as mcpModule from "../mcp"
 import * as shared from "../shared"
 import * as configDir from "../shared/opencode-config-dir"
@@ -841,8 +841,8 @@ describe("Prometheus category config resolution", () => {
 
     // then
     expect(config).toBeDefined()
-    expect(config?.model).toBe("openai/gpt-5.6-sol")
-    expect(config?.variant).toBe("xhigh")
+    expect(config?.model).toBe("openai/gpt-6-astra")
+    expect(config?.variant).toBe("max")
   })
 
   test("resolves visual-engineering category config", () => {
@@ -854,7 +854,7 @@ describe("Prometheus category config resolution", () => {
 
     // then
     expect(config).toBeDefined()
-    expect(config?.model).toBe("anthropic/claude-opus-5")
+    expect(config?.model).toBe("anthropic/claude-fable-5-1")
   })
 
   test("user categories override default categories", () => {
@@ -901,8 +901,8 @@ describe("Prometheus category config resolution", () => {
 
     // then - falls back to DEFAULT_CATEGORIES
     expect(config).toBeDefined()
-    expect(config?.model).toBe("openai/gpt-5.6-sol")
-    expect(config?.variant).toBe("xhigh")
+    expect(config?.model).toBe("openai/gpt-6-astra")
+    expect(config?.variant).toBe("max")
   })
 
   test("preserves all category properties (temperature, top_p, tools, etc.)", () => {
@@ -1502,7 +1502,7 @@ describe("config-handler plugin loading error boundary (#1559)", () => {
 })
 
 describe("command agent routing coherence", () => {
-  test("keeps start-work aligned with the exported Atlas list key opencode matches exactly", async () => {
+  test("keeps ulw-execute aligned with the exported Atlas list key opencode matches exactly", async () => {
     //#given
     const createBuiltinAgentsMock = unsafeTestValue<{
       mockResolvedValue: (value: Record<string, unknown>) => void
@@ -1514,8 +1514,8 @@ describe("command agent routing coherence", () => {
     ;(unsafeTestValue<{
       mockReturnValue: (value: Record<string, unknown>) => void
     }>(builtinCommands.loadBuiltinCommands)).mockReturnValue({
-      "start-work": {
-        name: "start-work",
+      "ulw-execute": {
+        name: "ulw-execute",
         description: "(builtin) Start work",
         template: "template",
         agent: "atlas",
@@ -1542,7 +1542,7 @@ describe("command agent routing coherence", () => {
     const agentConfig = config.agent as Record<string, unknown>
     const commandConfig = config.command as Record<string, { agent?: string }>
     expect(Object.keys(agentConfig)).toContain(getAgentListDisplayName("atlas"))
-    expect(commandConfig["start-work"]?.agent).toBe(getAgentListDisplayName("atlas"))
+    expect(commandConfig["ulw-execute"]?.agent).toBe(getAgentListDisplayName("atlas"))
   })
 })
 

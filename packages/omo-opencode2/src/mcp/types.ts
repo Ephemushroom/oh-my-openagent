@@ -20,7 +20,7 @@ export type RemoteMcpServerConfig = {
 
 export type BuiltinMcpServerConfig = LocalMcpServerConfig | RemoteMcpServerConfig
 
-export const BUILTIN_MCP_NAMES = ["context7", "grep_app", "lsp", "codegraph"] as const
+export const BUILTIN_MCP_NAMES = ["context7", "grep_app", "lsp"] as const
 export type BuiltinMcpName = (typeof BUILTIN_MCP_NAMES)[number]
 
 export function isBuiltinMcpName(value: string): value is BuiltinMcpName {

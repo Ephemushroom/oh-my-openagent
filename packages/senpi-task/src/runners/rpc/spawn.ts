@@ -10,6 +10,7 @@ import { MEMBER_EXTENSION_BUNDLE_NAME, MEMBER_PROCESS_ENV_NAMES } from "../../te
 const require = createRequire(import.meta.url)
 
 const SESSION_DIR_ENV = "SENPI_CODING_AGENT_SESSION_DIR"
+export const OMO_SENPI_TASK_RPC_CHILD = "OMO_SENPI_TASK_RPC_CHILD"
 const SENPI_BIN_ENV = "SENPI_BIN"
 const RPC_ENTRY_SPECIFIER = "@code-yeongyu/senpi/rpc-entry"
 
@@ -31,12 +32,19 @@ export type SenpiLauncher = {
 
 export type RpcSpawnRuntime = {
   readonly isBunBinary: boolean
+  // The running process embeds the engine (a compiled omo or senpi binary), so it IS the child engine.
+  readonly isCompiledEngine?: boolean
   readonly execPath: string
   readonly platform: NodeJS.Platform
   readonly parentEnv: NodeJS.ProcessEnv
   readonly resolveRpcEntry: () => string
   // Injectable so tests can pin the executable-vs-fallback branch; defaults to resolveSenpiExecutable.
   readonly resolveSenpiExecutable?: (runtime: RpcSpawnRuntime) => string | null
+  // Running @code-yeongyu/senpi version used to reject PATH/sibling candidates of a different version.
+  // When omitted or unreadable, the parity check is skipped (candidates are accepted).
+  readonly engineVersion?: string
+  // Optional diagnostics for rejected PATH/sibling candidates. Defaults to a no-op.
+  readonly onWarning?: (message: string) => void
 }
 
 /**
@@ -45,6 +53,17 @@ export type RpcSpawnRuntime = {
  */
 export function detectBunBinary(metaUrl: string): boolean {
   return metaUrl.includes("$bunfs") || metaUrl.includes("~BUN") || metaUrl.includes("%7EBUN")
+}
+
+/**
+ * Whether this process is a Bun single-file executable that embeds the engine. Such a process IS
+ * the engine: spawning `process.execPath` yields a child with the same version and the same shipped
+ * assets, which no PATH or sibling lookup can promise. `import.meta.url` cannot answer this: omo's
+ * plugin is loaded from a real file inside the compiled binary, so its URL is a plain `file:` path
+ * and `detectBunBinary` reports false while PATH may hold a different senpi install entirely.
+ */
+export function detectCompiledEngine(): boolean {
+  return typeof Bun !== "undefined" && Bun.embeddedFiles.length > 0
 }
 
 /**
@@ -60,11 +79,17 @@ function senpiBinaryName(platform: NodeJS.Platform): string {
   return platform === "win32" ? "senpi.exe" : "senpi"
 }
 
-function scanPathForExecutable(name: string, pathValue: string | undefined): string | null {
+function scanPathForExecutable(
+  name: string,
+  pathValue: string | undefined,
+  isAcceptable?: (canonical: string) => boolean,
+): string | null {
   for (const dir of (pathValue ?? "").split(delimiter)) {
     if (dir.length === 0) continue
     const candidate = canonicalExecutable(join(dir, name))
-    if (candidate !== null) return candidate
+    if (candidate === null) continue
+    if (isAcceptable !== undefined && !isAcceptable(candidate)) continue
+    return candidate
   }
   return null
 }
@@ -78,12 +103,77 @@ function canonicalExecutable(candidate: string): string | null {
   }
 }
 
+const SENPI_PACKAGE_NAME = "@code-yeongyu/senpi"
+const MANIFEST_WALK_MAX_LEVELS = 3
+
+export function readEngineVersionFromResolvePaths(paths: readonly string[]): string | undefined {
+  for (const dir of paths) {
+    try {
+      const pkg = JSON.parse(readFileSync(join(dir, "@code-yeongyu", "senpi", "package.json"), "utf8")) as {
+        name?: unknown
+        version?: unknown
+      }
+      if (pkg.name === SENPI_PACKAGE_NAME && typeof pkg.version === "string" && pkg.version.length > 0) {
+        return pkg.version
+      }
+    } catch {
+      // Missing or invalid manifest at this resolution path; keep scanning.
+    }
+  }
+  return undefined
+}
+
+export function readRunningEngineVersion(): string | undefined {
+  const fromPaths = readEngineVersionFromResolvePaths(require.resolve.paths(SENPI_PACKAGE_NAME) ?? [])
+  if (fromPaths !== undefined) return fromPaths
+  try {
+    return readCandidateSenpiVersion(require.resolve(SENPI_PACKAGE_NAME))
+  } catch {
+    return undefined
+  }
+}
+
+function readCandidateSenpiVersion(executable: string): string | undefined {
+  let dir = dirname(executable)
+  for (let depth = 0; depth <= MANIFEST_WALK_MAX_LEVELS; depth += 1) {
+    try {
+      const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
+        name?: unknown
+        version?: unknown
+      }
+      if (pkg.name === SENPI_PACKAGE_NAME && typeof pkg.version === "string" && pkg.version.length > 0) {
+        return pkg.version
+      }
+    } catch {
+      // Missing or invalid manifest at this level; keep walking.
+    }
+    const parent = dirname(dir)
+    if (parent === dir) break
+    dir = parent
+  }
+  return undefined
+}
+
+function passesEngineParity(candidate: string, runtime: RpcSpawnRuntime): boolean {
+  const engineVersion = runtime.engineVersion
+  if (engineVersion === undefined || engineVersion.length === 0) return true
+  const candidateVersion = readCandidateSenpiVersion(candidate)
+  if (candidateVersion === undefined) return true
+  if (candidateVersion === engineVersion) return true
+  runtime.onWarning?.(
+    `Skipping senpi executable ${candidate} version ${candidateVersion}; running engine is ${engineVersion}`,
+  )
+  return false
+}
+
 /**
  * Resolve the senpi EXECUTABLE to spawn the rpc child with (`<exe> --mode rpc`). Spawning the binary
  * directly bypasses module resolution, which senpi's own loader alias HIJACKS when omo runs as a senpi
  * extension: `require.resolve("@code-yeongyu/senpi/rpc-entry")` then resolves to the running dist entry
  * instead of the child rpc entry and the child never boots. Preference order: an explicit `SENPI_BIN`
- * override, the sibling binary next to a Bun-compiled senpi, then a PATH scan. Returns null when no
+ * override (used even when its package version differs), the running executable when it embeds the
+ * engine (`isCompiledEngine`), the sibling binary next to a Bun-compiled senpi, then a PATH scan. Sibling and PATH candidates whose @code-yeongyu/senpi manifest version differs from
+ * the running engine are skipped; a candidate with no readable manifest is kept. Returns null when no
  * executable is found so buildRpcSpawn can fall back to the documented `execPath + rpc-entry` path.
  */
 export function resolveSenpiExecutable(runtime: RpcSpawnRuntime): string | null {
@@ -95,10 +185,13 @@ export function resolveSenpiExecutable(runtime: RpcSpawnRuntime): string | null 
     }
     return scanPathForExecutable(override, runtime.parentEnv.PATH)
   }
+  if (runtime.isCompiledEngine === true) return canonicalExecutable(runtime.execPath)
+  const acceptParity = (candidate: string) => passesEngineParity(candidate, runtime)
   if (runtime.isBunBinary) {
-    return canonicalExecutable(join(dirname(runtime.execPath), binaryName))
+    const sibling = canonicalExecutable(join(dirname(runtime.execPath), binaryName))
+    return sibling !== null && acceptParity(sibling) ? sibling : null
   }
-  return scanPathForExecutable(binaryName, runtime.parentEnv.PATH)
+  return scanPathForExecutable(binaryName, runtime.parentEnv.PATH, acceptParity)
 }
 
 function normalizeSenpiLauncher(executable: string, runtime: RpcSpawnRuntime): SenpiLauncher | null {
@@ -132,7 +225,8 @@ export function resolveSenpiLauncher(runtime: RpcSpawnRuntime): SenpiLauncher | 
 
 /**
  * The child-facing argv tail shared by both spawn strategies: `--no-extensions` so the detached child
- * does NOT auto-load the parent's whole package set, then ONLY the threaded `-e` extensions, then the
+ * does NOT auto-load the parent's whole package set, then `--no-ask-user` so the child cannot register
+ * the parent-only question tools, then ONLY the threaded `-e` extensions, then the
  * threaded `--model` so the separate process resolves the requested provider/modelId.
  */
 function isDagOwnedChild(spec: RpcRunnerSpec): boolean {
@@ -145,7 +239,7 @@ function isDagOwnedChild(spec: RpcRunnerSpec): boolean {
 }
 
 export function buildChildArgs(spec: RpcRunnerSpec): readonly string[] {
-  const args: string[] = ["--no-extensions"]
+  const args: string[] = ["--no-extensions", "--no-ask-user"]
   // The OMO launcher prepends its own extension before user/provider entries. DAG-owned tasks drop
   // that first entry so the detached child cannot boot a task engine, while provider extensions
   // and every non-DAG child's extension list remain unchanged.
@@ -186,10 +280,12 @@ function resolveRpcEntrySpecifier(): string {
 function defaultRuntime(): RpcSpawnRuntime {
   return {
     isBunBinary: detectBunBinary(import.meta.url),
+    isCompiledEngine: detectCompiledEngine(),
     execPath: process.execPath,
     platform: process.platform,
     parentEnv: process.env,
     resolveRpcEntry: resolveRpcEntrySpecifier,
+    engineVersion: readRunningEngineVersion(),
   }
 }
 
@@ -214,6 +310,7 @@ function buildChildProfile(
   for (const name of MEMBER_PROCESS_ENV_NAMES) delete env[name]
   Object.assign(env, spec.memberEnv)
   env[SESSION_DIR_ENV] = resolveChildSessionDir(spec.state_dir, spec.task_id)
+  env[OMO_SENPI_TASK_RPC_CHILD] = "1"
   const extensions = spec.memberEnv === undefined
     ? spec.extensions?.filter((entry) => basename(entry) !== MEMBER_EXTENSION_BUNDLE_NAME)
     : spec.extensions

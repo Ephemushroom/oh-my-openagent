@@ -30,7 +30,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
 | Tools | 10 base + 19 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
-| MCP servers | 4 built-ins | `context7` + `grep_app` (remote), `lsp` + `codegraph` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
+| MCP servers | 3 built-ins | `context7` + `grep_app` (remote), `lsp` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
 | Commands | builtin | slash commands via `registerBuiltinCommands` |
 
@@ -146,7 +146,7 @@ injectors are configurations of `orchestration/idle-injector.ts`: the feature
 supplies the predicate, the prompt, and the trace name; the busy/idle tracking,
 settle delay, post-settle re-checks and gated dispatch are shared.
 
-## Boulder (start-work) idle continuation
+## Boulder (ulw-execute) idle continuation
 
 A third idle injector. When the session goes idle owning an active plan in
 `.omo/boulder.json` with unchecked top-level tasks, it injects the next task and
@@ -219,9 +219,9 @@ so a wide monitor cannot flood the context window.
 
 ## Built-in MCP servers
 
-`src/mcp/` registers four v1 built-ins through `ctx.mcp.transform` (the MCP
-domain added in beta-17793): `context7` + `grep_app` (remote) and `lsp` +
-`codegraph` (local stdio). **websearch is deliberately absent**: opencode2
+`src/mcp/` registers three v1 built-ins through `ctx.mcp.transform` (the MCP
+domain added in beta-17793): `context7` + `grep_app` (remote) and `lsp`
+(local stdio). **websearch is deliberately absent**: opencode2
 ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
 
 - **A user-defined server entry always wins.** The transform checks the draft
@@ -240,9 +240,9 @@ ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
   `package.json` is readable — the version feeds `OMO_LSP_DAEMON_VERSION`) →
   self-building bootstrap script. User config paths are v2-layout
   (`$XDG_CONFIG_HOME/opencode/lsp.json`).
-- codegraph reuses `@oh-my-opencode/utils` resolvers (bundled / provisioned /
-  PATH + node support + project exclusion). A failed resolution skips that one
-  server; it never fails the whole registration.
+- CodeGraph is user-owned only. The adapter does not resolve or register it;
+  an explicit user MCP entry is preserved. Stale `[opencode2].codegraph`
+  settings are stripped by the adapter schema without discarding other settings.
 
 ## Configuration keys live under `[opencode2]`, never at the root
 
@@ -384,7 +384,7 @@ and only one of them belongs to the gate:
 |---|---|---|
 | `hooks/goal/register.ts` | yes | Idle continuation. Shares the one gate. |
 | `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does. |
-| `hooks/boulder-continuation/register.ts` | yes | The third idle injector (start-work). Same shared gate; re-reads the plan off disk on every idle. |
+| `hooks/boulder-continuation/register.ts` | yes | The third idle injector (ulw-execute). Same shared gate; re-reads the plan off disk on every idle. |
 | `features/model-fallback/register.ts` | yes | Reactive provider-exhaustion recovery on a main-session error edge. Same shared gate; child sessions are excluded first. |
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |

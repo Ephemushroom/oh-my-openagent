@@ -1,6 +1,6 @@
 ---
 name: ulw-loop
-description: Goal-like loop that uses ultrawork mode to decompose work into systematic, evidence-bound steps.
+description: "A goal-like loop that decomposes work into systematic, evidence-bound ultrawork steps. Use when the user wants a goal loop or durable, checkpointed execution."
 metadata:
   short-description: Goal-like ultrawork loop for systematic decomposition
 ---
@@ -9,29 +9,27 @@ metadata:
 
 Use this skill when the user asks for `ulw-loop`, `ulw`, durable goal execution, evidence-led work, manual QA, or checkpointed long-running delivery.
 
-This skill is intentionally compact. The full workflow lives in `references/full-workflow.md`. Read only the sections needed for the current phase, then execute them exactly.
+This skill is compact by design: the run contract below is the whole bootstrap. `references/full-workflow.md` and `references/define-goal.md` carry the full doctrine; open a section only when the phase you are in needs it.
 
-## Required First Steps
+## Run contract
 
-1. Open `references/full-workflow.md`.
-2. Read through **Bootstrap** (including its tier triage), **Execution Loop**, the **Manual-QA channels** table, and the **Stop Rules** before running any ULW command or recording evidence.
-3. Open `references/define-goal.md` and register the run's goal by it. Goal creation is NEVER skipped: shape the objective and every success criterion by that reference before any implementation.
-4. If the task has code edits, tests, QA, or commit work, follow the full workflow's delegation and evidence rules. Tests alone never prove done.
+1. Create goals: `omo-agent-toolkit ulw-loop create-goals --session-id <id> --brief "<brief>" --json`. The ulw-loop skill-pointer message carries the resolved absolute CLI path and this session's id; use both verbatim on every ulw-loop command — the CLI refuses unscoped state (`ULW_LOOP_SESSION_SCOPE_REQUIRED`) rather than touching the shared `.omo/ulw-loop` root, and eval kernels do not inherit the session env. If the CLI reports this session's aggregate complete, start fresh with a new `--session-id` (and resume that run by hand: automatic continuation follows the session's own id).
+2. Register the aggregate objective from the printed handoff with `create_goal`, shaped by `references/define-goal.md`. Goal creation is NEVER skipped.
+3. Mirror every atomic step into the live `todo` checklist: one granular step per action, exactly one in_progress, transitions marked the instant they happen.
+4. Treat each goal as a phase: create its own worktree off the integration base; dispatch its dependency-ordered lanes as ONE `workflow` run (read the mass-ulw skill first; ordering-free lanes stay a `task` batch); verify every criterion with real-surface evidence; land the worktree on the integration base at `checkpoint --status complete` per the repository's flow (direct merge or merged PR); define the next goal's run from what this one proved. Tests alone never prove done. When a mass-ulw pointer accompanies this skill, this contract still owns goals, criteria, evidence, and checkpoints.
+5. Stop when the goal's WHEN-TO-STOP line holds with evidence in hand.
+
+When the injected ultrawork directive accompanies this skill, its goal/notepad/todo bootstrap is subsumed by this contract: the loop CLI owns goal state and the loop ledger is the notepad — do not create a second one.
 
 ## Non-Negotiables
 
-- Use the ulw-loop CLI state under `.omo/ulw-loop`; do not hand-edit goal state.
-- Register goals up front, shaped by `references/define-goal.md` (`omo-agent-toolkit ulw-loop create-goals`, then `create_goal` from the printed handoff), and mirror every atomic step into the live `update_plan` checklist: one ultra-granular step per action, exactly one in_progress, transitions marked the instant they happen.
+- Use the ulw-loop CLI state under `.omo/ulw-loop/<session-id>/`; do not hand-edit goal state. Mutations are serialized across processes by the session's `.state.lock`, so parallel `record-evidence` calls from workers are safe.
+- Register goals up front, shaped by `references/define-goal.md` (`omo-agent-toolkit ulw-loop create-goals`, then `create_goal` from the printed handoff), and mirror every atomic step into the live `todo` checklist: one ultra-granular step per action, exactly one in_progress, transitions marked the instant they happen.
 - After any compaction or context loss, re-read brief + goals + ledger FIRST plus `omo-agent-toolkit ulw-loop status --json`, then resume; never re-plan from scratch.
-- If `omo-agent-toolkit ulw-loop create-goals` says the existing aggregate is already complete, start unrelated new work with a fresh `--session-id <new-id>` instead of steering or forcing the completed default state. Use `--force` only to intentionally overwrite completed evidence.
+- If `omo-agent-toolkit ulw-loop create-goals` says this session's aggregate is already complete, start unrelated new work with a fresh `--session-id <new-id>` (passed on every later call) instead of steering or forcing the completed state. Use `--force` only to intentionally overwrite completed evidence.
 - Every success criterion needs observable evidence from a real surface: a channel (terminal/TUI via the xterm.js web terminal, HTTP, browser, computer-use) or, for CLI- or data-shaped criteria, an auxiliary surface (CLI stdout, DB diff, parsed config dump).
 - Evidence is bound to the tree it was captured at (`git rev-parse --short "HEAD^{tree}"`); it goes stale only when tracked content changes — a rebase or amend that keeps the tree identical keeps it valid. When the tree differs, re-run at the current HEAD and re-record, never relabel or regenerate. Record only after cleanup receipts exist.
-- Delegate code edits, test writes, fixes, and QA execution to right-sized omo-senpi subagents through the native `task` tool.
-- Plan and reviewer agents may run for a long time; spawn them with `run_in_background: true` and keep doing independent root work.
-- For work likely to exceed one wait cycle, require the child to send `WORKING: <task> - <current phase>` before long reading, testing, or review passes, and `BLOCKED: <reason>` only when it cannot progress.
-- Track spawned task ids locally. Completion and progress arrive as injected notifications; use `task_output` for at most one midpoint status or transcript check per child, never a polling loop.
-- While children run, surface the active subagent count, task ids, and latest `WORKING:` phase.
-- If a live child needs context or correction, send it with `task_send`. Fallback only when the child completed without the deliverable, explicitly reported `BLOCKED:`, or is no longer running; then record inconclusive and spawn a smaller native `task` with the missing deliverable.
+- Delegate code edits, test writes, fixes, and QA execution to right-sized omo-senpi subagents through the native `task` tool or through `workflow` nodes when the phase's lanes carry ordering.
 - Use `git-master` for git-tracked edits: inspect recent and touched-path commit history, then commit each verified work unit atomically in the repository's observed language, scope, and message style with only that unit's files staged. Never carry verified units into a later omnibus commit.
 
 ## Team mode: decide it, do not default to it

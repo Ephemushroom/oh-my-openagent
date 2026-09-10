@@ -1,7 +1,9 @@
-import { readFile, readdir } from "node:fs/promises"
+import { readFile, readdir } from "@oh-my-opencode/memory-core/fs"
 import { join } from "node:path"
 
 import type { ReflectionOutcome } from "@oh-my-opencode/memory-core"
+
+import { failureFingerprint } from "./failure-detail"
 
 /**
  * A trailing failure streak stops counting once its newest failure is older than this window.
@@ -122,12 +124,8 @@ export async function readReflectionHealth(
   }
 }
 
-export function reflectionFailureFingerprint(reason: string | undefined, detail: string | undefined): string {
-  return `${reason ?? "failed"}:${(detail ?? "").slice(0, 60)}`
-}
-
 function fingerprintOf(record: HealthRecord): string {
-  return reflectionFailureFingerprint(record.reason, record.detail)
+  return failureFingerprint(record.reason, record.detail)
 }
 
 function dominantFingerprint(fingerprints: readonly string[]): string {

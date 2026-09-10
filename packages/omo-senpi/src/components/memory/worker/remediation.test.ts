@@ -10,7 +10,7 @@ describe("reflectionRemediation", () => {
       // when
       const hint = reflectionRemediation(
         "category_unavailable",
-        'Reflection category "quick" could not resolve a usable model (cause: model_unavailable); missing providers: kimi-coding, quotio-openai',
+        'Reflection category "quick" could not resolve a usable model (cause: model_unavailable); missing providers: kimi-coding, openai-codex',
       )
 
       // then
@@ -44,6 +44,37 @@ describe("reflectionRemediation", () => {
     })
   })
 
+  describe("#given a bubblewrap sandbox setup failure", () => {
+    // bwrap dies inside its own setup, before the reflection child exists, and the run directory
+    // is already pruned by the time the hint is rendered - so child-stderr.log is a dead pointer.
+    test("#when remediated #then the hint names the sandbox setting instead of the deleted child log", () => {
+      // when
+      const hint = reflectionRemediation("child_exit", "bwrap: setting up uid map: Permission denied")
+
+      // then
+      expect(hint).toContain("memory.reflection.sandbox")
+      expect(hint).not.toContain("child-stderr.log")
+    })
+
+    test("#when the uid-map denial arrives without the bwrap prefix #then the sandbox hint still fires", () => {
+      // when
+      const hint = reflectionRemediation("child_exit", "setting up uid map: Permission denied")
+
+      // then
+      expect(hint).toContain("memory.reflection.sandbox")
+      expect(hint).not.toContain("child-stderr.log")
+    })
+
+    test("#when bwrap fails setting up the namespace itself #then the sandbox hint fires and offers the host fix", () => {
+      // when
+      const hint = reflectionRemediation("child_exit", "bwrap: setting up namespace: Operation not permitted")
+
+      // then
+      expect(hint).toContain("memory.reflection.sandbox")
+      expect(hint).toContain("user namespace")
+    })
+  })
+
   describe("#given the pre-existing failure taxonomies", () => {
     test("#when the child could not see the model #then the category/model hint is kept", () => {
       expect(reflectionRemediation("child_exit", "Model not found: apitopia/kimi")).toContain("memory.reflection")
@@ -51,6 +82,18 @@ describe("reflectionRemediation", () => {
 
     test("#when spawn failed #then the SENPI_BIN hint is kept", () => {
       expect(reflectionRemediation("spawn_failed", "execvp ENOENT")).toContain("SENPI_BIN")
+    })
+
+    test("#when a running child dies on a missing file #then the hint points at the child log, not SENPI_BIN", () => {
+      // given: the child started, so the executable resolved; only a file it opened was missing
+      const detail = "ENOENT: no such file or directory, open '/opt/omo-runtime/dist/modes/interactive/theme/dark.json'"
+
+      // when
+      const hint = reflectionRemediation("child_exit", detail)
+
+      // then
+      expect(hint).not.toContain("SENPI_BIN")
+      expect(hint).toContain("child-stderr.log")
     })
 
     test("#when nothing matches #then the child log hint remains the default for post-spawn failures", () => {

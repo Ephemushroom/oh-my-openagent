@@ -9,6 +9,7 @@ import {
   buildSandboxTransform,
   SandboxUnavailableError,
   type SandboxPolicy,
+  type SandboxUsability,
 } from "./sandbox"
 
 const roots: string[] = []
@@ -62,6 +63,7 @@ function spawnArgs(worktree: string): ReflectionSpawnArgs {
 function build(policy: SandboxPolicy, options: {
   readonly platform?: NodeJS.Platform
   readonly which?: (command: string) => string | undefined
+  readonly probe?: (executable: string) => SandboxUsability
 } = {}) {
   const setup = fixture()
   return {
@@ -75,11 +77,41 @@ function build(policy: SandboxPolicy, options: {
       env: { PATH: process.env.PATH },
       platform: options.platform,
       which: options.which,
+      probe: options.probe,
     }),
   }
 }
 
 describe("reflection worker OS sandbox", () => {
+  test("#given the reflection sandbox transform with the agent dir in runtimeWrites #when the Darwin profile is generated #then the whole agent dir is writable, so every senpi lock file under it (settings, auth, hooks-state) is too", () => {
+    // given: identity-runtime passes resolveAgentDir() through runtimeWrites; the transform itself
+    // never resolves the agent home (that would read process-wide state the caller never passed).
+    const { setup } = build("required", { platform: "darwin", which: () => "/usr/bin/sandbox-exec" })
+    const agentDir = join(setup.root, "agent")
+    mkdirSync(agentDir, { recursive: true })
+    const transform = buildSandboxTransform({
+      policy: "required",
+      worktreeDir: setup.worktree,
+      gitCommonDir: setup.gitCommonDir,
+      payloadPaths: setup.payloadPaths,
+      runtimeWrites: [agentDir],
+      command: "/bin/sh",
+      env: { PATH: process.env.PATH },
+      platform: "darwin",
+      which: () => "/usr/bin/sandbox-exec",
+    })
+
+    // when
+    const profile = transform(spawnArgs(setup.worktree)).args[1] ?? ""
+
+    // then: one subpath grant on the agent dir covers settings.json.lock, auth.json.lock and hooks-state.json.lock
+    const realAgentDir = realpathSync(agentDir)
+    expect(profile).toContain(`(allow file-write* (subpath ${JSON.stringify(realAgentDir)}))`)
+    for (const lock of ["settings.json.lock", "auth.json.lock", "hooks-state.json.lock"]) {
+      expect(dirname(join(realAgentDir, lock))).toBe(realAgentDir)
+    }
+  }, 30_000)
+
   test.skipIf(process.platform !== "darwin" || !existsSync("/usr/bin/sandbox-exec"))(
     "#given the real Darwin seatbelt #when a child writes inside the worktree and its parent repo #then only the worktree write succeeds",
     () => {
@@ -276,5 +308,114 @@ describe("reflection worker OS sandbox", () => {
     expect(transformed).toBe(original)
     expect(transform.wasSandboxed).toBe(false)
     expect(transform.warning).toBeUndefined()
+  }, 30_000)
+
+  test("#given Linux where bwrap exists but cannot create a user namespace #when auto policy is used #then spawn arguments pass through with a warning naming the probe reason", () => {
+    // given: issue #6873 - /usr/bin/bwrap is installed on Ubuntu 24.04+, so existence alone
+    // selects the sandbox, but every child dies at spawn on the uid-map denial.
+    const { setup, transform } = build("auto", {
+      platform: "linux",
+      which: () => "/usr/bin/bwrap",
+      probe: () => ({ usable: false, reason: "smoke test exited 1: bwrap: setting up uid map: Permission denied" }),
+    })
+    const original = spawnArgs(setup.worktree)
+
+    // when
+    const transformed = transform(original)
+
+    // then
+    expect(transformed).toBe(original)
+    expect(transform.wasSandboxed).toBe(false)
+    expect(transform.warning).toContain("setting up uid map: Permission denied")
+    expect(transform.warning).toContain("running unsandboxed because policy is auto")
+  }, 30_000)
+
+  test("#given Linux where bwrap exists but cannot create a user namespace #when required policy is used #then the build fails closed with a typed error", () => {
+    // given
+    const setup = fixture()
+
+    // when
+    const buildRequired = () => buildSandboxTransform({
+      policy: "required",
+      worktreeDir: setup.worktree,
+      gitCommonDir: setup.gitCommonDir,
+      payloadPaths: setup.payloadPaths,
+      command: "/bin/sh",
+      env: { PATH: process.env.PATH },
+      platform: "linux",
+      which: () => "/usr/bin/bwrap",
+      probe: () => ({ usable: false, reason: "smoke test exited 1: bwrap: setting up uid map: Permission denied" }),
+    })
+
+    // then
+    expect(buildRequired).toThrow(SandboxUnavailableError)
+    expect(buildRequired).toThrow("setting up uid map: Permission denied")
+  }, 30_000)
+
+  test("#given Linux where the bwrap probe reports a usable sandbox #when spawn arguments are transformed #then the child is still wrapped", () => {
+    // given: guards the degrade path against over-firing on a healthy host.
+    const { setup, transform } = build("auto", {
+      platform: "linux",
+      which: () => "/usr/bin/bwrap",
+      probe: () => ({ usable: true }),
+    })
+
+    // when
+    const transformed = transform(spawnArgs(setup.worktree))
+
+    // then
+    expect(transform.wasSandboxed).toBe(true)
+    expect(transform.warning).toBeUndefined()
+    expect(transformed.command).toBe("/usr/bin/bwrap")
+  }, 30_000)
+
+  test("#given off policy on Linux #when the transform is built #then the usability probe never runs", () => {
+    // given: probing costs a child spawn, and policy off must never pay it.
+    const { setup, transform } = build("off", {
+      platform: "linux",
+      which: () => "/usr/bin/bwrap",
+      probe: () => { throw new Error("must not probe when policy is off") },
+    })
+    const original = spawnArgs(setup.worktree)
+
+    // when
+    const transformed = transform(original)
+
+    // then
+    expect(transformed).toBe(original)
+    expect(transform.wasSandboxed).toBe(false)
+  }, 30_000)
+
+  test("#given Linux where bwrap is absent #when auto policy is used #then the missing-executable path wins and the probe never runs", () => {
+    // given: probing a path that was never resolved would spawn nothing meaningful.
+    const { setup, transform } = build("auto", {
+      platform: "linux",
+      which: () => undefined,
+      probe: () => { throw new Error("must not probe an unresolved executable") },
+    })
+    const original = spawnArgs(setup.worktree)
+
+    // when
+    const transformed = transform(original)
+
+    // then
+    expect(transformed).toBe(original)
+    expect(transform.warning).toContain("bwrap not found")
+  }, 30_000)
+
+  test("#given Darwin with sandbox-exec available #when the transform is built #then the bwrap probe never runs", () => {
+    // given: the smoke probe is linux-only; Darwin uses seatbelt.
+    const { setup, transform } = build("required", {
+      platform: "darwin",
+      which: () => "/usr/bin/sandbox-exec",
+      probe: () => { throw new Error("must not probe on darwin") },
+    })
+
+    // when
+    const transformed = transform(spawnArgs(setup.worktree))
+
+    // then
+    expect(transform.wasSandboxed).toBe(true)
+    expect(transformed.command).toBe("/usr/bin/sandbox-exec")
   }, 30_000)
 })

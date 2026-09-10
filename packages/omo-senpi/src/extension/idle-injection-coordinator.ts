@@ -1,4 +1,4 @@
-export type IdleInjectionSource = "task-completion" | "team-message" | "team-liveness" | "boulder-continuation" | "ulw-continuation" | "dag-run"
+export type IdleInjectionSource = "task-completion" | "team-message" | "team-liveness" | "boulder-continuation" | "ulw-continuation" | "dag-run" | "kibitzer"
 
 export interface IdleInjection {
   // Dedupe/order key. Task completions key on their task id; the ulw continuation keys on its source
@@ -8,6 +8,8 @@ export interface IdleInjection {
   readonly customType?: string
   readonly content: string
   readonly display?: boolean
+  /** Rides a flush that carries at least one non-passive entry; never causes a flush by itself. */
+  readonly passive?: boolean
   readonly details?: unknown
   readonly onFlushed?: () => void
   readonly onDeliveryFailed?: (error: unknown) => void
@@ -43,6 +45,7 @@ const SOURCE_RANK: Readonly<Record<IdleInjectionSource, number>> = {
   "boulder-continuation": 3,
   "ulw-continuation": 4,
   "dag-run": 5,
+  kibitzer: 6,
 }
 
 /**
@@ -59,6 +62,7 @@ export class IdleInjectionCoordinator {
   readonly #scheduleFlush: FlushScheduler
   #flushScheduled = false
   #soonScheduled = false
+  #retired = false
 
   constructor(deliver: IdleInjectionDelivery, options: IdleInjectionCoordinatorOptions = {}) {
     this.#deliver = deliver
@@ -66,17 +70,22 @@ export class IdleInjectionCoordinator {
   }
 
   enqueue(injection: IdleInjection): void {
+    if (this.#retired) return
     this.#pending.set(injection.key, injection)
   }
 
   // Streaming-safe producers enqueue then request a batched steer at the next tool-call boundary.
   // Repeated requests before the deferred pass runs coalesce to a single flush.
   scheduleFlush(): void {
-    if (this.#flushScheduled) return
+    if (this.#retired || this.#flushScheduled) return
     this.#flushScheduled = true
     this.#scheduleFlush(() => {
       this.#flushScheduled = false
-      this.#flush("steer")
+      try {
+        this.#flush("steer")
+      } catch (error) {
+        if (!this.#retired) throw error
+      }
     })
   }
 
@@ -84,11 +93,15 @@ export class IdleInjectionCoordinator {
   // senpi's print mode can decide the session is over (the windowed timer is not - live-driver proven),
   // while still batching every notification that becomes ready in the same tick into one injection.
   flushSoon(): void {
-    if (this.#soonScheduled) return
+    if (this.#retired || this.#soonScheduled) return
     this.#soonScheduled = true
     queueMicrotask(() => {
       this.#soonScheduled = false
-      this.flushOnIdle()
+      try {
+        this.flushOnIdle()
+      } catch (error) {
+        if (!this.#retired) throw error
+      }
     })
   }
 
@@ -100,13 +113,23 @@ export class IdleInjectionCoordinator {
     return this.#pending.delete(key)
   }
 
+  // Called from session_shutdown, which senpi emits on the OLD extension runner before invalidating its
+  // generation. After this, every armed deferred flush and every late enqueue is a no-op, so the captured
+  // pi.sendMessage can never be called on a stale API. The queue is dropped rather than carried over:
+  // it is a batching window, not a durable store, and durable producers redeliver on session_start.
+  retire(): void {
+    this.#retired = true
+    this.#pending.clear()
+  }
+
   // Flush the whole queue as one idle-edge steer. Returns how many queued items were collapsed (0 = no-op).
   flushOnIdle(): number {
     return this.#flush("steer")
   }
 
   #flush(deliverAs: "steer" | "followUp"): number {
-    if (this.#pending.size === 0) return 0
+    if (this.#retired || this.#pending.size === 0) return 0
+    if ([...this.#pending.values()].every((injection) => injection.passive === true)) return 0
     const ordered = [...this.#pending.values()].sort(
       (left, right) => SOURCE_RANK[left.source] - SOURCE_RANK[right.source],
     )

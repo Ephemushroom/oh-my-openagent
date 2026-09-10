@@ -24,11 +24,11 @@ $ARGUMENTS
 </command-instruction>`,
   },
   {
-    name: "start-work",
+    name: "ulw-execute",
     description: "(builtin) Start Atlas work session from Prometheus plan",
     agent: "atlas",
     template: `<command-instruction>
-Load the registered start-work skill, then execute the selected plan. Arguments: $ARGUMENTS
+Load the registered ulw-execute skill, then execute the selected plan. Arguments: $ARGUMENTS
 Session ID: $SESSION_ID
 Timestamp: $TIMESTAMP
 </command-instruction>`,

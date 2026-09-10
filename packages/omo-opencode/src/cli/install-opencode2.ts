@@ -1,5 +1,5 @@
 import { createRequire } from "node:module"
-import { resolveCodegraphCommand, buildCodegraphEnv, bunWhich } from "@oh-my-opencode/utils"
+import { bunWhich } from "@oh-my-opencode/utils"
 
 import type { OpenCode2McpEntry } from "./config-manager/update-opencode2-mcp-config"
 import { updateOpenCode2McpConfig } from "./config-manager/update-opencode2-mcp-config"
@@ -16,15 +16,13 @@ export interface OpenCode2InstallResult extends UpdateOpenCode2McpResult {
 
 /**
  * Top-level installer entry: locates the opencode config, builds the managed
- * MCP entries (codegraph + lsp), and writes only the missing ones. Fails
- * closed on a missing codegraph; lsp degrades to a skip when the node
- * runtime or daemon cli is unavailable.
+ * MCP entries and writes only the missing ones. LSP is skipped when its
+ * node runtime or daemon CLI is unavailable.
  * Also appends the OMO v2 plugin entry to the plugins array.
  */
 export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
   const { path } = detectConfigFormat()
   const entries = buildOpenCode2Entries({
-    codegraph: resolveCodegraphForInstall(),
     nodeCommand: await resolveNodeRuntime(),
     daemonCliPath: resolveLspDaemonCli(),
   })
@@ -39,7 +37,6 @@ export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
 }
 
 export interface OpenCode2EntriesInput {
-  codegraph: CodegraphResolutionInput
   nodeCommand: string
   daemonCliPath: string
 }
@@ -69,13 +66,12 @@ export function buildRemoteMcpEntries(): OpenCode2McpEntry[] {
 }
 
 /**
- * Builds the full managed MCP entry list. codegraph is the core value; a
- * missing command is a hard failure. lsp is best-effort: it is skipped when
+ * Builds the full managed MCP entry list. LSP is best-effort: it is skipped when
  * the node runtime or daemon cli is unavailable rather than failing the
  * whole install. Remote HTTP MCPs are always appended after the local entries.
  */
 export function buildOpenCode2Entries(input: OpenCode2EntriesInput): OpenCode2McpEntry[] {
-  const entries: OpenCode2McpEntry[] = [buildCodegraphMcpEntry(input.codegraph)]
+  const entries: OpenCode2McpEntry[] = []
   if (input.nodeCommand && input.daemonCliPath) {
     entries.push(
       buildLspMcpEntry({
@@ -87,31 +83,6 @@ export function buildOpenCode2Entries(input: OpenCode2EntriesInput): OpenCode2Mc
   }
   entries.push(...buildRemoteMcpEntries())
   return entries
-}
-
-export interface CodegraphResolutionInput {
-  command: string
-  argsPrefix: string[]
-  exists: boolean
-  source: string
-}
-
-/**
- * Builds the codegraph MCP server entry. The resolved command may carry an
- * args prefix (bundled shim); the entry command is
- * `[command, ...argsPrefix, "serve", "--mcp"]`.
- */
-export function buildCodegraphMcpEntry(resolution: CodegraphResolutionInput): OpenCode2McpEntry {
-  if (!resolution.exists) {
-    throw new Error("codegraph not available: no codegraph command resolved")
-  }
-  return {
-    name: "codegraph",
-    type: "local",
-    command: [resolution.command, ...resolution.argsPrefix, "serve", "--mcp"],
-    environment: buildCodegraphEnv(),
-    codemode: false,
-  }
 }
 
 export interface LspResolutionInput {
@@ -142,17 +113,6 @@ export function buildLspMcpEntry(resolution: LspResolutionInput): OpenCode2McpEn
     command: [resolution.nodeCommand, resolution.daemonCliPath, "mcp"],
     environment,
     codemode: false,
-  }
-}
-
-/** Resolves the codegraph command via the shared utils resolver. */
-export function resolveCodegraphForInstall(): CodegraphResolutionInput {
-  const resolved = resolveCodegraphCommand()
-  return {
-    command: resolved.command,
-    argsPrefix: [...resolved.argsPrefix],
-    exists: resolved.exists,
-    source: resolved.source,
   }
 }
 
