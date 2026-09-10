@@ -1,0 +1,29 @@
+✔ #given the generated installer #when linking the root runtime #then writes only the canonical wrapper with marker and edition exports (7.099809ms)
+✔ #given a marker-bearing legacy omo #when linking the root runtime #then deletes it (4.828278ms)
+✔ #given an unmarked user-owned omo #when linking twice #then preserves it byte-identical and remains idempotent (4.432772ms)
+✔ #given bun absent from PATH but present in ~/.bun/bin #when running the omo-agent-toolkit runtime wrapper #then resolves the bun fallback (4.646441ms)
+✔ #given bun absent everywhere #when running the omo runtime wrapper #then fails with an actionable install hint (3.136461ms)
+✔ #given OMO_RUNTIME=node and a node CLI bundle #when running the omo runtime wrapper #then executes the node CLI (18.857269ms)
+✔ #given bun absent everywhere and a node CLI bundle #when running the omo runtime wrapper #then falls back to node (18.603141ms)
+✔ #given bun absent and no node CLI bundle #when running the omo runtime wrapper #then the error names both runtimes (2.651663ms)
+✔ #given Windows platform #when writing the omo runtime wrapper #then embeds the node fallback chain (2.08678ms)
+✔ #given Windows platform #when writing the omo runtime wrapper #then embeds the bun fallback chain (1.787484ms)
+✔ #given Windows platform #when linking cached plugin bins #then writes command shims (3.25788ms)
+✔ #given existing custom Windows command shim #when linking bins #then rejects without overwriting (3.168337ms)
+✔ #given managed legacy Codex component symlink #when linking bins #then removes stale symlink and writes OMO bin (4.651775ms)
+✔ #given managed legacy Codex LSP symlink #when linking bins #then removes stale lsp symlink (3.814596ms)
+✔ #given nested component declares reserved omo bin #when linking bins #then skips the nested top-level command (3.295672ms)
+✔ #given stale managed ulw-loop omo symlink #when linking bins #then removes it without touching user-owned omo (2.067071ms)
+✔ #given stale local-source ulw-loop omo symlink #when linking bins #then removes it (2.291283ms)
+✔ #given user-owned legacy Codex symlink #when linking bins #then preserves the user symlink (2.972376ms)
+✔ #given user-owned legacy Codex symlink with component-like target #when linking bins #then preserves it (2.521411ms)
+✔ #given package bin name escapes bin directory #when linking bins #then rejects without writing outside link (1.471188ms)
+✔ #given package bin target escapes plugin root #when linking bins #then rejects without linking outside target (1.05164ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.322127

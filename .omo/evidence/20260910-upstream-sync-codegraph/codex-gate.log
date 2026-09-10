@@ -1,0 +1,1261 @@
+$ bun run build:codex-install && bun run build:git-bash-mcp && bun run build:lsp-tools-mcp && bun run build:lsp-daemon && npm --prefix packages/lsp-tools-mcp test && npm --prefix packages/omo-codex/plugin ci && npm --prefix packages/omo-codex/plugin/components/ulw-loop test && bun run --cwd packages/omo-codex/plugin build && node scripts/check-third-party-notices.mjs --ship && bun test --timeout 20000 packages/omo-opencode/src/cli/cli-installer.platform.test.ts packages/omo-codex/src/install/codex-cache.test.ts packages/omo-codex/src/install/codex-cleanup.test.ts packages/omo-codex/src/install/codex-config-agent-cleanup.test.ts packages/omo-codex/src/install/codex-config-autonomous-features.test.ts packages/omo-codex/src/install/codex-config-reasoning.test.ts packages/omo-codex/src/install/codex-config-toml.test.ts packages/omo-codex/src/install/codex-project-local-cleanup.test.ts packages/omo-codex/src/install/install-codex-project-local-cleanup.test.ts packages/omo-codex/src/install/install-codex.test.ts packages/omo-codex/src/install/install-codex-packaged.test.ts packages/omo-codex/src/install/link-cached-plugin-agents.test.ts packages/omo-codex/src/**/*.test.ts packages/utils/src/jsonc-parser.test.ts packages/utils/src/frontmatter.test.ts packages/hashline-core/src/hash-computation.test.ts packages/hashline-core/src/smoke-untested-modules.test.ts packages/rules-engine/src/index.test.ts packages/rules-engine/src/security-boundary.test.ts packages/agents-md-core/src/injector.test.ts packages/omo-codex/plugin/components/lsp/test/package-smoke.test.ts && node --test packages/omo-codex/plugin/test/*.test.mjs packages/omo-codex/scripts/install-cache-copy.test.mjs packages/omo-codex/scripts/install-cli-args.test.mjs packages/omo-codex/scripts/install-delegated-command.test.mjs packages/omo-codex/scripts/install-config-autonomous-features.test.mjs packages/omo-codex/scripts/install-config-autonomous.test.mjs packages/omo-codex/scripts/install-config-reasoning.test.mjs packages/omo-codex/scripts/install-config.test.mjs packages/omo-codex/scripts/install-hook-targets.test.mjs packages/omo-codex/scripts/install-project-local-cleanup.test.mjs packages/omo-codex/scripts/install-lazycodex-version-stamp.test.mjs packages/omo-codex/scripts/install-local-entrypoint.test.mjs packages/omo-codex/scripts/install-local-git-bash-preflight.test.mjs packages/omo-codex/scripts/install-local.test.mjs packages/omo-codex/scripts/install-marketplace-cache.test.mjs packages/omo-codex/scripts/install-mcp-context7-runtime.test.mjs packages/omo-codex/scripts/install-mcp-runtime.test.mjs packages/omo-codex/scripts/install-packaged-local.test.mjs packages/omo-codex/scripts/install-generated-bundle.test.mjs packages/omo-codex/scripts/install-agent-links.test.mjs packages/omo-codex/scripts/install-bin-links.test.mjs
+$ bun run script/build-codex-install.ts
+$ bun run --cwd packages/git-bash-mcp build
+$ bun build src/cli.ts --outdir dist --target node --format esm
+Bundled 15 modules in 9ms
+
+  cli.js  22.68 KB  (entry point)
+
+$ npm --prefix packages/lsp-tools-mcp ci && npm --prefix packages/lsp-tools-mcp run build
+
+added 52 packages, and audited 55 packages in 1s
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/lsp-tools-mcp@0.1.0 build
+> node scripts/ensure-core-links.mjs && node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && tsc -p tsconfig.build.json --emitDeclarationOnly && bun build src/cli.ts src/mcp.ts src/tools.ts src/request-context.ts src/lsp/manager.ts --outdir dist --target node --format esm
+
+Bundled 70 modules in 8ms
+
+  cli.js               195.16 KB  (entry point)
+  mcp.js               194.64 KB  (entry point)
+  tools.js             182.85 KB  (entry point)
+  request-context.js   7.47 KB    (entry point)
+  lsp/manager.js       109.45 KB  (entry point)
+
+$ npm --prefix packages/lsp-daemon ci && npm --prefix packages/lsp-daemon run build
+
+added 52 packages, and audited 55 packages in 675ms
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+2 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/lsp-daemon@0.1.0 build
+> node scripts/build.mjs
+
+Bundled 83 modules in 12ms
+
+  cli.js     250.14 KB  (entry point)
+  index.js   231.14 KB  (entry point)
+  client.js  228.75 KB  (entry point)
+
+
+> @code-yeongyu/lsp-tools-mcp@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.8 /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/lsp-tools-mcp
+
+
+ Test Files  25 passed (25)
+      Tests  97 passed (97)
+   Start at  21:54:47
+   Duration  1.20s (transform 2.21s, setup 0ms, import 3.36s, tests 1.28s, environment 3ms)
+
+
+added 71 packages, and audited 89 packages in 1s
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @code-yeongyu/comment-checker@0.8.0 (postinstall: node postinstall.js)
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @code-yeongyu/codex-ulw-loop@5.0.0-beta.52 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/components/ulw-loop
+
+
+ Test Files  54 passed (54)
+      Tests  548 passed (548)
+   Start at  21:54:50
+   Duration  2.31s (transform 2.78s, setup 0ms, import 5.47s, tests 5.77s, environment 3ms)
+
+$ node scripts/sync-version.mjs && node scripts/sync-hook-status-messages.mjs && node scripts/build-bundled-mcp-runtimes.mjs && node scripts/materialize-shared-upstreams.mjs --strict && node scripts/sync-skills.mjs && node scripts/build-components.mjs
+Synced OMO Codex manifests to version 5.0.0-beta.52 (0 updated)
+Using bundled lsp-tools-mcp dist
+Using bundled lsp-daemon dist
+Using bundled git-bash-mcp dist
+[materialize] wrote 148 frontend reference files from submodules
+Building components/comment-checker
+
+> @code-yeongyu/codex-comment-checker@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 10 modules in 11ms
+
+  cli.js  19.25 KB  (entry point)
+
+Building components/git-bash
+
+> @sisyphuslabs/codex-git-bash-hook@5.0.0-beta.52 build
+> tsc -p tsconfig.build.json
+
+Building components/rules
+
+> @code-yeongyu/codex-rules@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 51 modules in 23ms
+
+  cli.js  156.17 KB  (entry point)
+
+Building components/ulw-execute-continuation
+
+> @code-yeongyu/codex-ulw-execute-continuation@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 5 modules in 12ms
+
+  cli.js  14.52 KB  (entry point)
+
+Bundling components/git-bash/dist/cli.js
+Bundled 2 modules in 5ms
+
+  cli.js  6.1 KB  (entry point)
+
+Bundling components/comment-checker/dist/cli.js
+Bundled 10 modules in 7ms
+
+  cli.js  19.43 KB  (entry point)
+
+Building components/telemetry
+
+> @code-yeongyu/codex-telemetry@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js && bun build src/posthog.ts --target node --format esm --outfile dist/posthog.js
+
+Bundled 97 modules in 23ms
+
+  cli.js  0.28 MB  (entry point)
+
+Bundled 95 modules in 10ms
+
+  posthog.js  0.27 MB  (entry point)
+
+Building components/lazycodex-executor-verify
+
+> @code-yeongyu/codex-lazycodex-executor-verify@5.0.0-beta.52 build
+> tsc -p tsconfig.build.json
+
+Building components/lsp
+
+> @code-yeongyu/codex-lsp@5.0.0-beta.52 prebuild
+> node scripts/build-lsp-tools.mjs && node scripts/build-lsp-daemon.mjs
+
+
+> @code-yeongyu/codex-lsp@5.0.0-beta.52 build
+> node scripts/build-runtime.mjs
+
+Building components/teammode
+
+> @sisyphuslabs/codex-teammode@5.0.0-beta.52 build
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 2 modules in 5ms
+
+  cli.js  4.18 KB  (entry point)
+
+Bundling components/rules/dist/cli.js
+Bundled 51 modules in 12ms
+
+  cli.js  156.38 KB  (entry point)
+
+Bundling components/ulw-execute-continuation/dist/cli.js
+Bundled 5 modules in 7ms
+
+  cli.js  14.77 KB  (entry point)
+
+Bundling components/telemetry/dist/cli.js
+Bundled 97 modules in 20ms
+
+  cli.js  0.28 MB  (entry point)
+
+Bundling components/lazycodex-executor-verify/dist/cli.js
+Bundled 5 modules in 13ms
+
+  cli.js  8.79 KB  (entry point)
+
+Bundling components/teammode/dist/cli.js
+Bundled 2 modules in 9ms
+
+  cli.js  4.22 KB  (entry point)
+
+Building components/ultrawork
+
+> @code-yeongyu/codex-ultrawork@5.0.0-beta.52 build
+> node scripts/sync-directive.mjs && node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})" && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 5 modules in 8ms
+
+  cli.js  35.17 KB  (entry point)
+
+Building components/ulw-loop
+
+> @code-yeongyu/codex-ulw-loop@5.0.0-beta.52 build
+> tsc -p tsconfig.build.json && bun build src/cli.ts --target node --format esm --outfile dist/cli.js
+
+Bundled 45 modules in 4ms
+
+  cli.js  187.0 KB  (entry point)
+
+Bundling components/ultrawork/dist/cli.js
+Bundled 5 modules in 3ms
+
+  cli.js  35.34 KB  (entry point)
+
+Bundling components/ulw-loop/dist/cli.js
+Bundled 45 modules in 5ms
+
+  cli.js  188.0 KB  (entry point)
+
+Building components/bootstrap
+
+> @sisyphuslabs/codex-bootstrap@5.0.0-beta.52 build
+> node scripts/build.mjs
+
+
+  dist/cli.js  149.6kb
+
+⚡ Done in 10ms
+Bundling components/bootstrap/dist/cli.js
+Bundled 49 modules in 4ms
+
+  cli.js  154.1 KB  (entry point)
+
+ship verification passed: 16 notice/license files present in root npm pack payload
+bun test v1.4.2 (744846f84)
+
+ 469 pass
+ 1 skip
+ 0 fail
+ 1414 expect() calls
+Ran 470 tests across 66 files. [13.70s]
+✔ #given bundled Codex agents #when components/ultrawork/agents directory is scanned #then planner support TOMLs are present and match expected schema keys (40.882ms)
+✔ #given bundled agent TOMLs #when nickname_candidates are inspected #then they use only the codex-accepted charset (10.0375ms)
+✔ #given lazycodex agent prompts #when inspected #then each role pins model effort and evidence discipline (4.471458ms)
+✔ #given aggregate plugin build script #when inspected #then generated assets run before workspace builds (13.994166ms)
+✔ #given omo-codex package build script #when inspected #then delegates to the aggregate plugin package (3.969375ms)
+✔ #given a component-owned runtime manifest #when aggregate component build script is inspected #then it preserves bundled bytes (1.123625ms)
+✔ #given isolated components #when hooks are inspected #then commands stay inside component roots (53.549792ms)
+✔ #given aggregate Stop hooks #when inspected #then ulw-execute continuation and ulw-loop resume are separate groups (46.438042ms)
+✔ #given aggregate SubagentStop hooks #when inspected #then only LazyCodex executor verification remains (4.225125ms)
+✔ #given aggregate PostCompact hooks #when hooks are inspected #then LSP diagnostics cache reset is registered (2.512875ms)
+✔ #given aggregate hook commands #when inspected #then every command exposes a Codex status message (2.327ms)
+✔ #given aggregate hook commands #when inspected #then commands stay Node-based and platform-neutral (1.32925ms)
+✔ #given component hook commands #when inspected #then standalone packages expose Codex status messages (8.608208ms)
+✔ #given aggregate OMO plugin is enabled #when hooks are inspected #then shell guidance and ulw-loop guard are registered (3.539625ms)
+✔ #given aggregate OMO plugin has a dedicated ultrawork trigger #when hooks are inspected #then ulw-loop does not duplicate ultrawork injection (1.590917ms)
+✔ #given aggregate SessionStart hooks #when inspected #then LazyCodex auto-update is registered (3.547834ms)
+✔ #given aggregate SessionStart hooks #when inspected #then cold-start-prone hooks carry 15s timeout headroom (1.014625ms)
+✔ #given aggregate PostToolUse hooks #when inspected #then thread title hygiene is registered for created Codex threads (81.734542ms)
+✔ #given aggregate plugin packaging #when inspected #then hooks and compatibility sentinels stay Python-free (22.421667ms)
+✔ #given aggregate plugin manifest #when inspected #then it owns the omo namespace (6.562375ms)
+✔ #given aggregate plugin metadata #when inspected #then ulw-loop is the public loop name (6.370791ms)
+✔ #given component directories #when scanned #then only intentional resource roots declare plugin manifests (19.575ms)
+✔ #given aggregate MCP config #when inspected #then code MCPs reference package runtimes without package names (17.562708ms)
+✔ #given package-level MCP CLIs #when package metadata is inspected #then bin names use the omo prefix (4.195708ms)
+✔ #given bundled model catalog #when inspected #then default verifier and worker roles are pinned (7.442208ms)
+✔ #given bundled model catalog #when inspected #then no role or managed preset uses pure GPT-5.4 (2.367792ms)
+✔ #given Codex-facing orchestration surfaces #when inspected #then retired ChatGPT-account model names are not recommended (13.11725ms)
+✔ #given suffixed spawn-like identifiers #when parsed #then they are not spawn calls (0.760542ms)
+✔ #given nested spawn calls and isolation-like message text #when parsed #then only structural isolation arguments count (0.936417ms)
+✔ #given spawn parameter mutations and role-like prose #when parsed #then only unsupported machine arguments are rejected (0.206125ms)
+✔ #given shipped generated skills and Hephaestus rules #when spawn calls are scanned #then every call disables parent context (273.996208ms)
+✔ #given shipped generated skills and Hephaestus rules #when spawn parameters are scanned #then unsupported role and model arguments are absent (123.758666ms)
+✔ #given newer version with release notes #when running check #then selected notes are escaped inside one tag pair (57.52975ms)
+✔ #given marketplace install and hanging npm latest lookup #when running check #then update state fails closed within timeout (32.781792ms)
+✔ #given stale marketplace cache repair #when formatting notice #then release notes are escaped without leaking commands (0.352167ms)
+✔ #given a newer version #when resolving auto update plan #then plan carries current and latest versions (0.878917ms)
+✔ #given SessionStart migration removes unsupported root multi-agent mode #when startup check runs #then emits cleanup notice (27.26925ms)
+✔ #given a newer version #when waited update succeeds #then returns update-started notice and persists pendingNotice (80.659375ms)
+✔ #given completed pending update #when startup check is throttled #then emits completed notice and clears pendingNotice (9.620291ms)
+✔ #given incomplete pending update #when startup check runs #then no notice and pendingNotice retained (9.56175ms)
+✔ #given waited update fails #then no notice and no pendingNotice (35.713042ms)
+✔ #given malformed pendingNotice toVersion #when check runs #then pendingNotice dropped silently (7.422583ms)
+✔ #given completed pending update #when hook session-start runs as CLI #then prints one SessionStart JSON line (109.604542ms)
+✔ #given the script reached through a symlinked directory #when hook session-start runs as CLI #then the entry guard still fires (50.096541ms)
+✔ #given lazycodex is up to date #when running check #then persists checked success state (17.497375ms)
+✔ #given auto update is disabled #when resolving plan #then no command is scheduled (0.551833ms)
+✔ #given SessionStart payload with model #when reading stdin #then returns the model (1.1525ms)
+✔ #given empty or malformed stdin #when reading session model #then returns null (0.570167ms)
+✔ #given a TTY stdin #when reading session model #then returns null without waiting (0.08975ms)
+✔ #given stale state #when resolving plan #then installer update command is scheduled (0.8405ms)
+✔ #given Windows npm shims #when resolving spawn commands #then cmd shims are used (0.112917ms)
+✔ #given current version #when resolving update plan #then skips installer (0.051583ms)
+✔ #given latest version is newer #when resolving update plan #then schedules installer (0.047833ms)
+✔ #given current version is a prerelease of latest #when resolving update plan #then schedules stable installer (0.061375ms)
+✔ #given malformed latest version #when resolving update plan #then fails closed without scheduling (0.090833ms)
+✔ #given current version #when resolving auto update plan #then no command is scheduled (0.163292ms)
+✔ #given recent state #when resolving plan #then update is throttled (0.102083ms)
+✔ #given installed lazycodex version snapshot #when resolving auto update plan #then uses distribution version (81.654625ms)
+✔ #given test command override #when running check #then records state and launches command (71.35475ms)
+✔ #given failed waited update #when retry window passes #then next update is not blocked by success throttle (107.261583ms)
+✔ #given active lock #when running check #then skips concurrent update (6.040375ms)
+✔ #given stale lock #when running check #then removes lock and runs update (69.54675ms)
+✔ #given marketplace plugin root without install snapshot #when running check #then skips npx update with marketplace-flow log and upgrade notice (9.600584ms)
+✔ #given marketplace flow with stale local cache state #when running check #then starts npx repair instead of marketplace skip (55.997375ms)
+✔ #given stale marketplace cache and recent success state #when resolving plan #then repair bypasses success throttle (1.606333ms)
+✔ #given stale marketplace cache and recent started state #when resolving plan #then repair honors retry throttle (1.471542ms)
+✔ #given marketplace flow with stale Windows generated shim #when resolving plan #then starts local repair (5.11525ms)
+✔ #given marketplace flow with non-managed stale cache-shaped bin #when resolving plan #then skips local repair (4.779375ms)
+✔ #given install snapshot at plugin root #when running check #then npx update behavior is unchanged (41.571583ms)
+✔ #given marketplace skip already recorded #when next session is within interval #then throttled without repeated notice (4.358583ms)
+✔ #given unreadable install snapshot #when running check #then conservatively keeps npx flow and logs unknown detection (62.296667ms)
+✔ #given install flow fixtures #when detecting install flow #then discriminates on the install snapshot (11.828791ms)
+✔ #given workspace tree without install snapshot #when detecting install flow #then stays npx-local (11.341292ms)
+✔ #given snapshot path that is not a regular file #when detecting install flow #then reports unknown (3.140875ms)
+✔ #given LAZYCODEX_INSTALLED_VERSION_PATH override #when detecting install flow #then honors the override path (3.83325ms)
+✔ #given throttled updater and stale Codex config #when running check #then config migration still runs (12.956334ms)
+✔ #given two versioned plugin roots #when the worker setup runs against each in turn #then bin links re-point to the new root and none resolve under the old (210.940125ms)
+✔ #given a completed v1 marker #when the worker runs against a v2 root #then the version change re-runs setup and re-points stale links (197.882708ms)
+✔ #given platform win32 #when the worker setup links bins #then component bins become .cmd shims and the canonical wrapper is omo-agent-toolkit.cmd (62.328333ms)
+✔ #given a legacy payload without root CLI dist #when the worker setup runs #then it records degraded omo-agent-toolkit and leaves no broken link (93.48175ms)
+✔ #given a payload shipping dist/cli #when the worker setup runs with no bin-dir override #then the omo-agent-toolkit wrapper lands in <codexHome>/bin without a degraded entry (169.012292ms)
+✔ #given ulw-loop aliases in the plugin payload #when worker setup links bins #then public ULW commands point at the current component without adding SessionStart hooks (89.963667ms)
+✔ #given every hooks.json under the plugin #when handlers are inspected #then no entry opts into unsupported async execution (168.587292ms)
+✔ #given aggregate and component hook manifests #when command targets are resolved #then every command and commandWindows target exists (20.435792ms)
+✔ #given aggregate hook manifests #when command handlers are inspected #then each has a Windows dispatcher (9.618625ms)
+✔ #given the bootstrap component #when its SessionStart registration is inspected #then aggregate and component entries declare both platform commands (9.996792ms)
+✔ #given non-bootstrap aggregate hook manifests #when commandWindows entries are read #then they launch the managed Node dispatcher (5.452958ms)
+✔ #given the built bootstrap bundle #when its module references are inspected #then it depends on Node built-ins only (1.5595ms)
+✔ #given a fresh PLUGIN_DATA #when the session-start hook runs #then it spawns the detached worker and emits the restart notice (11.2695ms)
+✔ #given a completed marker for the current version #when the hook runs #then it exits 0 silently without spawning (18.171083ms)
+✔ #given a marker stamped for an older plugin version #when the hook runs #then the version bump re-spawns the worker (24.800792ms)
+✔ #given a fresh bootstrap lock held by another process #when the hook runs #then it exits 0 without spawning (19.611667ms)
+✔ #given a stale bootstrap lock #when the hook runs #then it spawns anyway (13.009ms)
+✔ #given PLUGIN_DATA or PLUGIN_ROOT missing #when the hook runs #then it exits 0 silently (5.224833ms)
+✔ #given an unreadable plugin version manifest #when the hook runs #then it exits 0 without spawning (5.411041ms)
+✔ #given the public hook runner #when every branch resolves #then it always returns exit code 0 (5.896375ms)
+✔ #given a fresh state #when the worker runs #then steps execute and the versioned success marker is persisted (13.17675ms)
+✔ #given a marker written between hook and worker start #when the worker re-checks under lock #then it honors the marker (TOCTOU) (8.869791ms)
+✔ #given both locks already held #when the worker starts #then it is refused without writing state (8.992583ms)
+✔ #given throwing and degraded steps #when the worker runs #then degraded reasons are persisted and the worker still exits cleanly (29.262417ms)
+✔ #given a completed marker #when the worker runs with --once #then the marker is bypassed and steps run again (37.69425ms)
+✔ #given --only names an injected custom step #when the worker runs #then only the matching step executes (32.081084ms)
+✔ #given an unknown --only value #when the worker starts #then it rejects before steps or bootstrap artifacts (23.623375ms)
+✔ #given worker CLI flags #when parsed #then --codex-home/--once/--only/--manifest-dir are recognized and unknown flags throw (0.226916ms)
+✔ #given a missing plugin version in the worker #when it runs #then it records a degraded state instead of crashing (24.985792ms)
+✔ #given bootstrap.ps1 #when the download preamble is inspected #then it forces TLS 1.2 on ServicePointManager (10.035625ms)
+✔ #given bootstrap.ps1 #when scanned for pwsh-7-only syntax #then Windows PowerShell 5.1 can parse every line (4.478708ms)
+✔ #given bootstrap.ps1 #when environment writes are scanned #then no Machine-scope target appears (1.405417ms)
+✔ #given bootstrap.ps1 #when dependency discovery misses #then it never invokes winget or mutates user PATH (0.917875ms)
+✔ #given bootstrap.ps1 #when resolving Node #then Codex NODE_REPL_NODE_PATH is checked before PATH (0.88975ms)
+✔ #given bootstrap.ps1 #when execution policy mutations are scanned #then Set-ExecutionPolicy is never invoked (0.563416ms)
+✔ #given bootstrap.ps1 #when the final executable statement is located #then it is `exit 0` so sessions are never blocked (0.568333ms)
+✔ #given bootstrap.ps1 #when every character is inspected #then the script is ASCII-only for cp949-safe consoles (0.7495ms)
+✔ #given the aggregate and bootstrap component hook manifests #when commandWindows entries are read #then the bootstrap SessionStart hook launches bootstrap.ps1 (5.151084ms)
+✔ #given a marketplace-flow CODEX_HOME #when the worker setup runs #then config gains plugin, hook-state, and agent blocks without permissions keys (89.22925ms)
+✔ #given an existing git marketplace source #when the worker setup runs #then the [marketplaces.sisyphuslabs] block stays byte-identical (29.501875ms)
+✔ #given a completed first run #when the worker setup runs again #then config.toml is byte-identical (idempotent) (218.058375ms)
+✔ #given a config.toml that already declares [agents.explorer] at a different path (Orca mirror) #when the worker setup runs #then no second colliding registration is added for that role (45.306708ms)
+✔ #given a config.toml with no pre-existing agent entries #when the worker setup runs #then all bundled registrations are written (97.780375ms)
+✔ #given bootstrap-managed staging #when agents are linked #then nothing is persisted under PLUGIN_ROOT (64.187792ms)
+✔ #given user-tuned reasoning and service tier on an installed agent #when agents are re-linked #then both are preserved (122.724875ms)
+✔ #given an unwritable config.toml #when the worker setup runs #then it degrades naming config.toml and leaves the file untouched (56.593584ms)
+✔ #given win32 without Git Bash #when the worker setup runs #then it degrades instead of throwing and disables the git_bash MCP (77.589584ms)
+✔ #given win32 with Git Bash and OMO_CODEX_GIT_BASH_PATH #when the worker setup runs #then git_bash is enabled and the MCP env is stamped (123.015375ms)
+✔ #given the shipped plugin model catalog #when the worker setup stamps reasoning config #then the bundled fallback has not drifted from it (44.60975ms)
+✔ #given the default worker step list #when the worker runs end to end #then the setup step updates config and records a success marker (90.7285ms)
+✔ #given a repo checkout #when resolving the ultrawork directive #then the checkout copy wins over a plugin-internal copy (12.130833ms)
+✔ #given the flattened plugin cache #when the repo-relative directive is absent #then the plugin-internal copy is resolved (4.54675ms)
+✔ #given aggregate component package metadata #when bin names are inspected #then component CLIs expose documented commands (5.41725ms)
+✔ #given component CLI sources #when usage text is inspected #then user-facing command names use OMO names (2.210667ms)
+✔ #given required component CLI contracts #when workspaces are inspected #then every contract component is covered (3.3525ms)
+✔ #given built workspace component CLIs #when import specifiers are inspected #then each CLI is self-contained except node builtins (5.743833ms)
+✔ #given built workspace component CLIs #when dynamically imported with hook argv and empty stdin #then each CLI loads without external module resolution (376.288584ms)
+✔ #given representative component hook payloads #when executed through dist CLI contract #then current hook behavior is preserved (852.496792ms)
+✔ #given bundled LSP hook CLI in installed layout #when diagnostics run #then it spawns sibling daemon target (267.318708ms)
+✔ #given malformed comment-checker stdin #when executed through dist CLI contract #then it exits successfully without output (60.224458ms)
+✔ #given aggregate hook manifest #when command hooks are inspected #then component CLI invocation contract is unchanged (9.191125ms)
+✔ #given Codex plugin hooks #when plugin metadata is inspected #then hook keys contain human-readable hook slugs (76.319667ms)
+✔ #given Codex plugin skills #when skill metadata is inspected #then every skill has an OmO display name (74.840792ms)
+✔ #given hook status label #when formatting #then prefixes OmO display namespace and version (3.15525ms)
+✔ #given hook status label with blank version #when formatting #then uses local OmO display version (0.207ms)
+✔ #given loose legacy status label #when normalizing #then removes OMO wording and title-cases label (2.499417ms)
+✔ #given LazyCodex appears inside hook label #when normalizing #then product casing is preserved (1.724083ms)
+✔ #given MCP appears inside hook label #when normalizing #then protocol casing is preserved (0.100791ms)
+✔ #given versioned OmO status label #when normalizing #then it does not duplicate display prefix (0.367667ms)
+✔ #given aggregate comment-checker hook #when status is inspected #then it uses OmO comments label (6.023042ms)
+✔ #given aggregate and component hooks #when status messages are inspected #then all use the OmO formatter (29.722042ms)
+✔ #given aggregate build scripts #when inspected #then component CLIs are bundled with Bun (2.871958ms)
+✔ #given aggregate build scripts #when inspected #then npm subprocesses resolve on Windows (0.805292ms)
+✔ #given bundled MCP runtime builds #when a locked runtime has no node_modules #then npm ci bootstraps it before build (0.454875ms)
+✔ #given lcx skills #when frontmatter is inspected #then each exposes the loader-parsed skill name (2.985625ms)
+✔ #given complete bug-fix evidence #when creating a PR body #then evidence and machine label are emitted (0.898542ms)
+✔ #given missing bug-fix evidence #when creating a PR body #then the script rejects the incomplete payload (0.637ms)
+✔ #given a JSON payload path #when running the PR body script #then markdown is written to the requested file (45.2655ms)
+✔ #given the installed cache layout #when running build-lsp-tools #then uses the bundled dist and exits 0 (56.923541ms)
+✔ #given the installed cache layout #when running build-lsp-daemon #then uses the bundled dist and exits 0 (56.550125ms)
+lsp-tools-mcp package metadata is missing at /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/lsp-tools-mcp/package.json; build packages/lsp-tools-mcp before codex-lsp
+probed: /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/lsp-tools-mcp/package.json, /private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/lsp-prebuild-none-Pgp6QL/components/lsp-tools-mcp/package.json
+✔ #given neither layout #when running build-lsp-tools #then fails listing every probed path (42.685333ms)
+✔ #given the repo sibling layout with fresh outputs #when running build-lsp-tools #then exits 0 without building (38.482333ms)
+✔ #given aggregate MCP config #when inspected #then registers research MCPs without ast-grep MCP (4.363916ms)
+✔ #given stale root reasoning config #when ensuring config #then replaces stale values without duplicate keys (0.944875ms)
+✔ #given section settings reuse managed root keys #when ensuring config #then section settings are preserved (0.217125ms)
+✔ #given project .codex is a symlink #when migrating #then project config is skipped (51.656ms)
+✔ #given project config.toml is a symlink #when migrating #then project config is skipped (27.892917ms)
+✔ #given global and project-local stale Codex configs #when migrating #then both configs are forced to current defaults (8.582334ms)
+✔ #given model catalog is unavailable and stale 272k config #when migrating #then fallback catalog still upgrades it (20.91175ms)
+✔ #given model catalog is malformed and stale config #when migrating #then fallback catalog still upgrades it (9.833542ms)
+✔ #given user-customized Codex model config #when migrating #then user values are preserved without root multi-agent mode (4.916041ms)
+✔ #given managed config state is malformed #when migrating #then migration ignores stale state safely (5.056458ms)
+✔ #given managed config state path has surrounding whitespace #when migrating #then trimmed state path is used (3.017917ms)
+✔ #given managed catalog state #when catalog version advances #then only previously managed config is updated (6.67875ms)
+✔ #given config already matches current catalog #when catalog version advances for role-only changes #then managed state is preserved (2.632542ms)
+✔ #given stale Context7 placeholder MCP config #when migrating #then removes it and keeps plugin policy (2.731125ms)
+✔ #given real Context7 API key and placeholder comment #when migrating #then preserves user server settings (3.804125ms)
+✔ #given multi_agent_v2 enabled #when forcing disable #then flips the flag to false (0.177167ms)
+✔ #given no multi_agent_v2 section #when forcing disable #then appends a disabled section (0.133ms)
+✔ #given multi_agent_v2 section without enabled key #when forcing disable #then inserts enabled = false (0.050084ms)
+✔ #given [features] boolean shorthand multi_agent_v2 = true #when forcing disable #then removes it and appends a disabled section (0.123416ms)
+✔ #given multi_agent_v2 enabled #when forcing disable #then annotates the managed section with the upstream issue and opt-out (0.068917ms)
+✔ #given no multi_agent_v2 section #when forcing disable #then annotates the appended section (0.059542ms)
+✔ #given an annotated managed section #when forcing disable runs again #then does not duplicate the comment (0.079167ms)
+✖ #given [features] boolean shorthand multi_agent_v2 = false #when forcing disable #then rewrites to the non-conflicting disabled table (187.999458ms)
+✔ #given multi_agent_v2 already disabled #when forcing disable #then returns config unchanged (0.103584ms)
+✔ #given global config without multi_agent_v2 section #when full migration runs #then writes a disabled section on disk (28.875334ms)
+✖ #given global config starts with inline-comment features table #when full migration runs #then managed root settings stay at TOML root (94.645667ms)
+✔ #given queue multi-agent mode #when removing unsupported root key #then deletes root setting (0.223084ms)
+✔ #given proactive multi-agent mode #when removing unsupported root key #then deletes root setting (0.04275ms)
+✖ #given inline-comment features table #when removing unsupported root key #then config stays unchanged (59.611666ms)
+✔ #given indented root proactive mode #when removing unsupported root key #then no root setting remains (0.150625ms)
+✔ #given global config with forced multi_agent_v2 #when full migration runs #then disables it on disk (6.236209ms)
+✔ #given enabled = true with an inline comment #when forcing disable #then flips to false and preserves the comment (0.266167ms)
+✔ #given a section header with an inline comment #when forcing disable #then patches in place without duplicating the table (0.086208ms)
+✔ #given an already-guarded commented config #when re-running #then output is byte-identical (0.085875ms)
+✔ #given user-disabled with an inline comment #when forcing disable #then returns config unchanged (0.030084ms)
+✔ #given [features] shorthand true with an inline comment #when forcing disable #then removes the shorthand and appends one disabled table (0.077625ms)
+✔ #given a following section header with an inline comment #when inserting enabled=false #then does not leak into the next section (0.061333ms)
+✔ #given gpt-5.6-terra with managed disable #when model catalog prefers v2 #then clears enabled=false and managed comments (0.130208ms)
+✔ #given gpt-5.6 v2 model with hide_spawn_agent_metadata=false #when clearing #then removes the stale metadata override (0.081791ms)
+✔ #given gpt-5.6 v2 model with hide_spawn_agent_metadata=true #when clearing #then leaves the default-matching value alone (0.048375ms)
+✔ #given v1 model with hide_spawn_agent_metadata=false #when forcing disable #then keeps the metadata override (0.035584ms)
+✔ #given gpt-5.6-sol with no multi_agent_v2 section #when model catalog prefers v2 #then does not append a disable (0.043708ms)
+✔ #given gpt-5.6-terra managed disable #when full migration sees models_cache v2 #then clears disable and drops agents.max_threads (5.730542ms)
+✔ #given config default gpt-5.5 #when SessionStart model is gpt-5.6-terra #then prefers session model and clears disable (0.154125ms)
+✔ #given SessionStart without model #when requireSessionModel is set #then skips legacy force-disable (0.050917ms)
+✔ #given legacy [features] shorthand #when requireSessionModel skips force-disable #then still removes the shorthand (0.080459ms)
+✔ #given legacy [features] shorthand #when session model has no catalog entry #then still removes the shorthand (0.035959ms)
+✖ #given legacy shorthand and no session model on hook path #when full migration runs #then output stays valid TOML (112.934084ms)
+✔ #given SoT migration failure #when hook migration runs #then config.toml repair still happens (23.998417ms)
+✔ #given config default gpt-5.5 #when full migration gets SessionStart gpt-5.6-terra #then clears disable using session model (34.780833ms)
+✔ #given no session model and no root model #when forcing disable #then leaves the enable state untouched (0.226292ms)
+✔ #given no session model and no root model #when config has no multi_agent_v2 section #then does not append a disable (0.047583ms)
+✔ #given user-modified config without root model #when full non-hook migration runs #then writes no disable and no new agents.max_threads (16.356417ms)
+✔ #given model_catalog_json declares a v2 model as v1 #when full migration runs #then keeps the managed disable and max_threads (18.356125ms)
+✔ #given model_catalog_json declares a model as v2 #when full migration runs #then clears the managed disable (10.36175ms)
+✔ #given relative model_catalog_json declares gpt-5.6 model as v1 #when migrating #then resolves catalog from config directory (47.578417ms)
+✔ #given no SessionStart model and root gpt-5.6 model without catalog #when migrating #then clears stale V2 disable (12.20725ms)
+✔ #given Codex Light install docs #when inspected #then lazycodex is npm-first and Bun-free (3.287458ms)
+✔ payload-equivalence: #given telemetry-core and component shim #when session_start is captured #then payload schema matches telemetry-core (57.268875ms)
+✔ payload-equivalence: #given built telemetry CLI #when inspected #then telemetry-core is bundled without runtime package imports (19.846833ms)
+✔ #given resolveSafeOmoPath #when the target escapes .omo or the workspace #then it is refused (the script never escapes .omo) (2.352167ms)
+✔ #given scaffold #when .omo/plans is a symlink outside the workspace #then it refuses before the plan write escapes (12.359292ms)
+✔ #given scaffold #when .omo/drafts is a symlink outside the workspace #then it refuses before the draft write escapes (3.5985ms)
+✔ #given parseArgs #when the slug is missing or unsafe #then it throws, and valid flags parse (0.646416ms)
+✔ #given an explicit review modifier at startup #when draft-only scaffold runs #then the first durable write contains the complete pending review request (19.525917ms)
+✔ #given automatic review for non-Trivial UNCLEAR intent #when draft-only scaffold runs #then the first durable write contains the complete pending review request (25.700667ms)
+✔ #given Trivial UNCLEAR pre-approval planning #when draft-only scaffold runs #then it creates a review-optional draft without creating a plan (9.357209ms)
+✔ #given an already-scaffolded plan #when the script is re-run plain #then it is a no-op that preserves appended todos (resume-safe, no crash, no clobber) (21.139416ms)
+✔ #given a hand-edited plan #when --reset is used #then it refuses without --force and overwrites with --force (25.602042ms)
+✖ #given bare thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (97.814542ms)
+✖ #given V2 and an incompatible bare agents cap #when migrating #then removes only the cap assignment (70.8635ms)
+✖ #given double-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (62.148167ms)
+✖ #given V2 and an incompatible double-quoted agents cap #when migrating #then removes only the cap assignment (72.564583ms)
+✖ #given single-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (61.991166ms)
+✖ #given V2 and an incompatible single-quoted agents cap #when migrating #then removes only the cap assignment (79.146041ms)
+✖ #given escaped-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (75.099042ms)
+✖ #given V2 and an incompatible escaped-quoted agents cap #when migrating #then removes only the cap assignment (63.67825ms)
+✖ #given verify-a4 quoted agents.max_threads=1000 #when SessionStart migrates under V2 #then removes the cap idempotently (104.958708ms)
+✔ #given SessionStart migration sees an inline-commented V2 cap #when migrating twice #then preserves the line and ordering byte-for-byte (4.436292ms)
+✖ #given SessionStart migration sees equivalent V2 header ["features"."multi_agent_v2"] #when migrating twice #then preserves one valid table and the explicit cap (82.428125ms)
+✖ #given SessionStart migration sees equivalent V2 header [ features . multi_agent_v2 ] #when migrating twice #then preserves one valid table and the explicit cap (85.845042ms)
+✖ #given SessionStart migration sees equivalent V2 header ["features"."multi_agent_v\u0032"] #when migrating twice #then preserves one valid table and the explicit cap (79.288208ms)
+✖ #given SessionStart migration sees a quoted cap key #when migrating twice #then preserves the semantic cap without duplication (67.266875ms)
+✖ #given SessionStart migration sees a escaped quoted cap key #when migrating twice #then preserves the semantic cap without duplication (92.718625ms)
+✖ #given SessionStart migration sees a dotted cap key #when migrating twice #then preserves the semantic cap without duplication (77.363583ms)
+✖ #given SessionStart migration sees a root-qualified dotted cap key #when migrating twice #then preserves the semantic cap without duplication (52.293833ms)
+✖ #given multiline string contains V2 cap lookalikes #when SessionStart migrates #then leaves the semantic cap absent (84.861333ms)
+✖ #given V2 section multiline value contains a cap lookalike #when SessionStart migrates #then leaves the cap absent (130.377792ms)
+✖ #given V2 root-dotted disable and cap #when gpt-5.6 SessionStart migrates #then removes disable and V1 agents cap (60.554334ms)
+✖ #given quoted dotted V1 keys under features #when SessionStart migrates #then replaces enabled without a duplicate (141.4775ms)
+✖ #given multiline string closes after an escaped quote #when SessionStart migrates #then preserves the following explicit cap (105.342417ms)
+✔ #given gpt-5.6 session model with no models_cache and an explicit V2 cap #when migrating #then removes agents.max_threads but preserves the cap (4.011042ms)
+✔ #given SessionStart config migration has no V2 cap #when migrating #then leaves the cap unset (1.945833ms)
+✔ #given config without any model #when migrating #then does not introduce agents.max_threads (6.449125ms)
+✔ #given todo 4 cap cases #when migrating #then removes managed caps, preserves user caps, and detects gpt-6 V2 (15.662042ms)
+✔ #given config without any model but an existing low cap #when migrating #then preserves the existing cap (6.252708ms)
+✔ #given source package versions and component without hooks #when hook status messages sync #then source versions are preserved (89.305042ms)
+✔ #given release version override #when hook status messages sync #then aggregate hooks use release version (3.176666ms)
+✔ #given sentinel OpenCode tool content #when compatibility guidance is inserted #then the production artifact is placed after frontmatter and before the tool token (0.563333ms)
+✔ #given shared skill source anchors #when Codex overlays are applied #then exact anchors transform and match the generated artifacts (6.570208ms)
+✔ #given already transformed sentinel content #when compatibility guidance is inserted again #then the transform is idempotent (0.190042ms)
+✔ #given a stale generated compatibility block #when guidance is inserted #then the production artifact replaces it (0.229ms)
+✔ #given a custom compatibility block before an OpenCode tool token #when guidance is inserted #then the custom block is preserved (0.147583ms)
+✔ #given an exported template wrapper containing an OpenCode tool token #when guidance is inserted #then wrapper bytes are preserved (0.070625ms)
+✔ #given real shared skills that need Codex translation #when aggregate skills are synced #then each generated skill injects the production compatibility artifact once before any remaining OpenCode tool token (85.161625ms)
+✔ #given the aggregate sync implementation #when its skill adaptation pipeline is inspected #then it still applies compatibility guidance before overlays (0.6925ms)
+✔ #given the flattened plugin cache the Codex installer produces #when sync-skills runs inside it #then it resolves shared skills through the linked package and writes the skill tree (2268.693584ms)
+✔ #given synced aggregate Codex skills #when inspected #then component and shared skills are present (21.117459ms)
+✔ #given reference-only designpowers frontend files #when synced for Codex #then nested SKILL.md files are not packaged (23.42825ms)
+✔ #given aggregate Codex skills #when source wiring is inspected #then shared skills are imported from the shared-skills package (3.624083ms)
+✔ #given shared skill package source #when aggregate Codex shared skills are inspected #then generated copies have no hand-authored drift (148.584834ms)
+✔ #given a shared skill name collides with a Codex component skill #when aggregate skills are inspected #then the component skill wins (7.549083ms)
+✔ #given shared skill source tests #when aggregate Codex skills are synced #then source tests are not packaged (100.881333ms)
+✔ #given component skill sources #when aggregate Codex component skills are inspected #then generated copies have no hand-authored drift (31.756583ms)
+✔ #given the canonical prompts-core directive #when the aggregate ultrawork skill is inspected #then it wraps the canonical bytes in skill frontmatter (0.628041ms)
+✔ #given synced ulw-loop skill #when Codex hint metadata is inspected #then ulw-loop surfaces the ulw-loop alias (0.839875ms)
+✔ #given synced ulw-loop skill #when Codex hint metadata is inspected #then ulw-loop remains discoverable as an alias (0.732791ms)
+✔ #given shipped Codex skill payloads #when legacy ultraresearch alias is inspected #then it is not packaged (462.084209ms)
+✔ #given synced git-master skill #when inspected #then commits and git history route through it (3.0035ms)
+✔ #given packaged Codex ulw-plan surfaces #when inspected #then dangerous sandbox bypass guidance is not shipped (1.697458ms)
+✔ #given LAZYCODEX_RELEASE_VERSION env #when resolving authoritative version #then the env value wins (1.08925ms)
+✔ #given no env override #when resolving authoritative version #then root package.json version is used (3.245958ms)
+✔ #given drifted Codex manifests #when syncing version from root #then all versioned manifests match and version-less files are left alone (10.168625ms)
+✔ #given already coherent manifests #when syncing again #then nothing is rewritten (16.859958ms)
+✔ #given app-thread archival is blocked by an ambiguous id #when archive runs with a note #then team state is archived and keeps the blocker in the log (355.789166ms)
+✔ #given a bound team #when the member field manual renders #then it names the cross-thread tool and the team.json address book (463.757292ms)
+✔ #given a member bootstrap trigger #when it is generated #then it names the cross-thread push tool (357.149334ms)
+✔ #given guide.md is a symlink #when guide is regenerated #then the outside target stays untouched (138.089625ms)
+✔ #given member A exists #when add-member receives A with trailing space #then state is not partially mutated (162.985084ms)
+✔ #given two add-member commands run concurrently #then both successful mutations are preserved (202.935208ms)
+✔ #given another command holds the team lock #when add-member times out #then it fails without mutating team state (161.211625ms)
+✔ #given member focus already exists #when add-member receives same focus with different spacing and case #then state is not partially mutated (171.127084ms)
+✔ #given only one member exists #when bind-thread runs #then member is not activated (243.424792ms)
+✔ #given persisted paths are mutated outside trusted team dir #when guide is regenerated #then outside file stays untouched (149.582792ms)
+✔ #given team dir is swapped to a symlink #when status reads team state #then command refuses the symlink (309.712625ms)
+✔ #given teams root is a symlink #when delete runs #then outside team state stays untouched (75.130167ms)
+✔ #given a worktree-backed team has bound member threads #when guide and status render #then they include codex thread links (459.4935ms)
+✔ #given two members with distinct names #when added #then each thread title is per-member and the two never collide (192.104625ms)
+✔ #given a member added without an explicit name #when state is read #then the title falls back to the focus, never a shared session name (265.203583ms)
+✔ #given a member name already exists #when add-member receives the same name with different spacing and case #then state is not partially mutated (168.389625ms)
+✔ #given persisted team.json has duplicate member names #when a command loads the team #then stale state is rejected (197.604125ms)
+✔ #given persisted team.json has duplicate thread titles with distinct member names #when bind-thread runs #then state is rejected before activation (218.79725ms)
+✔ #given MultiAgentV2 transport #when members are added and bound #then task names and canonical agent paths form the address book (459.749958ms)
+✔ #given codex_app transport #when members bind threads #then the existing thread address book and deep links remain (310.139416ms)
+✔ #given an unsupported transport #when init runs #then it fails before creating team state (43.848625ms)
+✔ #given --transport without a value #when init runs #then it fails before creating team state (40.339459ms)
+✔ #given an existing team #when init re-runs with a conflicting transport #then it fails and state is unchanged (184.204625ms)
+✔ #given a V2 team #when the whole team is archived without a note #then no output claims runtime members were closed (424.896084ms)
+✔ #given a V2 team #when one member is archived #then output scopes the archive to team state, not the runtime agent (249.231625ms)
+✔ #given a codex_app team #when one member is archived #then the existing wording is preserved (164.024958ms)
+✔ #given a transport-specific team #when the wrong bind command runs #then it fails without changing team.json (310.908291ms)
+✔ #given V2 expected task identity #when bind-agent receives another path #then it fails without activating the member (149.109708ms)
+✔ #given a V2 member has no valid task name #when add-member runs #then state remains unchanged (111.638125ms)
+✔ #given legacy schemaVersion 2 state with existing members #when a mutation succeeds #then it upgrades in place as codex_app (200.89175ms)
+✔ #given a worktree team #when worktree-add A #then a real git worktree on a derived branch is created and recorded (664.330792ms)
+✔ #given worktree-add ran #when the field manual is regenerated #then it shows the member's derived worktree branch (643.566375ms)
+✔ #given a team initialized WITHOUT --worktree #when worktree-add is called mid-run #then it auto-enables isolation (conflict-triggered) (369.280542ms)
+✔ #given an existing member worktree #when worktree-add runs again #then it is a safe no-op that reports the existing worktree (361.079958ms)
+✔ #given a member worktree #when worktree-remove A #then git drops it and team.json clears the path (369.021959ms)
+✔ #given a member committed work in its worktree #when integrate --id A #then the base branch gets a NO-FF merge commit (465.3995ms)
+✔ #given two members edited the same line #when integrate hits the conflict #then it stops, reports the conflicting member, and exits non-zero (621.940333ms)
+✔ #given a member branch that cannot be merged #when integrate runs #then it surfaces git's real reason, not a fake conflict (364.210625ms)
+✔ #given a member id that is not a safe path segment #when worktree-add runs #then it refuses instead of escaping the team dir (192.978416ms)
+✔ #given synced skills #when the ultrawork skill is inspected #then it carries the full directive body (1.176291ms)
+✔ #given the built ultrawork CLI #when a ulw prompt is submitted #then a compact skill pointer is emitted (51.733458ms)
+✔ #given the built ultrawork and ulw-loop CLIs #when both emit the pointer #then the payloads match byte for byte (95.574458ms)
+✔ #given shared OpenCode #when deeper review becomes required before plan completion #then durable request state covers explicit and automatic review without inventing a digest (5.001541ms)
+✔ #given a complete shared OpenCode plan #when a fresh review round starts #then both lanes persist literal workspace and artifact bindings (2.102ms)
+✔ #given a shared OpenCode review round #when launch, interruption, completion, or compaction occurs #then the durable transition table fails closed (0.585334ms)
+✔ #given shared OpenCode round R2 replaced R1 #when a delayed R1 launch or receipt arrives #then identity-bound CAS leaves R2 unchanged (0.731ms)
+✔ #given shared OpenCode independent reviewers #when exact-path retrieval drifts #then intake fails closed without alternate artifact recovery (1.378333ms)
+✔ #given Codex #when deeper review becomes required before plan completion #then durable request state covers explicit and automatic review without inventing a digest (2.374709ms)
+✔ #given a complete Codex plan #when a fresh review round starts #then both lanes persist literal workspace and artifact bindings (1.353208ms)
+✔ #given a Codex review round #when launch, interruption, completion, or compaction occurs #then the durable transition table fails closed (0.997125ms)
+✔ #given Codex round R2 replaced R1 #when a delayed R1 launch or receipt arrives #then identity-bound CAS leaves R2 unchanged (1.408ms)
+✔ #given Codex independent reviewers #when exact-path retrieval drifts #then intake fails closed without alternate artifact recovery (1.543375ms)
+✔ #given ulw-plan skill copies #when component source and packaged copy are compared #then they are byte-identical and expose the loader-parsed name (6.520042ms)
+✔ #given ulw-research skill copies #when frontmatter is inspected #then the loader-parsed name is ulw-research (3.715583ms)
+✔ #given ulw-research skill copies #when scanned for non-English content #then they contain no Hangul (2.134125ms)
+✔ #given bundled agent roles and stale legacy links #when installing locally #then installs durable Codex agent files (329.983041ms)
+✔ #given local sisyphuslabs install #when plugin cache is pruned #then agent files still resolve from Codex home (519.514125ms)
+✔ #given local sisyphuslabs install #when temporary marketplace snapshot is removed #then agent files still resolve from Codex home (224.110125ms)
+✔ #given bundled ultrawork plan #when installing locally #then fresh installs write bundled default xhigh (102.351084ms)
+✔ #given bundled ultrawork plan #when reinstalling without edits #then bundled xhigh stays intact (136.212792ms)
+✔ #given user edited installed ultrawork plan #when reinstalling after snapshot refresh #then high survives (87.347ms)
+✔ #given user removed installed ultrawork service tier #when reinstalling after snapshot refresh #then removal survives (81.296417ms)
+✔ #given user edited installed ultrawork plan #when reinstalling after snapshot refresh #then bundled snapshot target retains xhigh (71.284041ms)
+✔ #given the generated installer #when linking the root runtime #then writes only the canonical wrapper with marker and edition exports (10.307709ms)
+✔ #given a marker-bearing legacy omo #when linking the root runtime #then deletes it (5.590292ms)
+✔ #given an unmarked user-owned omo #when linking twice #then preserves it byte-identical and remains idempotent (11.19475ms)
+✔ #given bun absent from PATH but present in ~/.bun/bin #when running the omo-agent-toolkit runtime wrapper #then resolves the bun fallback (34.734959ms)
+✖ #given bun absent everywhere #when running the omo runtime wrapper #then fails with an actionable install hint (70.219209ms)
+✔ #given OMO_RUNTIME=node and a node CLI bundle #when running the omo runtime wrapper #then executes the node CLI (79.898ms)
+✖ #given bun absent everywhere and a node CLI bundle #when running the omo runtime wrapper #then falls back to node (40.94125ms)
+✖ #given bun absent and no node CLI bundle #when running the omo runtime wrapper #then the error names both runtimes (30.792708ms)
+✔ #given Windows platform #when writing the omo runtime wrapper #then embeds the node fallback chain (3.050625ms)
+✔ #given Windows platform #when writing the omo runtime wrapper #then embeds the bun fallback chain (2.377084ms)
+✔ #given Windows platform #when linking cached plugin bins #then writes command shims (10.95275ms)
+✔ #given existing custom Windows command shim #when linking bins #then rejects without overwriting (6.481958ms)
+✔ #given managed legacy Codex component symlink #when linking bins #then removes stale symlink and writes OMO bin (7.4625ms)
+✔ #given managed legacy Codex LSP symlink #when linking bins #then removes stale lsp symlink (8.0955ms)
+✔ #given nested component declares reserved omo bin #when linking bins #then skips the nested top-level command (15.85875ms)
+✔ #given stale managed ulw-loop omo symlink #when linking bins #then removes it without touching user-owned omo (16.678958ms)
+✔ #given stale local-source ulw-loop omo symlink #when linking bins #then removes it (20.569417ms)
+✔ #given user-owned legacy Codex symlink #when linking bins #then preserves the user symlink (7.312375ms)
+✔ #given user-owned legacy Codex symlink with component-like target #when linking bins #then preserves it (12.349625ms)
+✔ #given package bin name escapes bin directory #when linking bins #then rejects without writing outside link (5.734958ms)
+✔ #given package bin target escapes plugin root #when linking bins #then rejects without linking outside target (3.526292ms)
+✔ #given source plugin has an npm lockfile #when caching plugin #then lockfile is preserved for deterministic install (21.816917ms)
+✔ #given cached file dependency is rewritten #when lockfile exists #then package lock stays in sync (92.786792ms)
+✔ #given npm creates workspace bin shims in the cache #when caching plugin #then plugin-owned shims are removed (168.143542ms)
+✔ #given packaged root CLI runtimes #when caching omo plugin #then root dist is materialized into the plugin cache (43.247875ms)
+✔ #given packaged prompts-core directive #when caching omo plugin #then the ultrawork directive is materialized into the plugin cache (32.079166ms)
+✔ #given existing cache #when npm install fails #then previous active cache is preserved (18.634ms)
+✔ #given existing cache #when final promotion fails #then previous active cache is restored (25.339833ms)
+✔ #given lazycodex install flags #when parsing Node installer argv #then keeps Codex autonomous intent (0.8035ms)
+✔ #given unsupported OpenCode platform override #when parsing Node installer argv #then rejects the Bun-backed path (0.182708ms)
+✔ #given missing platform value #when parsing Node installer argv #then rejects the incomplete option (0.073209ms)
+✔ #given repo root equals option #when parsing Node installer argv #then keeps the explicit path (0.055167ms)
+✔ #given unknown positional command #when parsing Node installer argv #then rejects instead of treating it as a repo root (0.065458ms)
+✔ #given install help flag #when parsing Node installer argv #then returns help (0.047167ms)
+✔ #given installer help #when formatting usage #then includes uninstall (1.00225ms)
+✔ #given installer help #when formatting usage #then advertises every supported command (0.398417ms)
+✔ #given installer help #when formatting usage #then documents update and version entry points (0.618333ms)
+✔ #given dry-run install with codex autonomy flags #when parsing Node installer argv #then keeps delegated install command and dry-run intent (0.185167ms)
+✔ #given dry-run doctor command #when parsing Node installer argv #then returns delegated doctor command (1.281625ms)
+✔ #given update command #when parsing Node installer argv #then returns lazycodex update intent (0.246208ms)
+✔ #given dry-run update with repo root #when parsing Node installer argv #then keeps local update intent (0.105084ms)
+✔ #given dry-run cleanup command #when parsing Node installer argv #then returns delegated codex cleanup command (1.312209ms)
+✔ #given uninstall command #when parsing Node installer argv #then returns delegated codex cleanup command (0.077ms)
+✔ #given doctor flags #when parsing Node installer argv #then preserves pass-through arguments (0.053666ms)
+✔ #given autonomous permissions requested #when script installer updates config #then enables Codex autonomy feature flags (14.715875ms)
+✔ #given autonomous permissions disabled #when script installer updates config #then keeps native Codex feature flags enabled (13.569875ms)
+✔ #given existing child_agents_md setting #when script installer updates config #then preserves it without stamping unsupported values (7.4365ms)
+✔ #given config without child_agents_md #when script installer updates config #then does not add unsupported feature key (6.353625ms)
+✔ #given autonomous permissions requested #when script installer updates config #then enables full Codex autonomy (64.791ms)
+✔ #given empty Codex config #when script installer updates config #then sets worker model and reasoning defaults (12.87625ms)
+✔ #given existing model and reasoning config #when script installer updates config #then replaces stale defaults without duplicate keys (13.460333ms)
+✔ #given user-customized model config #when script installer updates config #then preserves user reasoning values (8.819584ms)
+✔ #given bundled model catalog #when script installer updates config #then reads defaults from catalog (4.410167ms)
+✔ #given fallback model catalog #when catalog file is unavailable #then no managed preset uses pure GPT-5.4 (0.769708ms)
+✔ #given empty Codex config #when script installer updates config #then leaves thread limits unset without forcing MultiAgentV2 (9.400792ms)
+✔ #given queue multi-agent mode #when script installer updates config #then removes unsupported root key (3.232875ms)
+✔ #given indented steering mode and inline-comment features table #when script installer updates config #then removes root key and keeps one features table (66.201625ms)
+✔ #given empty Codex config #when script installer updates config #then leaves Context7 to the plugin MCP manifest (44.006208ms)
+✔ #given sisyphuslabs omo install #when script installer updates config #then enables Context7 plugin mcp policy (25.8865ms)
+✔ #given existing Context7 MCP config #when script installer updates config #then leaves user setup untouched (32.287667ms)
+✔ #given real Context7 API key and placeholder comment #when script installer updates config #then preserves user setup (17.659334ms)
+✔ #given stale Context7 placeholder MCP config #when script installer updates config #then removes it for plugin MCP (7.683292ms)
+✔ #given Codex config is a symlink #when script installer updates config #then writes through the target (10.43025ms)
+✔ #given sisyphuslabs config without explicit source #when script installer updates config #then uses local marketplace (15.384667ms)
+✔ #given existing MultiAgentV2 table #when script installer updates config #then preserves unrelated tuning while setting subagent thread limits (37.023959ms)
+✔ #given empty Codex config #when script installer updates config #then sets the generated MultiAgentV2 thread limit (10.057042ms)
+✔ #given user config hiding spawn_agent metadata #when script installer updates config #then preserves the generated source behavior (15.758291ms)
+✔ #given legacy boolean MultiAgentV2 flag and table #when script installer updates config #then normalizes to table config (21.761125ms)
+✔ #given legacy boolean MultiAgentV2 flag false #when script installer updates config #then normalizes to a disabled table config (45.223167ms)
+✔ #given legacy agents max_threads #when script installer updates config #then preserves the user root subagent thread cap (25.874875ms)
+✔ #given managed agent role sections #when script installer updates config #then preserves role config without raising root agents max_threads (13.646667ms)
+✔ #given existing trust and lsp blocks #when updating config #then existing blocks are preserved (6.914875ms)
+✔ #given a lazycodex passthrough command #when delegating to omo-agent-toolkit #then resets OMO_INVOCATION_NAME so the delegate does not re-enter the lazycodex path (0.8805ms)
+✔ #given OMO_INVOCATION_NAME=lazycodex in the parent env #when delegating a cleanup passthrough #then the child env overrides it to omo-agent-toolkit (0.159083ms)
+✔ #given a dry-run doctor #when delegating #then routes to the Codex LazyCodex doctor workflow (0.473542ms)
+✔ #given doctor without model override #when delegating #then uses the configured Codex default model (0.068667ms)
+✔ #given explicit doctor model override #when delegating #then passes only that model to Codex exec (0.075958ms)
+✔ #given doctor source-root override #when delegating #then passes it to the Codex workflow environment (0.065334ms)
+✔ #given dry-run install without explicit platform #when delegating #then logs one Windows-safe Codex install command (0.066792ms)
+✔ #given doctor recursion guard is active #when lazycodex doctor delegates #then rejects before launching Codex (0.221667ms)
+✔ #given a dry-run doctor with JSON output #when delegating #then asks the Codex workflow to return JSON (0.082042ms)
+✔ #given dry-run args with shell metacharacters #when delegating #then logs a shell-safe command (0.096167ms)
+✔ #given the stable installer entrypoint #when inspecting imports #then it delegates to generated output (2.188833ms)
+✔ #given generated installer output #when importing install-local #then public installer API comes from the bundle (1.717375ms)
+✔ #given generated installer output #when importing direct bundle #then compatibility helper APIs are exported (5.232083ms)
+✔ #given no root model #when generated bundle updates config #then it does not introduce agents max_threads (11.596916ms)
+✔ #given an inline-commented V2 thread cap #when generated bundle updates config twice #then preserves the line and ordering byte-for-byte (76.139667ms)
+✔ #given explicit v1 model_catalog_json and stale models_cache v2 #when generated bundle updates config #then explicit catalog preserves disable and cap (42.351417ms)
+✔ #given explicit v2 model_catalog_json and stale models_cache v1 #when generated bundle updates config #then explicit catalog clears managed disable and cap (8.628458ms)
+✔ #given a hook command target missing from the payload #when scanning #then exactly that path is reported (11.276292ms)
+✔ #given a Windows hook command target missing from the payload #when scanning #then the backslash path is reported (5.044792ms)
+✔ #given a Windows hook command target exists in the payload #when scanning #then nothing is missing (10.914041ms)
+✔ #given a complete payload #when scanning #then nothing is missing (17.554042ms)
+✔ #given hook manifests declared as an array #when scanning #then missing targets are reported (25.552917ms)
+✔ #given hook manifests declared as an array and complete payload #when scanning #then nothing is missing (65.781375ms)
+✔ #given no hooks manifest #when scanning #then nothing is missing (1.150917ms)
+✔ #given a broken payload #when asserting #then the error names the missing target and the plugin root (52.66925ms)
+✔ #given a complete payload #when asserting #then it resolves (33.849833ms)
+✔ #given sisyphuslabs lazycodex install #when installing locally #then stamps the distribution version (655.2345ms)
+lazycodex-ai installs the Codex Light edition only. Use the omo installer for OpenCode or both-platform installs.
+Refusing recursive lazycodex doctor invocation from inside $omo:lcx-doctor
+✔ #given published lazycodex bin runs outside the package #when resolving default repo root #then uses installer location (0.569625ms)
+✔ #given lazycodex version flag #when running the Node installer entrypoint #then prints the package version (75.199583ms)
+✔ #given lazycodex runs through an npm bin symlink #when running the Node installer entrypoint #then it still executes main (53.758417ms)
+✔ #given dry-run install flags #when running the Node installer entrypoint #then prints delegated autonomous codex install command (100.381792ms)
+✔ #given dry-run install opt-out #when running the Node installer entrypoint #then preserves existing Codex permission settings (160.400542ms)
+✔ #given explicit non-Codex dry-run platform #when running the Node installer entrypoint #then rejects it (94.001792ms)
+✔ #given dry-run doctor #when running the Node installer entrypoint #then prints Codex LazyCodex doctor workflow command (113.390791ms)
+✔ #given recursive doctor env #when running the Node installer entrypoint #then refuses to re-enter doctor (43.554041ms)
+✔ #given dry-run cleanup path needs quoting #when running the Node installer entrypoint #then prints shell-safe command (41.047417ms)
+✔ #given dry-run cleanup #when running the Node installer entrypoint #then prints delegated codex cleanup command (41.531208ms)
+✔ #given dry-run uninstall #when running the Node installer entrypoint #then prints delegated codex cleanup command (44.224792ms)
+✔ #given stale lazycodex version #when running update dry-run #then prints the latest installer command (41.868208ms)
+✔ #given bun global lazycodex wrapper #when running update dry-run #then prints bun global update command (42.388042ms)
+✔ #given bun global lazycodex wrapper and untrusted known scripts #when update runs noninteractively #then prints manual scoped trust command (62.643875ms)
+✔ #given current lazycodex version #when running update dry-run #then reports already current (40.01375ms)
+✔ #given dry-run ulw-loop #when running the Node installer entrypoint #then prints delegated ulw-loop command (39.571959ms)
+✔ #given the invoking argv path disappears #when importing the Node installer module #then the entrypoint guard does not throw (40.351583ms)
+✔ #given Windows without Git Bash #when installing local marketplace #then rejects before marketplace or config mutation (6.412666ms)
+✔ #given Windows without Git Bash #when installing local marketplace #then winget is not run and install stops with guidance (2.2115ms)
+✔ #given non-Windows install #when running installer #then winget is never called (1779.500083ms)
+✔ #given Windows env override resolves Git Bash #when installing local marketplace #then install continues (1054.635792ms)
+✔ #given Windows env override in installer options #when no custom resolver is provided #then default resolver uses it (1003.6315ms)
+✔ #given non-Windows local install #when resolver would fail #then installer keeps existing behavior (836.793959ms)
+✔ #given default CODEX_HOME #when resolving local installer bin dir without override #then preserves user local bin precedence (0.482208ms)
+✔ #given custom CODEX_HOME #when resolving local installer bin dir without override #then keeps generated omo inside that Codex home (0.083ms)
+✔ #given custom CODEX_HOME and PATH without omo #when installing locally without bin override #then bootstraps via local CLI when omo is absent (145.271041ms)
+✔ #given repoRoot without root CLI dist #when installing locally #then warns about the skipped omo runtime wrapper (421.637834ms)
+✔ #given explicit CODEX_LOCAL_BIN_DIR #when resolving local installer bin dir #then preserves installed omo precedence (0.151167ms)
+✔ #given CODEX_LOCAL_BIN_DIR with surrounding whitespace #when resolving local installer bin dir #then trims the env value before use (0.061792ms)
+✔ #given omo plugin source #when inspecting identity #then uses sisyphuslabs omo metadata (0.727625ms)
+✔ #given plugin hooks #when installing #then records trusted hook hashes (35.896666ms)
+✔ #given bad plugin source path #when installing #then rejects traversal (1.139833ms)
+✔ #given local marketplace #when installing #then copies versioned plugins and enables config (216.040375ms)
+✔ #given sisyphuslabs marketplace #when installing #then registers the local built marketplace cache (297.824333ms)
+✔ #given Context7 placeholder auth in generated installer path #when installing cached plugin #then placeholder auth is stripped (18.709542ms)
+✔ #given real Context7 auth in generated installer path #when installing cached plugin #then user auth is preserved (10.784166ms)
+✔ #given env-only Context7 placeholder auth in generated installer path #when installing cached plugin #then placeholder env is stripped (197.558667ms)
+✔ #given dangling Context7 api-key flag in generated installer path #when installing cached plugin #then blank auth flag is stripped (190.654083ms)
+✔ #given external MCP package runtime #when installing cached plugin #then runtime is copied into the plugin cache (268.3265ms)
+✔ #given plugin-local MCP runtime #when installing cached plugin #then manifest args point at the cached plugin dist (65.367334ms)
+✔ #given external MCP package not in the generated bundled runtime set #when installing cached plugin #then manifest args point at source (10.8235ms)
+✔ #given packaged bundled MCP runtime has only dist files #when installing cached plugin #then runtime is copied into the plugin cache (20.988667ms)
+✔ #given packaged lazycodex adapter #when installing locally #then uses bundled artifacts without source builds (124.583125ms)
+✔ #given stale project-local Codex config #when Node installer runs #then repairs the local conflict (114.612792ms)
+✔ #given root and nested project-local Codex configs #when script cleanup runs #then it repairs every loaded project layer (3.056708ms)
+✔ #given no project-local config and CODEX_HOME in the parent chain #when script cleanup runs #then global Codex config is not treated as project state (1.590666ms)
+✔ #given project-local config is a symlink to CODEX_HOME #when script cleanup runs #then it skips the link without mutating the target (1.280875ms)
+✔ #given project-local Codex config is a symlink #when script cleanup runs #then symlink target is not modified (1.616916ms)
+✔ #given project-local .codex directory is a symlink #when script cleanup runs #then symlink target is not modified (1.060083ms)
+✔ #given malformed project directory from the environment #when script cleanup runs #then it skips project-local cleanup without failing install (0.211917ms)
+✔ #given absent project directory from the script surface #when script cleanup runs #then it skips project-local cleanup without throwing (0.151208ms)
+✔ #given project cleanup hits a filesystem edge #when Node installer runs #then install succeeds and reports skipped cleanup (70.649375ms)
+ℹ tests 496
+ℹ suites 0
+ℹ pass 468
+ℹ fail 28
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6420.146625
+
+✖ failing tests:
+
+test at packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:587:1
+✖ #given [features] boolean shorthand multi_agent_v2 = false #when forcing disable #then rewrites to the non-conflicting disabled table (187.999458ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:36:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:15:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:598:17)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:650:1
+✖ #given global config starts with inline-comment features table #when full migration runs #then managed root settings stay at TOML root (94.645667ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:36:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:15:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:671:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:705:1
+✖ #given inline-comment features table #when removing unsupported root key #then config stays unchanged (59.611666ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:36:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:15:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:709:17)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:1012:1
+✖ #given legacy shorthand and no session model on hook path #when full migration runs #then output stays valid TOML (112.934084ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:36:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:15:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/migrate-codex-config.test.mjs:1030:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:17:2
+✖ #given bare thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (97.814542ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:36:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:41:2
+✖ #given V2 and an incompatible bare agents cap #when migrating #then removes only the cap assignment (70.8635ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:46:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:17:2
+✖ #given double-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (62.148167ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:36:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:41:2
+✖ #given V2 and an incompatible double-quoted agents cap #when migrating #then removes only the cap assignment (72.564583ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:46:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:17:2
+✖ #given single-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (61.991166ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:36:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:41:2
+✖ #given V2 and an incompatible single-quoted agents cap #when migrating #then removes only the cap assignment (79.146041ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:46:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:17:2
+✖ #given escaped-quoted thread-cap keys with varied spacing #when migrating #then removes managed values and retains user values (75.099042ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:36:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:41:2
+✖ #given V2 and an incompatible escaped-quoted agents cap #when migrating #then removes only the cap assignment (63.67825ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:46:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:52:1
+✖ #given verify-a4 quoted agents.max_threads=1000 #when SessionStart migrates under V2 #then removes the cap idempotently (104.958708ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:59:19)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:134:2
+✖ #given SessionStart migration sees equivalent V2 header ["features"."multi_agent_v2"] #when migrating twice #then preserves one valid table and the explicit cap (82.428125ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:152:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:134:2
+✖ #given SessionStart migration sees equivalent V2 header [ features . multi_agent_v2 ] #when migrating twice #then preserves one valid table and the explicit cap (85.845042ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:152:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:134:2
+✖ #given SessionStart migration sees equivalent V2 header ["features"."multi_agent_v\u0032"] #when migrating twice #then preserves one valid table and the explicit cap (79.288208ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:152:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:199:2
+✖ #given SessionStart migration sees a quoted cap key #when migrating twice #then preserves the semantic cap without duplication (67.266875ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:206:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:199:2
+✖ #given SessionStart migration sees a escaped quoted cap key #when migrating twice #then preserves the semantic cap without duplication (92.718625ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:206:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:199:2
+✖ #given SessionStart migration sees a dotted cap key #when migrating twice #then preserves the semantic cap without duplication (77.363583ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:206:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:199:2
+✖ #given SessionStart migration sees a root-qualified dotted cap key #when migrating twice #then preserves the semantic cap without duplication (52.293833ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:206:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:221:1
+✖ #given multiline string contains V2 cap lookalikes #when SessionStart migrates #then leaves the semantic cap absent (84.861333ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:238:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:244:1
+✖ #given V2 section multiline value contains a cap lookalike #when SessionStart migrates #then leaves the cap absent (130.377792ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:260:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:266:1
+✖ #given V2 root-dotted disable and cap #when gpt-5.6 SessionStart migrates #then removes disable and V1 agents cap (60.554334ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:284:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:291:1
+✖ #given quoted dotted V1 keys under features #when SessionStart migrates #then replaces enabled without a duplicate (141.4775ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:308:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:315:1
+✖ #given multiline string closes after an escaped quote #when SessionStart migrates #then preserves the following explicit cap (105.342417ms)
+  AssertionError [ERR_ASSERTION]: Python with tomllib is required for TOML parse assertions
+      at resolvePython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:80:9)
+      at parseTomlWithPython (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:65:17)
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/plugin/test/subagent-limit-migration.test.mjs:331:17)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/scripts/install-bin-links.test.mjs:99:1
+✖ #given bun absent everywhere #when running the omo runtime wrapper #then fails with an actionable install hint (70.219209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/scripts/install-bin-links.test.mjs:108:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/scripts/install-bin-links.test.mjs:126:1
+✖ #given bun absent everywhere and a node CLI bundle #when running the omo runtime wrapper #then falls back to node (40.94125ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /OMO_NODE_OK --version/. Input:
+  
+  ''
+  
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/scripts/install-bin-links.test.mjs:136:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: /OMO_NODE_OK --version/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at packages/omo-codex/scripts/install-bin-links.test.mjs:139:1
+✖ #given bun absent and no node CLI bundle #when running the omo runtime wrapper #then the error names both runtimes (30.792708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (file:///Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-codex/scripts/install-bin-links.test.mjs:148:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+error: script "test:codex" exited with code 1

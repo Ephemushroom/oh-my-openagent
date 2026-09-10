@@ -10,7 +10,7 @@ type CommandInfo = NonNullable<ReturnType<CommandDraft["get"]>>
 const EXPECTED_COMMANDS = [
   "goal",
   "refactor",
-  "start-work",
+  "ulw-execute",
   "stop-continuation",
   "handoff",
   "remove-ai-slops",
@@ -51,6 +51,6 @@ describe("registerBuiltinCommands", () => {
       expect(command.template.length).toBeGreaterThan(0)
       expect(command.description?.length).toBeGreaterThan(0)
     }
-    expect(commands.get("start-work")?.agent).toBe("atlas")
+    expect(commands.get("ulw-execute")?.agent).toBe("atlas")
   })
 })

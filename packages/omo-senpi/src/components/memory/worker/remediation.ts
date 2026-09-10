@@ -17,7 +17,16 @@ export function reflectionRemediation(reason: string | undefined, detail: string
   ) {
     return "the reflection child cannot see the configured category model; adjust memory.reflection category/model in your omo config"
   }
-  if (combined.includes("spawn") || combined.includes("enoent")) {
+  // bwrap dies inside its own sandbox setup, before the reflection child ever execs, and the run
+  // directory is pruned by the time this hint renders - so child-stderr.log is a dead pointer.
+  if (/bwrap:|setting up (uid map|gid map|namespace)/.test(combined)) {
+    return 'the sandbox helper (bwrap) cannot create a user namespace on this host; set memory.reflection.sandbox to "off" in your omo config, or allow unprivileged user namespaces on the host'
+  }
+  // Only a PRE-SPAWN failure means the executable could not be resolved. A child that started and
+  // then died on a missing file also reports ENOENT, and pointing at SENPI_BIN there is a
+  // misdiagnosis: the omo launcher deletes SENPI_BIN from the engine environment, so that advice
+  // cannot even be applied. Post-spawn ENOENT falls through to the child-log hint below.
+  if (reason === "spawn_failed" || combined.includes("execvp")) {
     return "senpi executable not resolvable for the reflection child; set SENPI_BIN"
   }
   if (combined.includes("api key") || combined.includes("auth_missing")) {

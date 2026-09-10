@@ -160,6 +160,9 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
         return 1
       }
       printWarning(`Codex install failed (OpenCode install is still complete): ${message}`)
+      printInfo(
+        `The Codex harness is NOT installed. Fix the error above, then re-run: ${color.cyan("bunx oh-my-openagent install --platform=codex")}`,
+      )
     }
     console.log()
   }
@@ -178,7 +181,7 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
   }
 
   if (config.hasOpenCode2) {
-    printInfo("Installing OpenCode2 MCP servers (codegraph / lsp) and OMO plugin...")
+    printInfo("Installing OpenCode2 MCP servers and OMO plugin...")
     try {
       const openCode2Result = await runOpenCode2Installer()
       const mcpMsg = openCode2Result.added.length > 0 ? `added MCP: ${openCode2Result.added.join(", ")}` : "MCP: nothing to add"

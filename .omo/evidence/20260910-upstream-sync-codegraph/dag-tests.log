@@ -1,0 +1,150 @@
+bun test v1.4.2 (744846f84)
+
+packages/senpi-task/src/dag/store.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+48 | <<<<<<< HEAD
+     ^
+error: Unexpected <<
+    at /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-opencode/src/agents/types.ts:48:1
+-------------------------------
+
+
+packages/senpi-task/src/dag/scheduler.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/journal.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/manager.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/events.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/skills.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/types.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/scheduler-spill.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/handle.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/e2e-failure.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/fingerprint.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/scheduler-frontier.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/recovery-nonblocking.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/execution-mode.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/graph.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/e2e-happy.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/recovery.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/recovery-scope.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/recovery-lease-watch.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+packages/senpi-task/src/dag/results.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+-------------------------------
+
+
+ 0 pass
+ 20 fail
+ 20 errors
+Ran 20 tests across 20 files. [80.00ms]

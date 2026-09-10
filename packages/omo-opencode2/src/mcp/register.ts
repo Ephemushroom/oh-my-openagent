@@ -3,7 +3,6 @@ import type { Context } from "@opencode-ai/plugin/promise/plugin"
 import { createContext7Config } from "./context7"
 import { createGrepAppConfig } from "./grep-app"
 import { createLspMcpConfig } from "./lsp"
-import { createCodegraphMcpConfig } from "./codegraph"
 import { isBuiltinMcpName, toServerConfig, userDefinedNames, type BuiltinMcpServerConfig } from "./types"
 import { loadOpenCode2Config } from "../config"
 
@@ -20,8 +19,8 @@ export interface BuiltinMcpsRegistration {
 }
 
 /**
- * Registers the four built-in MCP servers (context7, grep_app remote; lsp,
- * codegraph local stdio) through ctx.mcp.transform, added in beta-17793.
+ * Registers three built-in MCP servers (context7, grep_app remote; lsp local
+ * stdio) through ctx.mcp.transform, added in beta-17793.
  *
  * Invariants:
  * - A server the user already defined is NEVER overwritten; the built-in
@@ -29,8 +28,6 @@ export interface BuiltinMcpsRegistration {
  * - `disabled_mcps` (under [opencode2]) removes a built-in entirely.
  * - websearch is intentionally absent: opencode2 ships a native
  *   ctx.websearch domain, so a remote Exa/Tavily MCP adds nothing.
- * - codegraph resolving to nothing (no binary, excluded project, no node
- *   support) skips that one server, not the whole registration.
  */
 export async function registerBuiltinMcps(
   ctx: Context,
@@ -44,7 +41,6 @@ export async function registerBuiltinMcps(
     { name: "context7", config: createContext7Config(env) },
     { name: "grep_app", config: createGrepAppConfig() },
     { name: "lsp", config: createLspMcpConfig({ cwd: options.cwd }) },
-    { name: "codegraph", config: createCodegraphMcpConfig({ cwd: options.cwd, config: loaded.config.codegraph }) },
   ]
 
   const deferred: string[] = []

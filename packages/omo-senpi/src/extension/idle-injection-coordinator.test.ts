@@ -227,6 +227,118 @@ describe("IdleInjectionCoordinator", () => {
     expect(events).toEqual(["provider rejected"])
   })
 
+  it("#given only a passive kibitzer entry #when flushOnIdle runs #then nothing is delivered and the entry stays queued", () => {
+    const { coordinator, calls } = createCoordinator()
+    coordinator.enqueue({ key: "kibitzer:1", source: "kibitzer", content: "recall", passive: true })
+
+    expect(coordinator.flushOnIdle()).toBe(0)
+    expect(calls).toHaveLength(0)
+    expect(coordinator.pendingCount()).toBe(1)
+  })
+
+  it("#given a passive kibitzer entry and a task-completion entry #when flushOnIdle runs #then one delivery carries both contents with kibitzer last and the passive onFlushed fires", () => {
+    const events: string[] = []
+    const { coordinator, calls } = createCoordinator()
+    coordinator.enqueue({
+      key: "kibitzer:1",
+      source: "kibitzer",
+      content: "recall",
+      passive: true,
+      onFlushed: () => events.push("kibitzer"),
+    })
+    coordinator.enqueue({ key: "task:1", source: "task-completion", content: "task done" })
+
+    expect(coordinator.flushOnIdle()).toBe(2)
+    expect(calls[0]?.content).toBe("task done\n\nrecall")
+    expect(events).toEqual(["kibitzer"])
+  })
+
+  it("#given a passive entry #when scheduleFlush's deferred pass runs #then nothing is delivered", () => {
+    const calls: DeliveredCall[] = []
+    const scheduled: Array<() => void> = []
+    const coordinator = new IdleInjectionCoordinator((message, options) => calls.push({ content: message.content, options }), {
+      scheduleFlush: (flush) => scheduled.push(flush),
+    })
+    coordinator.enqueue({ key: "kibitzer:1", source: "kibitzer", content: "recall", passive: true })
+
+    coordinator.scheduleFlush()
+    scheduled[0]?.()
+
+    expect(calls).toHaveLength(0)
+    expect(coordinator.pendingCount()).toBe(1)
+  })
+
+  it("#given a deferred flush pending #when the coordinator is retired before the scheduler runs it #then the flush no-ops and nothing is delivered", () => {
+    // given a stale-generation delivery behind a manual scheduler
+    let deliveries = 0
+    const scheduled: Array<() => void> = []
+    const failures: unknown[] = []
+    const coordinator = new IdleInjectionCoordinator(
+      () => {
+        deliveries += 1
+        throw new Error("stale extension generation after reload")
+      },
+      { scheduleFlush: (flush) => scheduled.push(flush) },
+    )
+    coordinator.enqueue({
+      key: "ulw",
+      source: "ulw-continuation",
+      content: "continue",
+      onDeliveryFailed: (error) => failures.push(error),
+    })
+    coordinator.scheduleFlush()
+
+    // when the session shuts down before the deferred pass runs
+    coordinator.retire()
+
+    // then the armed callback is a no-op instead of throwing into the timer queue
+    expect(scheduled).toHaveLength(1)
+    for (const flush of scheduled) expect(flush).not.toThrow()
+    expect(deliveries).toBe(0)
+    expect(failures).toHaveLength(0)
+    expect(coordinator.pendingCount()).toBe(0)
+  })
+
+  it("#given a flushSoon microtask pending #when the coordinator is retired before the microtask runs #then nothing is delivered", async () => {
+    // given
+    const { coordinator, calls } = createCoordinator()
+    coordinator.enqueue({ key: "st_1", source: "task-completion", content: "task st_1 completed" })
+    coordinator.flushSoon()
+
+    // when
+    coordinator.retire()
+    await Promise.resolve()
+
+    // then
+    expect(calls).toHaveLength(0)
+    expect(coordinator.pendingCount()).toBe(0)
+  })
+
+  it("#given a retired coordinator #when a late producer enqueues and schedules #then no flush is scheduled and the queue stays empty", async () => {
+    // given
+    let scheduledCount = 0
+    const calls: DeliveredCall[] = []
+    const coordinator = new IdleInjectionCoordinator((message, options) => calls.push({ content: message.content, options }), {
+      scheduleFlush: (flush) => {
+        scheduledCount += 1
+        flush()
+      },
+    })
+    coordinator.retire()
+
+    // when
+    coordinator.enqueue({ key: "st_1", source: "task-completion", content: "task st_1 completed" })
+    coordinator.scheduleFlush()
+    coordinator.flushSoon()
+    await Promise.resolve()
+
+    // then
+    expect(scheduledCount).toBe(0)
+    expect(coordinator.pendingCount()).toBe(0)
+    expect(coordinator.flushOnIdle()).toBe(0)
+    expect(calls).toHaveLength(0)
+  })
+
   it("#given an injection callback w2lead #when the queue flushes #then onFlushed runs synchronously after delivery returns", () => {
     // given
     const order: string[] = []

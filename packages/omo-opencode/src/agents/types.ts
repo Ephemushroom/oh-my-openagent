@@ -21,6 +21,7 @@ export {
   isGptNativeSisyphusModel,
   isGpt5_5Model,
   isGpt5_6Model,
+  isGpt6Model,
 } from "@oh-my-opencode/agents-core";
 
 export type {

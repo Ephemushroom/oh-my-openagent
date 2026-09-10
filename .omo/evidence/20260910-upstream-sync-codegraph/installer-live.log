@@ -1,0 +1,20 @@
+
+ oMoMoMoMo... Install 
+
+
+┌─ Installation Complete ────┐
+│ Configuration Summary       │
+│                             │
+│   [i] Platform: opencode2   │
+└─────────────────────────────┘
+
+* Installation complete!
+
+[i] Installing OpenCode2 MCP servers and OMO plugin...
+[X] OpenCode2 install failed: opencode config not found: /var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/tmp.HDuQaNECGo/config/opencode/opencode.json
+1 | import { runCliInstaller } from "./packages/omo-opencode/src/cli/cli-installer"; import { runOpenCode2Installer } from "./packages/omo-opencode/src/cli/install-opencode2"; import { z } from "zod"; const code = await runCliInstaller({ tui:false, platform:"opencode2", claude:"no", openai:"no", gemini:"no", copilot:"no", opencodeZen:"no", zaiCodingPlan:"no", kimiForCoding:"no", opencodeGo:"no", vercelAiGateway:"no", skipAuth:true }, "5.0.0-beta.52"); if(code !== 0) throw new Error("installer failed"); const repeated = await runOpenCode2Installer(); const config = z.object({ mcp:z.object({servers:z.record(z.string(),z.unknown())}), plugin:z.array(z.string()) }).parse(await Bun.file(repeated.configPath).json()); const names=Object.keys(config.mcp.servers); if(names.includes("codegraph") || !names.includes("context7") || !names.includes("grep_app") || repeated.changed || config.plugin.length!==1 || !repeated.configPath.startsWith(process.env.XDG_CONFIG_HOME ?? "missing")) throw new Error("installer contract failed"
+
+error: installer failed
+      at /Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/[eval]:1:478
+
+Bun v1.4.2 (macOS arm64)

@@ -58,12 +58,6 @@ export const OpenCode2MonitorSettingsSchema = z.object({
   pattern_max_length: z.number().int().min(1).optional(),
 }).strip()
 
-export const OpenCode2CodegraphSettingsSchema = z.object({
-  daemon: z.boolean().optional(),
-  install_dir: z.string().optional(),
-  excluded_roots: z.array(z.string()).optional(),
-}).strip()
-
 export const OpenCode2ConfigSchema = z.object({
   default_agent: z.string().optional(),
   agents: z.record(z.string(), OpenCode2AgentOverrideSchema).optional(),
@@ -74,7 +68,6 @@ export const OpenCode2ConfigSchema = z.object({
   btw: OpenCode2BtwSettingsSchema.optional(),
   model_fallback: OpenCode2ModelFallbackSettingsSchema.optional(),
   team_mode: OpenCode2TeamModeSettingsSchema.optional(),
-  codegraph: OpenCode2CodegraphSettingsSchema.optional(),
   disabled_hooks: z.array(z.string()).optional(),
   disabled_mcps: z.array(z.string()).optional(),
 }).strip() // permissive: ignores all core root keys (categories, task, etc.)
@@ -87,5 +80,4 @@ export type OpenCode2MonitorSettings = z.infer<typeof OpenCode2MonitorSettingsSc
 export type OpenCode2BtwSettings = z.infer<typeof OpenCode2BtwSettingsSchema>
 export type OpenCode2ModelFallbackSettings = z.infer<typeof OpenCode2ModelFallbackSettingsSchema>
 export type OpenCode2TeamModeSettings = z.infer<typeof OpenCode2TeamModeSettingsSchema>
-export type OpenCode2CodegraphSettings = z.infer<typeof OpenCode2CodegraphSettingsSchema>
 export type OpenCode2Config = z.infer<typeof OpenCode2ConfigSchema>

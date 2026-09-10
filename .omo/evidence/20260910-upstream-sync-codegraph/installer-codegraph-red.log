@@ -1,0 +1,23 @@
+bun test v1.4.2 (744846f84)
+
+packages/omo-opencode/src/cli/install-opencode2.test.ts:
+92 |       nodeCommand: "C:/node/node.exe",
+93 |       daemonCliPath: "C:/lsp/dist/cli.js",
+94 |     }
+95 | 
+96 |     // when / then
+97 |     expect(() => buildOpenCode2Entries(input)).not.toThrow()
+                                                        ^
+error: expect(received).not.toThrow()
+
+Error name: "Error"
+Error message: "codegraph not available: no codegraph command resolved"
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/packages/omo-opencode/src/cli/install-opencode2.test.ts:97:52)
+(fail) buildOpenCode2Entries > #given no CodeGraph installation #when assembling MCP entries #then supported MCPs do not require it [1.14ms]
+
+ 0 pass
+ 9 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [508.00ms]

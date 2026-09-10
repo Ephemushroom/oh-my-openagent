@@ -1,4 +1,5 @@
 import { createAstGrepComponent } from "../components/ast-grep"
+import { createBuiltinMcpsComponent } from "../components/builtin-mcps"
 import { createCommentCheckerComponent } from "../components/comment-checker"
 import { createConfigStartupComponent } from "../components/config-startup"
 import { createConfigWatchComponent } from "../components/config-watch"
@@ -10,11 +11,13 @@ import { createMemoryComponent } from "../components/memory"
 import { createNativeBadgeComponent } from "../components/native-badge"
 import { createOnboardingComponent } from "../components/onboarding"
 import { createSkillPointersComponent } from "../components/skill-pointers"
-import { createStartWorkContinuationComponent } from "../components/start-work-continuation"
 import { createOmoNativeTelemetryComponent } from "../components/telemetry"
 import { createTodoFanoutReminderComponent } from "../components/todo-fanout-reminder"
+import { createThreadComponent } from "../components/thread"
 import { createUltraworkComponent } from "../components/ultrawork"
+import { createUlwExecuteContinuationComponent } from "../components/ulw-execute-continuation"
 import { createUlwLoopComponent } from "../components/ulw-loop"
+import { createXSearchComponent } from "../components/x-search"
 import type { OmoSenpiComponent } from "./types"
 
 export function createOmoSenpiComponents(taskComponent: OmoSenpiComponent): OmoSenpiComponent[] {
@@ -26,15 +29,18 @@ export function createOmoSenpiComponents(taskComponent: OmoSenpiComponent): OmoS
     createOmoNativeTelemetryComponent(),
     createUltraworkComponent(),
     createSkillPointersComponent(),
-    createStartWorkContinuationComponent(),
+    createUlwExecuteContinuationComponent(),
     createUlwLoopComponent(),
     createTodoFanoutReminderComponent(),
     createGitMasterAttributionComponent(),
     createFallbackArchitectComponent(),
-    createCommentCheckerComponent(),
     createAstGrepComponent(),
+    createBuiltinMcpsComponent(),
     createLspComponent(),
+    createXSearchComponent(),
+    createCommentCheckerComponent(),
     taskComponent,
+    createThreadComponent(),
     createMemoryComponent(),
     createConfigWatchComponent(),
   ]

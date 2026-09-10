@@ -1,7 +1,10 @@
 import { afterAll, afterEach, describe, expect, setDefaultTimeout, test } from "bun:test"
 import { appendFile, cp, mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+
+import { PERSONA_ASSET_FILES } from "@oh-my-opencode/memory-core/personas"
 
 import {
   buildExtension,
@@ -9,6 +12,7 @@ import {
   resolveBunExecutable,
   toPortableBuildPath,
 } from "./build-extension.mjs"
+import { runtimePersonaSources } from "./persona-artifacts.mjs"
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const pluginRoot = join(scriptDir, "..")
@@ -16,7 +20,10 @@ const repoRoot = join(scriptDir, "..", "..", "..", "..")
 const perTestRoots = []
 let sharedBuildPromise = null
 
-setDefaultTimeout(30_000)
+// A focused run builds the six artifacts twice in ~14s, while the package suite shares CPU and disk
+// with other build/staging files. Keep the test bounded, but give the real two-build workload enough
+// headroom under suite contention instead of timing out before the freshness assertion runs.
+setDefaultTimeout(60_000)
 
 afterEach(async () => {
   await Promise.all(perTestRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })))
@@ -33,7 +40,6 @@ function outputPathsIn(root) {
     outputPath: join(root, "omo.js"),
     taskOutputPath: join(root, "omo-task.js"),
     memberOutputPath: join(root, "omo-member.js"),
-    memoryMcpOutputPath: join(root, "omo-memory-mcp.js"),
     supervisorOutputPath: join(root, "memory-run-supervisor.mjs"),
     advisorRuntimeOutputPath: join(root, "omo-init-deep-advisor.js"),
   }
@@ -46,7 +52,7 @@ function outputPathsIn(root) {
  */
 async function sharedOutputs() {
   sharedBuildPromise ??= (async () => {
-    const root = await mkdtemp(join(repoRoot, ".build-extension-test-shared-"))
+    const root = await mkdtemp(join(tmpdir(), "omo-senpi-extension-test-shared-"))
     const paths = outputPathsIn(root)
     const build = await buildExtension(paths)
     return { root, ...paths, ...build }
@@ -56,7 +62,7 @@ async function sharedOutputs() {
 
 async function mutableOutputs() {
   const shared = await sharedOutputs()
-  const root = await mkdtemp(join(repoRoot, ".build-extension-test-"))
+  const root = await mkdtemp(join(tmpdir(), "omo-senpi-extension-test-"))
   perTestRoots.push(root)
   await cp(shared.root, root, { recursive: true })
   return { root, ...outputPathsIn(root), mainInputs: shared.mainInputs, taskInputs: shared.taskInputs }
@@ -74,11 +80,10 @@ describe("checkExtensionCurrent", () => {
     const outputs = await sharedOutputs()
 
     // when
-    const mcp = await readFile(outputs.memoryMcpOutputPath, "utf8")
     const supervisor = await readFile(outputs.supervisorOutputPath, "utf8")
 
     // then (Node's ESM loader strips a shebang only at byte 0; a marker above it breaks startup)
-    for (const text of [mcp, supervisor]) {
+    for (const text of [supervisor]) {
       expect(text.startsWith("#!/usr/bin/env node\n")).toBe(true)
       expect(text.indexOf("\n// omo:")).toBeGreaterThan(0)
     }
@@ -86,10 +91,10 @@ describe("checkExtensionCurrent", () => {
     const check = await checkExtensionCurrent({
       outputPath: outputs.outputPath,
       memberOutputPath: outputs.memberOutputPath,
-      memoryMcpOutputPath: outputs.memoryMcpOutputPath,
       supervisorOutputPath: outputs.supervisorOutputPath,
     })
-    expect(check.ok).toBe(true)
+    // Compare the whole result so a failure names the stale artifact instead of printing "false".
+    expect(check).toMatchObject({ ok: true })
   })
 
   test("#given an empty output directory #when extensions are built #then all runtime personas match their sources", async () => {
@@ -99,12 +104,23 @@ describe("checkExtensionCurrent", () => {
       ["reflection-persona.md", join(repoRoot, "packages", "memory-core", "src", "reflection", "assets", "reflection-persona.md")],
       ["dream-persona.md", join(repoRoot, "packages", "memory-core", "src", "reflection", "assets", "dream-persona.md")],
       ["facts-persona.md", join(repoRoot, "packages", "memory-core", "src", "facts", "assets", "facts-persona.md")],
+      // The kibitzer gate loads its persona from beside the BUNDLE, so an unstaged asset makes
+      // every live gate launch fail with ENOENT while every source-reading unit test still passes.
+      ["kibitzer-persona.md", join(repoRoot, "packages", "memory-core", "src", "recall", "assets", "kibitzer-persona.md")],
     ]
 
     // then
     for (const [name, source] of personas) {
       expect(await readFile(join(dirname(outputs.outputPath), name), "utf8")).toBe(await readFile(source, "utf8"))
     }
+  })
+
+  test("#given the runtime persona manifest #when staging sources are listed #then the staged names match it", () => {
+    // given / when
+    const staged = runtimePersonaSources(repoRoot).map(([name]) => name)
+
+    // then
+    expect(staged).toEqual([...PERSONA_ASSET_FILES])
   })
 
   test("#given platform-specific source paths #when normalized #then build markers use portable separators", () => {

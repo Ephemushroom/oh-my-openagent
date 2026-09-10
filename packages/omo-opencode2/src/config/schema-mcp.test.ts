@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test"
 import { OpenCode2ConfigSchema } from "./schema"
 
 describe("OpenCode2ConfigSchema disabled_mcps", () => {
-  test("accepts known built-in names", () => {
+  test("accepts built-in and retired names", () => {
     const parsed = OpenCode2ConfigSchema.safeParse({
       disabled_mcps: ["context7", "grep_app", "lsp", "codegraph"],
     })
@@ -17,22 +17,27 @@ describe("OpenCode2ConfigSchema disabled_mcps", () => {
 })
 
 describe("OpenCode2ConfigSchema codegraph", () => {
-  test("accepts the settings block", () => {
-    const parsed = OpenCode2ConfigSchema.safeParse({
-      codegraph: { daemon: false, install_dir: "/opt/cg", excluded_roots: ["/tmp"] },
-    })
-    expect(parsed.success).toBe(true)
-    if (parsed.success) {
-      expect(parsed.data.codegraph?.daemon).toBe(false)
-      expect(parsed.data.codegraph?.install_dir).toBe("/opt/cg")
+  test.each([
+    { daemon: false, install_dir: "/opt/cg", excluded_roots: ["/tmp"] },
+    { daemon: "obsolete", install_dir: 17 },
+    "retired",
+  ])("#given stale CodeGraph config %j #when parsing #then unrelated settings survive and the retired block is stripped", (codegraph) => {
+    // given
+    const input = {
+      codegraph,
+      default_agent: "atlas",
+      agents: { atlas: { model: "custom/model" } },
+      disabled_mcps: ["grep_app", "codegraph"],
     }
-  })
 
-  test("drops unknown codegraph fields", () => {
-    const parsed = OpenCode2ConfigSchema.safeParse({ codegraph: { bogus: 1 } })
-    expect(parsed.success).toBe(true)
-    if (parsed.success) {
-      expect(parsed.data.codegraph).toEqual({})
-    }
+    // when
+    const parsed = OpenCode2ConfigSchema.parse(input)
+
+    // then
+    expect(parsed).toEqual({
+      default_agent: "atlas",
+      agents: { atlas: { model: "custom/model" } },
+      disabled_mcps: ["grep_app", "codegraph"],
+    })
   })
 })

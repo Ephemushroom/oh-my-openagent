@@ -1,0 +1,36 @@
+bun test v1.4.2 (744846f84)
+
+script/ci-schema-freshness-gate.test.ts:
+48 |     const gateIndex = steps.findIndex((step) => step.name === SCHEMA_GATE_STEP_NAME)
+49 |     const gate = steps[gateIndex]
+50 | 
+51 |     // then
+52 |     expect(buildIndex).toBeGreaterThanOrEqual(0)
+53 |     expect(gateIndex).toBeGreaterThan(buildIndex)
+                           ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 5
+Received: -1
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/script/ci-schema-freshness-gate.test.ts:53:23)
+(fail) ci test prerequisite schema freshness gate > #given the test job #when its steps are read #then a schema drift gate runs after the build that regenerates the artifacts [3.42ms]
+61 | 
+62 |     // when
+63 |     const run = gate?.run ?? ""
+64 | 
+65 |     // then
+66 |     expect(run).toContain("bun run build:schema && bun run build:omo-schema")
+                     ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "bun run build:schema && bun run build:omo-schema"
+Received: ""
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/script/ci-schema-freshness-gate.test.ts:66:17)
+(fail) ci test prerequisite schema freshness gate > #given the schema drift gate #when it fails #then it tells the author which command regenerates the artifacts [0.52ms]
+
+ 0 pass
+ 2 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [632.00ms]

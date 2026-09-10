@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 
 import { registerBuiltinMcps } from "./register"
 import type { Context } from "@opencode-ai/plugin/promise/plugin"
@@ -7,6 +10,7 @@ type DraftServer = [string, Record<string, unknown>]
 
 function createContextWith(initial: DraftServer[]): {
   ctx: Context
+  servers: () => DraftServer[]
   set: (callback: (draft: { list(): DraftServer[]; set(name: string, config: unknown): void }) => void | Promise<void>) => Promise<unknown>
 } {
   let servers: DraftServer[] = [...initial]
@@ -30,7 +34,7 @@ function createContextWith(initial: DraftServer[]): {
     },
     options: {},
   }
-  return { ctx: ctx as unknown as Context, set: async (cb) => Promise.all(registrations.push(Promise.resolve(cb)) as never) }
+  return { ctx: ctx as unknown as Context, servers: () => servers, set: async (cb) => Promise.all(registrations.push(Promise.resolve(cb)) as never) }
 }
 
 function writeOmoConfig(dir: string, config: Record<string, unknown>): void {
@@ -40,17 +44,15 @@ function writeOmoConfig(dir: string, config: Record<string, unknown>): void {
 }
 
 describe("registerBuiltinMcps", () => {
-  test("registers remote + lsp built-ins; codegraph only when the binary resolves", async () => {
+  test("#given an empty MCP catalog #when registering built-ins #then only remote servers and LSP are added", async () => {
+    // given
     const dir = require("node:fs").mkdtempSync(require("node:path").join(require("node:os").tmpdir(), "oc2-mcp-"))
-    const { ctx } = createContextWith([])
+    const { ctx, servers } = createContextWith([])
+    // when
     const result = await registerBuiltinMcps(ctx, { cwd: dir, env: {} })
-    // context7 / grep_app / lsp always register; codegraph depends on the
-    // binary resolving in the temp environment, so assert it as a subset.
-    expect(result.registered).toContain("context7")
-    expect(result.registered).toContain("grep_app")
-    expect(result.registered).toContain("lsp")
-    expect(result.registered.length).toBeGreaterThanOrEqual(3)
-    expect(result.registered.length).toBeLessThanOrEqual(4)
+    // then
+    expect(result.registered).toEqual(["context7", "grep_app", "lsp"])
+    expect(servers().map(([name]) => name)).toEqual(["context7", "grep_app", "lsp"])
   })
 
   test("never overwrites a user-defined server", async () => {
@@ -61,12 +63,38 @@ describe("registerBuiltinMcps", () => {
     expect(result.registered).not.toContain("context7")
   })
 
-  test("disabled_mcps removes built-ins entirely", async () => {
+  test("#given explicit user MCPs #when registering built-ins #then CodeGraph and remaining built-in overrides are preserved", async () => {
+    // given
+    const dir = mkdtempSync(join(tmpdir(), "oc2-mcp-"))
+    const initial: DraftServer[] = [
+      ["codegraph", { type: "local", command: ["user-codegraph", "serve"] }],
+      ["context7", { type: "remote", url: "https://user.example/context7" }],
+      ["grep_app", { type: "remote", url: "https://user.example/grep" }],
+      ["lsp", { type: "local", command: ["user-lsp"] }],
+      ["custom", { type: "remote", url: "https://user.example/custom" }],
+    ]
+    const { ctx, servers } = createContextWith(initial)
+
+    try {
+      // when
+      const result = await registerBuiltinMcps(ctx, { cwd: dir, env: {} })
+
+      // then
+      expect(result.registered).toEqual([])
+      expect(servers()).toEqual(initial)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test("#given stale CodeGraph settings #when registering #then disabled_mcps still removes selected built-ins", async () => {
+    // given
     const dir = require("node:fs").mkdtempSync(require("node:path").join(require("node:os").tmpdir(), "oc2-mcp-"))
-    writeOmoConfig(dir, { "[opencode2]": { disabled_mcps: ["context7", "grep_app"] } })
+    writeOmoConfig(dir, { "[opencode2]": { codegraph: { daemon: "obsolete" }, disabled_mcps: ["context7", "grep_app"] } })
     const { ctx } = createContextWith([])
+    // when
     const result = await registerBuiltinMcps(ctx, { cwd: dir, env: {} })
-    expect(result.registered).not.toContain("context7")
-    expect(result.registered).not.toContain("grep_app")
+    // then
+    expect(result.registered).toEqual(["lsp"])
   })
 })

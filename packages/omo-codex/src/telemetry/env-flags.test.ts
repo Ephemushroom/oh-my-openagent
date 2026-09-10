@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it } from "bun:test"
+import { afterEach, beforeEach, describe, expect, it } from "bun:test"
 
 import { shouldDisablePostHog } from "./env-flags"
 
 const TELEMETRY_ENV_KEYS = [
+  "DO_NOT_TRACK",
   "OMO_DISABLE_POSTHOG",
   "OMO_SEND_ANONYMOUS_TELEMETRY",
   "OMO_CODEX_DISABLE_POSTHOG",
@@ -14,6 +15,8 @@ function clearTelemetryEnv(): void {
     delete process.env[envKey]
   }
 }
+
+beforeEach(clearTelemetryEnv)
 
 afterEach(() => {
   clearTelemetryEnv()

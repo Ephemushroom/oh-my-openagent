@@ -1,0 +1,38 @@
+bun test v1.4.2 (744846f84)
+
+script/fork-workflow.test.ts:
+47 |       expect(result.exitCode).toBe(baseRef === "master" ? 1 : 0)
+48 |       expect(result.stdout.toString().includes("gh pr close https://example.invalid/pull/1")).toBe(baseRef === "master")
+49 |       const summaryResult = Bun.spawnSync(["bash", "-c", summary], {
+50 |         cwd: directory, env, stdout: "pipe", stderr: "pipe",
+51 |       })
+52 |       expect(summaryResult.exitCode, summaryResult.stderr.toString()).toBe(0)
+                                                                           ^
+error: bash: .github/scripts/write-job-summary.sh: No such file or directory
+
+
+Expected: 0
+Received: 127
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/script/fork-workflow.test.ts:52:71)
+(fail) fork workflow policy > #given a master PR without checkout #when the real guard and summary run #then only master is rejected and the summary succeeds [8.04ms]
+47 |       expect(result.exitCode).toBe(baseRef === "master" ? 1 : 0)
+48 |       expect(result.stdout.toString().includes("gh pr close https://example.invalid/pull/1")).toBe(baseRef === "master")
+49 |       const summaryResult = Bun.spawnSync(["bash", "-c", summary], {
+50 |         cwd: directory, env, stdout: "pipe", stderr: "pipe",
+51 |       })
+52 |       expect(summaryResult.exitCode, summaryResult.stderr.toString()).toBe(0)
+                                                                           ^
+error: bash: .github/scripts/write-job-summary.sh: No such file or directory
+
+
+Expected: 0
+Received: 127
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-sync-20260910/script/fork-workflow.test.ts:52:71)
+(fail) fork workflow policy > #given a dev PR without checkout #when the real guard and summary run #then only master is rejected and the summary succeeds [5.59ms]
+
+ 3 pass
+ 2 fail
+ 26 expect() calls
+Ran 5 tests across 1 file. [487.00ms]

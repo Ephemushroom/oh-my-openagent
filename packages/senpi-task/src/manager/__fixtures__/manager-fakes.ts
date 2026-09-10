@@ -7,6 +7,7 @@ import { OmoTaskSettingsSchema, type OmoTaskSettings } from "@oh-my-opencode/omo
 import type { RunnerOutcome } from "../../runners/in-process/child-handle"
 import type { ManagedChildEvent, ManagedChildListener } from "../child-handle"
 import { createTaskRecordStore } from "../../store"
+import type { TaskRecordStore } from "../../store"
 import type { ManagedChildHandle } from "../child-handle"
 import { createTaskManager } from "../manager"
 import type { AdmitResident, ChildPlanner, ManagedRunner, ManagedStartSpec, ManagerStartSpec } from "../types"
@@ -24,7 +25,7 @@ export function tempProject(): string {
 }
 
 export function settings(overrides: Record<string, unknown> = {}): OmoTaskSettings {
-  return OmoTaskSettingsSchema.parse(overrides)
+  return OmoTaskSettingsSchema.parse({ global_concurrency: 0, ...overrides })
 }
 
 export type FakeHandle = {
@@ -36,6 +37,7 @@ export type FakeHandle = {
   subscribeCount(): number
   unsubscribeCount(): number
   waitForSubscription(): Promise<void>
+  waitForUnsubscription(): Promise<void>
 }
 
 export function makeHandle(taskId: string, pid?: number): FakeHandle {
@@ -51,6 +53,7 @@ export function makeHandle(taskId: string, pid?: number): FakeHandle {
   let subscribeCalls = 0
   let unsubscribeCalls = 0
   const subscriptionWaiters: Array<() => void> = []
+  const unsubscriptionWaiters: Array<() => void> = []
   const handle: ManagedChildHandle = {
     task_id: taskId,
     sessionId: `sess-${taskId}`,
@@ -68,6 +71,7 @@ export function makeHandle(taskId: string, pid?: number): FakeHandle {
       listeners.add(listener)
       return () => {
         unsubscribeCalls += 1
+        for (const resolve of unsubscriptionWaiters.splice(0)) resolve()
         listeners.delete(listener)
       }
     },
@@ -95,6 +99,9 @@ export function makeHandle(taskId: string, pid?: number): FakeHandle {
     waitForSubscription: () => subscribeCalls > 0
       ? Promise.resolve()
       : new Promise((resolve) => subscriptionWaiters.push(resolve)),
+    waitForUnsubscription: () => unsubscribeCalls > 0
+      ? Promise.resolve()
+      : new Promise((resolve) => unsubscriptionWaiters.push(resolve)),
   }
 }
 
@@ -138,6 +145,8 @@ export function flush(): Promise<void> {
 
 export function makeManager(options: {
   project?: string
+  // A caller-owned store (e.g. a wrapper that injects persistence faults) over the same project dir.
+  store?: TaskRecordStore
   config?: OmoTaskSettings
   planner?: ChildPlanner
   inProcess?: FakeRunner
@@ -145,7 +154,7 @@ export function makeManager(options: {
   admit?: AdmitResident
 } = {}) {
   const project = options.project ?? tempProject()
-  const store = createTaskRecordStore({ project_dir: project })
+  const store = options.store ?? createTaskRecordStore({ project_dir: project })
   const inProcess = options.inProcess ?? new FakeRunner()
   const processRunner = options.process ?? new FakeRunner()
   const manager = createTaskManager({

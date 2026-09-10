@@ -4,12 +4,13 @@ import type { TaskRecord } from "../state"
 import { isSpawnSpecV1, markRecordLostForReconciliation } from "../state"
 import { delay, nowIso, TERMINAL_STATUSES, type LifecycleContext } from "./context"
 import { destroyResidentTask } from "./destroy"
+import { detachTerminalResident } from "./reconcile-terminal"
 import { getLifecycleReattachPorts, type RespawnFailureCode } from "./port"
 import { markCrashedResident } from "./reconcile-crashed-resident"
 import { reclaimOrphanedResident } from "./residency"
 import type { ReconcileDeferredReason, ReconcileOutcome } from "./types"
 
-export const REVIVABLE_STATUSES = new Set(["pending", "running", "completed", "error", "interrupted"])
+export const REVIVABLE_STATUSES = new Set(["pending", "running", "interrupted"])
 const activeLocalReclamations = new Set<string>()
 
 export type SuspendedResidency = "persisted_only" | "rpc_detached"
@@ -56,11 +57,6 @@ async function reclaimResidentExclusive(
       reason: claimed.killed === true ? "killed orphan disposed" : `${claimed.status} orphan disposed`,
     }
   }
-  if (!REVIVABLE_STATUSES.has(claimed.status)) {
-    await destroyResidentTask(context, claimed.task_id, "reconcile_lost")
-    return { task_id: claimed.task_id, kind: "resumed", reason: "non-revivable orphan disposed" }
-  }
-
   const sessionPath = sessionPathFor(claimed.task_id)
   if (TERMINAL_STATUSES.has(claimed.status) && sessionPath === undefined) {
     context.store.transition(claimed.task_id, { type: "dispose", timestamp: nowIso(context) })
@@ -70,7 +66,11 @@ async function reclaimResidentExclusive(
       reason: "terminal without transcript disposed; persisted result preserved",
     }
   }
-
+  if (TERMINAL_STATUSES.has(claimed.status)) return detachTerminalResident(context, claimed)
+  if (!REVIVABLE_STATUSES.has(claimed.status)) {
+    await destroyResidentTask(context, claimed.task_id, "reconcile_lost")
+    return { task_id: claimed.task_id, kind: "resumed", reason: "non-revivable orphan disposed" }
+  }
   const rollbackResidency: SuspendedResidency = claimed.execution_mode === "process" ? "rpc_detached" : "persisted_only"
   if (context.config.reattach_on_reconcile === false) {
     const marked = await markCrashedResident(context, claimed, "reattach disabled for crashed resident")
@@ -80,14 +80,21 @@ async function reclaimResidentExclusive(
   return reviveClaimed(context, claimed, rollbackResidency, sessionPath)
 }
 
+export type ReviveClaimedOptions = {
+  readonly allowTerminal?: boolean
+  readonly rollbackTerminalFailure?: boolean
+}
+
 export async function reviveClaimed(
   context: LifecycleContext,
   claimed: TaskRecord,
   rollbackResidency: SuspendedResidency,
   sessionPath: string | undefined,
+  options: ReviveClaimedOptions = {},
 ): Promise<ReconcileOutcome> {
   const fresh = context.store.load(claimed.task_id)
-  if (!isClaimHeld(context, fresh, claimed.parent_session_id) || fresh.killed === true || !REVIVABLE_STATUSES.has(fresh.status)) {
+  const terminalAllowed = options.allowTerminal === true && fresh !== null && TERMINAL_STATUSES.has(fresh.status)
+  if (!isClaimHeld(context, fresh, claimed.parent_session_id) || fresh.killed === true || (!REVIVABLE_STATUSES.has(fresh?.status ?? "pending") && !terminalAllowed)) {
     return rollbackOrDeferred(context, claimed.task_id, rollbackResidency, "foreign_live_owner")
   }
 
@@ -113,25 +120,45 @@ export async function reviveClaimed(
 
   const ports = context.reattachPorts ?? getLifecycleReattachPorts(context.store)
   if (ports === undefined) {
+    if (TERMINAL_STATUSES.has(fresh.status)) return rollbackOrDeferred(context, fresh.task_id, rollbackResidency, "session_unavailable")
     await markLost(context, fresh, "reattach ports unavailable")
     return { task_id: fresh.task_id, kind: "lost", reason: "reattach ports unavailable" }
   }
 
-  const respawned = await ports.respawn(fresh, sessionPath)
+  const reservation = ports.reserve(fresh)
+  if (!reservation.ok) return rollbackOrDeferred(context, fresh.task_id, rollbackResidency, "capacity")
+  let respawned: Awaited<ReturnType<typeof ports.respawn>>
+  try {
+    respawned = await ports.respawn(fresh, sessionPath)
+  } catch (error) {
+    reservation.release()
+    if (terminalAllowed) return rollbackOrDeferred(context, fresh.task_id, rollbackResidency, "session_unavailable")
+    throw error
+  }
   if (!respawned.ok) {
+    reservation.release()
     if (respawned.disposition === "retryable") {
       return rollbackOrDeferred(context, fresh.task_id, rollbackResidency, deferredCode(respawned.code))
     }
-    if (TERMINAL_STATUSES.has(fresh.status)) {
+    if (TERMINAL_STATUSES.has(fresh.status) && options.rollbackTerminalFailure !== true) {
       context.store.transition(fresh.task_id, { type: "dispose", timestamp: nowIso(context) })
       return { task_id: fresh.task_id, kind: "resumed", reason: respawned.reason }
     }
+    if (TERMINAL_STATUSES.has(fresh.status)) return rollbackOrDeferred(context, fresh.task_id, rollbackResidency, deferredCode(respawned.code))
     await markLost(context, fresh, `reattach failed: ${respawned.reason}`)
     return { task_id: fresh.task_id, kind: "lost", reason: respawned.reason }
   }
 
-  const reattached = await ports.reattach(fresh, respawned.handle)
+  let reattached: Awaited<ReturnType<typeof ports.reattach>>
+  try {
+    reattached = await ports.reattach(fresh, respawned.handle)
+  } catch (error) {
+    reservation.release()
+    if (terminalAllowed) return rollbackOrDeferred(context, fresh.task_id, rollbackResidency, "session_unavailable")
+    throw error
+  }
   if (!reattached.ok) {
+    reservation.release()
     if (reattached.kind === "already_attached") {
       return { task_id: fresh.task_id, kind: "resumed", reason: reattached.reason }
     }
@@ -181,7 +208,11 @@ function rollbackClaim(context: LifecycleContext, taskId: string, residency: Sus
     })
     return true
   } catch (error) {
-    log("senpi-task reconcile ownership rollback failed", { taskId, residency, error: String(error) })
+    log("senpi-task reconcile ownership rollback failed", {
+      taskId,
+      residency,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return false
   }
 }

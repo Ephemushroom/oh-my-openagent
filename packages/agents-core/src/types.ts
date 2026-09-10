@@ -138,6 +138,11 @@ export function isGpt5_6Model(model: string): boolean {
   return modelName.includes("gpt-5.6") || modelName.includes("gpt-5-6");
 }
 
+export function isGpt6Model(model: string): boolean {
+  const modelName = extractModelName(model).toLowerCase();
+  return modelName.includes("gpt-6");
+}
+
 export type BuiltinAgentName =
   | "sisyphus"
   | "hephaestus"

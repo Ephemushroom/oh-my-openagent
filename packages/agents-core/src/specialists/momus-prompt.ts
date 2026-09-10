@@ -1,5 +1,5 @@
 import type { AgentPromptMetadata } from "../types";
-import { isGpt5_6Model, isGptModel } from "../types";
+import { isGpt5_6Model, isGpt6Model, isGptModel } from "../types";
 import { MOMUS_GPT_5_6_PROMPT } from "./momus-gpt-5-6";
 
 /**
@@ -289,7 +289,7 @@ export interface MomusPromptSelection {
  * verbosity extras. Harness-agnostic; the adapter maps these onto its config.
  */
 export function getMomusPromptSelection(model: string): MomusPromptSelection {
-  if (isGpt5_6Model(model)) {
+  if (isGpt5_6Model(model) || isGpt6Model(model)) {
     return { prompt: MOMUS_GPT_5_6_PROMPT, reasoningEffort: "high", textVerbosity: "high" };
   }
   if (isGptModel(model)) {

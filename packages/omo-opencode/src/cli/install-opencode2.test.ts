@@ -1,44 +1,10 @@
 import { describe, expect, test } from "bun:test"
 
 import {
-  buildCodegraphMcpEntry,
   buildLspMcpEntry,
   buildOpenCode2Entries,
   buildRemoteMcpEntries,
 } from "./install-opencode2"
-
-const resolvedCodegraph = {
-  command: "node",
-  argsPrefix: ["/abs/codegraph/cli.js"],
-  exists: true,
-  source: "bundled",
-}
-
-describe("buildCodegraphMcpEntry", () => {
-  test("#given a resolved codegraph command #when building #then the entry carries command + env + codemode false", () => {
-    // given
-    const entry = buildCodegraphMcpEntry({
-      command: "node",
-      argsPrefix: ["/abs/codegraph/cli.js"],
-      exists: true,
-      source: "bundled",
-    })
-
-    // then
-    expect(entry.name).toBe("codegraph")
-    expect(entry.type).toBe("local")
-    expect(entry.command).toEqual(["node", "/abs/codegraph/cli.js", "serve", "--mcp"])
-    expect(entry.codemode).toBe(false)
-    expect(entry.environment).toContainKey("CODEGRAPH_NO_DOWNLOAD")
-  })
-
-  test("#given a missing codegraph command #when building #then it throws", () => {
-    // when / then
-    expect(() =>
-      buildCodegraphMcpEntry({ command: "codegraph", argsPrefix: [], exists: false, source: "path" }),
-    ).toThrow(/codegraph not available/)
-  })
-})
 
 describe("buildLspMcpEntry", () => {
   test("#given a node runtime and a daemon cli path #when building #then the entry carries command + env + codemode false", () => {
@@ -85,50 +51,55 @@ describe("buildRemoteMcpEntries", () => {
 })
 
 describe("buildOpenCode2Entries", () => {
-  test("#given codegraph + node + daemon #when assembling #then locals then remotes are returned", () => {
+  test("#given no CodeGraph installation #when assembling MCP entries #then supported MCPs do not require it", () => {
+    // given
+    const input = {
+      codegraph: { command: "codegraph", argsPrefix: [], exists: false, source: "path" },
+      nodeCommand: "C:/node/node.exe",
+      daemonCliPath: "C:/lsp/dist/cli.js",
+    }
+
+    // when / then
+    expect(() => buildOpenCode2Entries(input)).not.toThrow()
+    expect(buildOpenCode2Entries(input).map((entry) => entry.name)).toEqual(["lsp", "context7", "grep_app"])
+  })
+
+  test("#given node and daemon #when assembling #then LSP and remotes are returned", () => {
     // when
     const entries = buildOpenCode2Entries({
-      codegraph: resolvedCodegraph,
       nodeCommand: "C:/node/node.exe",
       daemonCliPath: "C:/lsp/dist/cli.js",
     })
 
     // then
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "lsp", "context7", "grep_app"])
+    expect(entries.map((e) => e.name)).toEqual(["lsp", "context7", "grep_app"])
   })
 
   test("#given a missing node runtime #when assembling #then lsp is skipped and remotes remain", () => {
     // when
     const entries = buildOpenCode2Entries({
-      codegraph: resolvedCodegraph,
       nodeCommand: "",
       daemonCliPath: "C:/lsp/dist/cli.js",
     })
 
-    // then: codegraph survives, lsp degrades to a skip, remotes stay
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "context7", "grep_app"])
+    // then
+    expect(entries.map((e) => e.name)).toEqual(["context7", "grep_app"])
   })
 
   test("#given a missing daemon cli #when assembling #then lsp is skipped and remotes remain", () => {
     // when
     const entries = buildOpenCode2Entries({
-      codegraph: resolvedCodegraph,
       nodeCommand: "C:/node/node.exe",
       daemonCliPath: "",
     })
 
     // then
-    expect(entries.map((e) => e.name)).toEqual(["codegraph", "context7", "grep_app"])
+    expect(entries.map((e) => e.name)).toEqual(["context7", "grep_app"])
   })
 
-  test("#given a missing codegraph #when assembling #then it fails closed", () => {
+  test("#given no local runtime #when assembling #then remote MCPs remain available", () => {
     // when / then
-    expect(() =>
-      buildOpenCode2Entries({
-        codegraph: { command: "codegraph", argsPrefix: [], exists: false, source: "path" },
-        nodeCommand: "C:/node/node.exe",
-        daemonCliPath: "C:/lsp/dist/cli.js",
-      }),
-    ).toThrow(/codegraph not available/)
+    expect(buildOpenCode2Entries({ nodeCommand: "", daemonCliPath: "" }).map((entry) => entry.name))
+      .toEqual(["context7", "grep_app"])
   })
 })

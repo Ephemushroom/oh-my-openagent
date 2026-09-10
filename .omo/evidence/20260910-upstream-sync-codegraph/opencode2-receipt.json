@@ -1,0 +1,41 @@
+{
+  "results": [],
+  "requests": [
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "glob",
+        "grep",
+        "patch",
+        "question",
+        "read",
+        "shell",
+        "skill",
+        "subagent",
+        "webfetch",
+        "websearch",
+        "execute"
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "tools": []
+    }
+  ],
+  "before": {
+    "configDigest": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": {
+      "session": 2688,
+      "session_v2": 2335
+    }
+  },
+  "after": {
+    "configDigest": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": {
+      "session": 2688,
+      "session_v2": 2335
+    }
+  },
+  "sandboxRemoved": true,
+  "mockClosed": true
+}

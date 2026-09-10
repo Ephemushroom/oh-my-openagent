@@ -36,6 +36,8 @@ describe("registerSharedSkills", () => {
     const ids = added.map((skill) => skill.id)
     expect(ids).toContain("programming")
     expect(ids).toContain("git-master")
+    expect(ids).toContain("ulw-execute")
+    expect(ids).not.toContain("start-work")
     expect(new Set(ids).size).toBe(ids.length)
   })
 

@@ -68,7 +68,10 @@ describe("createTaskChildPlanner", () => {
     const planner = createTaskChildPlanner(
       {},
       {},
-      () => registry([model("zai-coding-plan", "glm-5.2")]),
+      () => registry([
+        model("anthropic", "claude-fable-5-1"),
+        model("google", "gemini-3.1-pro"),
+      ]),
     )
 
     // when
@@ -83,9 +86,9 @@ describe("createTaskChildPlanner", () => {
     const resolved = expectResolved(result)
     expect(resolved.plan.resolved_model).toMatchObject({
       source: "category",
-      provider: "zai-coding-plan",
-      model_id: "glm-5.2",
-      display: "zai-coding-plan/glm-5.2",
+      provider: "anthropic",
+      model_id: "claude-fable-5-1",
+      display: "anthropic/claude-fable-5-1",
       variant: "max",
     })
   })
@@ -103,7 +106,7 @@ describe("createTaskChildPlanner", () => {
         },
       },
       {},
-      () => registry([model("google", "gemini-3.1-pro")]),
+      () => registry([model("anthropic", "claude-fable-5-1")]),
     )
 
     // when
@@ -225,7 +228,7 @@ describe("createTaskChildPlanner", () => {
     const planner = createTaskChildPlanner(
       {},
       BUILTIN_AGENTS,
-      () => registry([model("zai-coding-plan", "glm-5.2")]),
+      () => registry([model("anthropic", "claude-fable-5-1")]),
     )
 
     // when
@@ -238,7 +241,7 @@ describe("createTaskChildPlanner", () => {
 
     // then
     const resolved = expectResolved(result)
-    expect(resolved.plan.resolved_model).toMatchObject({ source: "category", provider: "zai-coding-plan" })
+    expect(resolved.plan.resolved_model).toMatchObject({ source: "category", provider: "anthropic" })
     expect(resolved.plan.category).toBe("visual-engineering")
   })
 
@@ -248,7 +251,10 @@ describe("createTaskChildPlanner", () => {
     const planner = createTaskChildPlanner(
       { categories: { explore: { model: "google/gemini-3.1-pro" } } },
       agents,
-      () => registry([model("google", "gemini-3.1-pro")]),
+      () => registry([
+        model("anthropic", "claude-fable-5-1"),
+        model("google", "gemini-3.1-pro"),
+      ]),
     )
 
     // when
@@ -283,7 +289,14 @@ describe("createTaskChildPlanner", () => {
     // then
     if (result.kind !== "error") throw new Error(`Expected error resolution, got ${result.kind}`)
     expect(result.error.code).toBe("unknown_target")
-    expect(result.error.availableAgents).toEqual(["explore", "librarian", "metis"])
+    expect(result.error.availableAgents).toEqual([
+      "explore",
+      "librarian",
+      "metis",
+      "omo-senpi-code-reviewer",
+      "omo-senpi-gate-reviewer",
+      "omo-senpi-qa-executor",
+    ])
   })
 
   test("#given an unknown subagent_type #when planned #then the unknown-target error lists available agents and categories", () => {
@@ -291,7 +304,7 @@ describe("createTaskChildPlanner", () => {
     const planner = createTaskChildPlanner(
       {},
       BUILTIN_AGENTS,
-      () => registry([model("google", "gemini-3.1-pro")]),
+      () => registry([model("anthropic", "claude-fable-5-1")]),
     )
 
     // when
@@ -305,9 +318,17 @@ describe("createTaskChildPlanner", () => {
     // then
     if (result.kind !== "error") throw new Error(`Expected error resolution, got ${result.kind}`)
     expect(result.error.code).toBe("unknown_target")
-    expect(result.error.availableAgents).toEqual(["explore", "librarian", "metis", "momus"])
-    // writing survives on a gemini-only registry (its gemini-3.1-pro rung resolves); ultrabrain's
-    // sol-only chain is dead, so the dead-chain gate excludes it.
+    expect(result.error.availableAgents).toEqual([
+      "explore",
+      "librarian",
+      "metis",
+      "momus",
+      "omo-senpi-code-reviewer",
+      "omo-senpi-gate-reviewer",
+      "omo-senpi-qa-executor",
+    ])
+    // writing survives when its Fable 5.1 rung resolves; ultrabrain's
+    // Astra-only chain is dead, so the dead-chain gate excludes it.
     expect(result.error.availableCategories).toContain("writing")
     expect(result.error.availableCategories).not.toContain("ultrabrain")
   })
@@ -332,7 +353,15 @@ describe("createTaskChildPlanner", () => {
     if (result.kind !== "error") throw new Error(`Expected error resolution, got ${result.kind}`)
     expect(result.error.code).toBe("model_unavailable")
     expect(result.error.message).toContain('No available model for agent "explore"')
-    expect(result.error.availableAgents).toEqual(["explore", "librarian", "metis", "momus"])
+    expect(result.error.availableAgents).toEqual([
+      "explore",
+      "librarian",
+      "metis",
+      "momus",
+      "omo-senpi-code-reviewer",
+      "omo-senpi-gate-reviewer",
+      "omo-senpi-qa-executor",
+    ])
   })
 })
 
@@ -426,7 +455,7 @@ describe("createTaskChildPlanner plan variant", () => {
     const planner = createTaskChildPlanner(
       {},
       {},
-      () => registry([model("zai-coding-plan", "glm-5.2")]),
+      () => registry([model("anthropic", "claude-fable-5-1")]),
     )
 
     // when
@@ -466,7 +495,7 @@ describe("createTaskChildPlanner plan variant", () => {
     const planner = createTaskChildPlanner(
       {},
       BUILTIN_AGENTS,
-      () => registry([model("openai", "gpt-5.6-sol")]),
+      () => registry([model("openai", "gpt-6-astra")]),
     )
 
     // when
@@ -479,7 +508,79 @@ describe("createTaskChildPlanner plan variant", () => {
 
     // then
     const resolved = expectResolved(result)
+    expect(resolved.plan.model).toBe("openai/gpt-6-astra")
+    expect(resolved.plan.variant).toBe("xhigh")
+  })
+})
+
+describe("createTaskChildPlanner reviewer category routing", () => {
+  test("#given omo.json overrides categories.deep.model #when the gate reviewer is planned #then the override reaches the agent-sourced model", () => {
+    // given
+    const planner = createTaskChildPlanner(
+      { categories: { deep: { model: "openai/gpt-5.6-terra" } } },
+      BUILTIN_AGENTS,
+      () => registry([model("openai", "gpt-5.6-terra")]),
+    )
+
+    // when
+    const result = planner({
+      prompt: "Review the gate.",
+      parent_session_id: "parent-1",
+      depth: 0,
+      subagent_type: "omo-senpi-gate-reviewer",
+    })
+
+    // then
+    const resolved = expectResolved(result)
+    expect(resolved.plan.model).toBe("openai/gpt-5.6-terra")
+    expect(resolved.plan.resolved_model?.source).toBe("agent")
+    expect(resolved.plan.agentType).toBe("omo-senpi-gate-reviewer")
+  })
+
+  test("#given a registry serving deep and unspecified-high #when the gate reviewer is planned #then the deep model wins and unspecified-high extends the runtime chain", () => {
+    // given
+    const planner = createTaskChildPlanner(
+      {},
+      BUILTIN_AGENTS,
+      () => registry([model("openai", "gpt-5.6-sol"), model("anthropic", "claude-opus-5")]),
+    )
+
+    // when
+    const result = planner({
+      prompt: "Review the gate.",
+      parent_session_id: "parent-1",
+      depth: 0,
+      subagent_type: "omo-senpi-gate-reviewer",
+    })
+
+    // then
+    const resolved = expectResolved(result)
     expect(resolved.plan.model).toBe("openai/gpt-5.6-sol")
+    expect(resolved.plan.variant).toBe("medium")
+    expect(resolved.plan.fallback_models?.map((record) => record.display)).toContain("anthropic/claude-opus-5")
+    expect(resolved.plan.instructions).toBe(BUILTIN_AGENTS["omo-senpi-gate-reviewer"]?.prompt)
+    expect(resolved.plan.agentExecutionMode).toBe("in-process")
+  })
+
+  test("#given a registry without the deep gate model #when the gate reviewer is planned #then unspecified-high supplies the model", () => {
+    // given
+    const planner = createTaskChildPlanner(
+      {},
+      BUILTIN_AGENTS,
+      () => registry([model("anthropic", "claude-opus-5")]),
+    )
+
+    // when
+    const result = planner({
+      prompt: "Review the gate.",
+      parent_session_id: "parent-1",
+      depth: 0,
+      subagent_type: "omo-senpi-gate-reviewer",
+    })
+
+    // then
+    const resolved = expectResolved(result)
+    expect(resolved.plan.model).toBe("anthropic/claude-opus-5")
     expect(resolved.plan.variant).toBe("xhigh")
   })
 })

@@ -1,19 +1,20 @@
 import { join } from "node:path"
 
-import { resolveAgentHome } from "../agent-home/resolve-agent-home"
-import type { FactsSandbox, FactsSpawnArgs } from "./worker/spawn"
+import type { ReflectionSpawnArgs } from "./worker/spawn"
 import {
   SandboxUnavailableError,
   type SandboxPolicy,
   type SandboxTransform,
 } from "./sandbox-contracts"
-import { buildPathSandboxTransform } from "./sandbox-platform"
+import { buildPathSandboxTransform, type SandboxUsability } from "./sandbox-platform"
 
 export {
   SandboxUnavailableError,
   type SandboxPolicy,
   type SandboxTransform,
 } from "./sandbox-contracts"
+export type { SandboxUsability } from "./sandbox-platform"
+
 
 export function buildSandboxTransform(input: {
   readonly policy: SandboxPolicy
@@ -27,7 +28,12 @@ export function buildSandboxTransform(input: {
   readonly errorRethrow?: (error: SandboxUnavailableError) => never
   readonly platform?: NodeJS.Platform
   readonly which?: (command: string) => string | undefined
+  readonly probe?: (executable: string) => SandboxUsability
 }): SandboxTransform {
+  // The reflection child needs no lock grant: identity-runtime already lists the whole agent
+  // directory under runtimeWrites, so senpi's settings/auth/hooks-state locks are writable there.
+  // Resolving the agent home here would read process-wide state the caller never passed and, on a
+  // host whose agent dir does not exist yet, degrade the sandbox to identity.
   return buildPathSandboxTransform({
     surface: "reflection",
     policy: input.policy,
@@ -44,36 +50,6 @@ export function buildSandboxTransform(input: {
     errorRethrow: input.errorRethrow,
     platform: input.platform,
     which: input.which,
+    probe: input.probe,
   })
-}
-
-export function buildFactsSandboxTransform(input: {
-  readonly policy: SandboxPolicy
-  readonly foreignRoots?: readonly string[]
-  readonly onWarning?: (warning: string, spawnArgs: FactsSpawnArgs) => void
-  readonly errorRethrow?: (error: SandboxUnavailableError) => never
-  readonly platform?: NodeJS.Platform
-  readonly which?: (command: string) => string | undefined
-}): FactsSandbox {
-  return (spawnArgs) => {
-    // The child only needs to take senpi's own settings/auth locks; the agent dir itself stays
-    // read-only so auth.json and settings.json cannot be rewritten by a misbehaving child.
-    const agentDir = resolveAgentHome({ env: spawnArgs.env })
-    const transform = buildPathSandboxTransform<FactsSpawnArgs>({
-      surface: "facts",
-      policy: input.policy,
-      writableDirs: [spawnArgs.paths.runDir],
-      lockPaths: [join(agentDir, "settings.json.lock"), join(agentDir, "auth.json.lock")],
-      payloadPaths: [spawnArgs.paths.payload],
-      fallbackDir: spawnArgs.paths.runDir,
-      foreignRoots: input.foreignRoots,
-      command: spawnArgs.command,
-      env: spawnArgs.env,
-      errorRethrow: input.errorRethrow,
-      platform: input.platform,
-      which: input.which,
-    })
-    if (transform.warning !== undefined) input.onWarning?.(transform.warning, spawnArgs)
-    return transform(spawnArgs)
-  }
 }
