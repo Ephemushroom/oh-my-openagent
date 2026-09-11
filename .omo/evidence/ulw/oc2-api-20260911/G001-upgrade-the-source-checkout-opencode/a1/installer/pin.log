@@ -1,0 +1,13 @@
+bun test v1.4.2 (744846f84)
+
+packages/omo-opencode/src/cli/install-opencode2.test.ts:
+[test-setup] vendored lsp-daemon dist missing; building once via `npm ci && npm run build`...
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+ 16 pass
+ 0 fail
+ 38 expect() calls
+Ran 16 tests across 3 files. [2.68s]

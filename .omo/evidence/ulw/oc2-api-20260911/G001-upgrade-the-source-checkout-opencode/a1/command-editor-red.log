@@ -1,0 +1,30 @@
+bun test v1.4.2 (744846f84)
+
+packages/omo-opencode2/src/commands/register-builtin-commands.test.ts:
+12 |   ctx: BuiltinCommandsRegistrationContext,
+13 |   trace?: (event: string, detail?: Record<string, unknown>) => void,
+14 | ): Promise<void> {
+15 |   await ctx.command.transform((draft) => {
+16 |     for (const definition of BUILTIN_COMMAND_DEFINITIONS) {
+17 |       draft.update(definition.name, (command) => {
+                 ^
+TypeError: draft.update is not a function. (In 'draft.update(definition.name, (command) => {
+        command.name = definition.name;
+        command.description = definition.description;
+        command.template = definition.template;
+        command.subtask = definition.subtask ?? !1;
+        if (definition.agent === void 0)
+          delete command.agent;
+        else
+          command.agent = definition.agent;
+      })', 'draft.update' is undefined)
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/commands/register-builtin-commands.ts:17:13)
+      at transform (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/commands/register-builtin-commands.test.ts:27:84)
+      at registerBuiltinCommands (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/commands/register-builtin-commands.ts:15:21)
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/commands/register-builtin-commands.test.ts:31:11)
+(fail) registerBuiltinCommands > #given the current add-only command editor #when registering #then every command is executable [2.30ms]
+
+ 1 pass
+ 1 fail
+ 16 expect() calls
+Ran 2 tests across 1 file. [490.00ms]

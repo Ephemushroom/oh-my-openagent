@@ -1,0 +1,153 @@
+bun test v1.4.2 (744846f84)
+
+packages/omo-opencode/src/cli/resolve-opencode2-plugin-entry.test.ts:
+38 |       // when resolving from the nested cli directory
+39 |       const result = resolveOpenCode2PluginEntry(nested)
+40 | 
+41 |       // then the walk-up locates the entry
+42 |       expect(result.exists).toBe(true)
+43 |       expect(result.entry).toBe(dirname(entry))
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-entry-cNUNZ6/packages/omo-opencode2/src"
+Received: "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-entry-cNUNZ6/packages/omo-opencode2/src/index.ts"
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/resolve-opencode2-plugin-entry.test.ts:43:28)
+(fail) resolveOpenCode2PluginEntry > #given a source checkout containing the v2 adapter > should find the entry when starting from a deeply nested directory [3.50ms]
+
+packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:
+124 |     const old = format === "url" ? pathToFileURL(file).href : format === "relative" ? "./adapter/src/index.ts" : file
+125 |     writeFileSync(configPath, `{// retained comment\n"plugins": ["unrelated", {"package": ${JSON.stringify(old)}, "options": {"custom": 7}}]}`)
+126 |     const first = updateOpenCode2PluginConfig({ configPath, pluginEntry: entry })
+127 |     const changed = readFileSync(configPath, "utf8")
+128 |     expect(first.changed).toBe(true)
+129 |     expect(parse(changed)).toEqual({ plugins: ["unrelated", { package: entry, options: { custom: 7 } }] })
+                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -7,4 +7,5 @@
+        },
+-       "package": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467909-0.8910542484046415/adapter/src",
++       "package": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467909-0.8910542484046415/adapter/src/index.ts",
+      },
++     "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467909-0.8910542484046415/adapter/src",
+    ],
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:129:28)
+(fail) updateOpenCode2PluginConfig > #given absolute legacy OMO entry #when installing #then migrates in place and remains idempotent [0.70ms]
+124 |     const old = format === "url" ? pathToFileURL(file).href : format === "relative" ? "./adapter/src/index.ts" : file
+125 |     writeFileSync(configPath, `{// retained comment\n"plugins": ["unrelated", {"package": ${JSON.stringify(old)}, "options": {"custom": 7}}]}`)
+126 |     const first = updateOpenCode2PluginConfig({ configPath, pluginEntry: entry })
+127 |     const changed = readFileSync(configPath, "utf8")
+128 |     expect(first.changed).toBe(true)
+129 |     expect(parse(changed)).toEqual({ plugins: ["unrelated", { package: entry, options: { custom: 7 } }] })
+                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -7,4 +7,5 @@
+        },
+-       "package": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467909-0.3823937973977044/adapter/src",
++       "package": "./adapter/src/index.ts",
+      },
++     "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467909-0.3823937973977044/adapter/src",
+    ],
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:129:28)
+(fail) updateOpenCode2PluginConfig > #given relative legacy OMO entry #when installing #then migrates in place and remains idempotent [0.69ms]
+124 |     const old = format === "url" ? pathToFileURL(file).href : format === "relative" ? "./adapter/src/index.ts" : file
+125 |     writeFileSync(configPath, `{// retained comment\n"plugins": ["unrelated", {"package": ${JSON.stringify(old)}, "options": {"custom": 7}}]}`)
+126 |     const first = updateOpenCode2PluginConfig({ configPath, pluginEntry: entry })
+127 |     const changed = readFileSync(configPath, "utf8")
+128 |     expect(first.changed).toBe(true)
+129 |     expect(parse(changed)).toEqual({ plugins: ["unrelated", { package: entry, options: { custom: 7 } }] })
+                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -7,4 +7,5 @@
+        },
+-       "package": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467910-0.4253716953594696/adapter/src",
++       "package": "file:///var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467910-0.4253716953594696/adapter/src/index.ts",
+      },
++     "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467910-0.4253716953594696/adapter/src",
+    ],
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:129:28)
+(fail) updateOpenCode2PluginConfig > #given url legacy OMO entry #when installing #then migrates in place and remains idempotent [0.55ms]
+135 | 
+136 |   it("#given a legacy tuple and duplicate native directory #when installing #then preserves options without duplicating OMO", () => {
+137 |     const entry = join(tempDir, "adapter", "src")
+138 |     writeFileSync(configPath, JSON.stringify({ plugin: [[join(entry, "index.ts"), { custom: 7 }], "v1-other"], plugins: [entry, "v2-other"] }))
+139 |     updateOpenCode2PluginConfig({ configPath, pluginEntry: entry })
+140 |     expect(parse(readFileSync(configPath, "utf8"))).toEqual({ plugin: [[entry, { custom: 7 }], "v1-other"], plugins: ["v2-other"] })
+                                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+      [
+-       "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467910-0.7085737216474679/adapter/src",
++       "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467910-0.7085737216474679/adapter/src/index.ts",
+        {
+@@ -11,2 +11,3 @@
+    "plugins": [
++     "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467910-0.7085737216474679/adapter/src",
+      "v2-other",
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:140:53)
+(fail) updateOpenCode2PluginConfig > #given a legacy tuple and duplicate native directory #when installing #then preserves options without duplicating OMO [0.33ms]
+143 | 
+144 |   it("#given conflicting configured OMO duplicates #when installing #then refuses without changing the file", () => {
+145 |     const entry = join(tempDir, "adapter", "src")
+146 |     const original = JSON.stringify({ plugins: [{ package: entry, options: { n: 1 } }, { package: join(entry, "index.ts"), options: { n: 2 } }] })
+147 |     writeFileSync(configPath, original)
+148 |     expect(() => updateOpenCode2PluginConfig({ configPath, pluginEntry: entry })).toThrow("multiple configured OMO")
+                                                                                        ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "multiple configured OMO"
+
+Received function did not throw
+Received value: {
+  changed: false,
+  configPath: "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467911-0.9315228190417244/opencode.jsonc",
+}
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:148:83)
+(fail) updateOpenCode2PluginConfig > #given conflicting configured OMO duplicates #when installing #then refuses without changing the file [0.56ms]
+150 |   })
+151 | 
+152 |   it("#given a malformed legacy plugin array #when installing #then fails closed", () => {
+153 |     const original = '{"plugin":42}'
+154 |     writeFileSync(configPath, original)
+155 |     expect(() => updateOpenCode2PluginConfig({ configPath, pluginEntry: "/adapter/src" })).toThrow("must be an array")
+                                                                                                 ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "must be an array"
+
+Received function did not throw
+Received value: {
+  changed: true,
+  configPath: "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467911-0.1758284602562865/opencode.jsonc",
+  backupPath: "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789101467911-0.1758284602562865/opencode.jsonc.backup-2026-09-11T04-37-47-912Z",
+}
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:155:92)
+(fail) updateOpenCode2PluginConfig > #given a malformed legacy plugin array #when installing #then fails closed [0.50ms]
+
+ 7 pass
+ 7 fail
+ 23 expect() calls
+Ran 14 tests across 2 files. [479.00ms]

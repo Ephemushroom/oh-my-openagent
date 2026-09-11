@@ -1,0 +1,68 @@
+{
+  "results": [
+    {
+      "mode": "old-file",
+      "code": 0,
+      "observedRequests": 2,
+      "verdict": "failure reproduced"
+    },
+    {
+      "mode": "old-command",
+      "code": 0,
+      "observedRequests": 2,
+      "verdict": "failure reproduced"
+    }
+  ],
+  "requests": [
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "glob",
+        "grep",
+        "patch",
+        "question",
+        "read",
+        "shell",
+        "skill",
+        "subagent",
+        "webfetch",
+        "websearch",
+        "execute"
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "tools": []
+    },
+    {
+      "model": "gpt-fake",
+      "tools": [
+        "glob",
+        "grep",
+        "patch",
+        "question",
+        "read",
+        "shell",
+        "skill",
+        "subagent",
+        "webfetch",
+        "websearch",
+        "execute"
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "tools": []
+    }
+  ],
+  "before": {
+    "config": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": "session|2690\nsession_v2|2336"
+  },
+  "after": {
+    "config": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+    "sessions": "session|2690\nsession_v2|2336"
+  },
+  "sandboxRemoved": true,
+  "mockClosed": true
+}

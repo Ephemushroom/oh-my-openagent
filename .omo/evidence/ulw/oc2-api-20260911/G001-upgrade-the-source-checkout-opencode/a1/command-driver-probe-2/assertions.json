@@ -1,0 +1,40 @@
+[
+  {
+    "name": "version",
+    "verdict": "PASS"
+  },
+  {
+    "name": "help",
+    "verdict": "PASS"
+  },
+  {
+    "name": "serve-help",
+    "verdict": "PASS"
+  },
+  {
+    "name": "bad-input",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: suite",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: isolated installer resolver/writer failed; see /Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/.omo/evidence/ulw/oc2-api-20260911/G001-upgrade-the-source-checkout-opencode/a1/command-driver-probe-2\n\n1 !== 0\n"
+  },
+  {
+    "name": "disabled: suite",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: isolated installer resolver/writer failed; see /Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/.omo/evidence/ulw/oc2-api-20260911/G001-upgrade-the-source-checkout-opencode/a1/command-driver-probe-2\n\n1 !== 0\n"
+  },
+  {
+    "name": "real host unchanged",
+    "verdict": "PASS"
+  },
+  {
+    "name": "cleanup completed",
+    "verdict": "PASS"
+  },
+  {
+    "name": "mock protocol",
+    "verdict": "PASS"
+  }
+]

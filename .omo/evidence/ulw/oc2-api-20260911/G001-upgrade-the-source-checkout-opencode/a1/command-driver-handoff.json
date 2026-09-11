@@ -1,0 +1,55 @@
+{
+  "verdict": "Driver ready; actual-host invocation verified; adapter capabilities remain intentionally RED pending lead migration",
+  "driver": "packages/omo-opencode2/scripts/qa-api-upgrade.mjs",
+  "helpers": ["host.mjs", "fixture.mjs", "installer-config.mjs", "model.mjs", "scenarios.mjs"],
+  "helperDirectory": "packages/omo-opencode2/scripts/qa-api-upgrade",
+  "invocation": "node packages/omo-opencode2/scripts/qa-api-upgrade.mjs .omo/evidence/ulw/oc2-api-20260911/G001-upgrade-the-source-checkout-opencode/a1/command-driver-final --installer",
+  "directInvocation": "Omit --installer to exercise the actual source-directory plugin independently of installer completion. The evidence directory must not exist.",
+  "whatWasTested": [
+    "Installed opencode2 0.0.0-beta-19425 --version, run --help, serve --help, invalid CLI option",
+    "Authenticated real serve --stdio --port 0 readiness and stdin lease; no-auth 401",
+    "POST /api/session/:id/command through the host with a QA-only native config command; HTTP 204, exact durable user payload, payload received by local mock",
+    "Registered OMO /goal with literal dollar tokens and /ulw-execute with initial sisyphus agent, durable atlas switch plus assistant agent assertions",
+    "Missing command 404 and malformed command 400; neither appends a user message",
+    "Local Responses SSE requests native read, then pending todo write, then empty todo write; tagged read, tool status, context and all 19 gated tools asserted",
+    "Exclusive evidence directory creation rejects --red reuse with EEXIST before spawning any process"
+  ],
+  "whatWasObserved": {
+    "finalSourceProbe": "command-driver-probe-3",
+    "assertions": 29,
+    "passed": 15,
+    "expectedRed": 14,
+    "mockRequests": 10,
+    "transport": "Native command control and HTTP rejection paths passed in both enabled and disabled fixtures. Native read content returned to model.",
+    "adapterFailure": "Host disables OMO after command transform throws TypeError: draft.update is not a function. /goal and /ulw-execute return CommandNotFoundError 404. OMO tools/context/hooks are consequently absent; todowrite returns Unknown tool.",
+    "installerProbe": "command-driver-probe-2/enabled-installer.log and disabled-installer.log: Bun successfully imported the real installer modules, but resolver still returns src/index.ts rather than src, so --installer fails closed before server startup.",
+    "hostCountsBeforeAndAfter": { "session": 2692, "session_v2": 2337 },
+    "configHashesUnchanged": true,
+    "sandboxRemoved": true,
+    "mockClosed": true,
+    "allSixOwnedHostProcessesClosed": true
+  },
+  "artifacts": [
+    "command-driver-probe-3/version.log",
+    "command-driver-probe-3/help.log",
+    "command-driver-probe-3/serve-help.log",
+    "command-driver-probe-3/bad-input.log",
+    "command-driver-probe-3/enabled-server.log",
+    "command-driver-probe-3/disabled-server.log",
+    "command-driver-probe-3/enabled-api.ndjson",
+    "command-driver-probe-3/disabled-api.ndjson",
+    "command-driver-probe-3/requests.ndjson",
+    "command-driver-probe-3/enabled.ndjson",
+    "command-driver-probe-3/disabled.ndjson",
+    "command-driver-probe-3/assertions.json",
+    "command-driver-probe-3/receipt.json"
+  ],
+  "whyEnough": "The stock host command control proves actual server callback dispatch, durable session writes and provider execution without substituting OMO logic. OMO RED assertions are separate and remain fatal to the driver exit status. Lead must rerun on final migrated production source; this handoff does not claim adapter GREEN.",
+  "verification": {
+    "syntax": "node --check passed for all six .mjs files",
+    "lineCounts": { "qa-api-upgrade.mjs": 93, "fixture.mjs": 48, "host.mjs": 112, "installer-config.mjs": 16, "model.mjs": 61, "scenarios.mjs": 125 },
+    "lsp": "Attempted lsp_diagnostics on all six changed files and reran on the last two edited files. All blocked by workspace TypeScript 7.0.2 lacking tsserver.js. No install or suppression attempted.",
+    "selfReview": "Each helper has one responsibility; every file is below 200 total lines. No production type escapes, dependency changes or authored prompt assertions. Assertions use protocol fields, structural sentinels, native tool states and dynamic fixture payload propagation. Cleanup and readback checks exist only as required external QA evidence. No new production logger or abstractions."
+  },
+  "whatWasOmitted": "No host credentials, authorization headers or inherited environment dump in final evidence. Fake provider key only. No production/tests/manifests/docs edits, installs, commits or pushes. Existing loader-red artifacts untouched. No final adapter GREEN run awaited. Native Promise client was not available through the adapter workspace during exploration; direct authoritative HTTP API was used."
+}

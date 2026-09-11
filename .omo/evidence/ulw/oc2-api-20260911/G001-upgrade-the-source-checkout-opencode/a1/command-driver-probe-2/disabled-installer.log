@@ -1,0 +1,23 @@
+ 9 |   "packages/omo-opencode/src/cli/resolve-opencode2-plugin-entry.ts")))
+10 | const { updateOpenCode2PluginConfig } = await import(pathToFileURL(join(repo,
+11 |   "packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.ts")))
+12 | const resolution = resolveOpenCode2PluginEntry(repo)
+13 | assert.equal(resolution.exists, true)
+14 | assert.equal(resolution.entry, join(repo, "packages/omo-opencode2/src"), "resolver must return the source directory")
+            ^
+AssertionError: resolver must return the source directory
++ actual - expected
+
++ '/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/index.ts'
+- '/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src'
+
+ generatedMessage: false,
+     actual: "/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/index.ts",
+   expected: "/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src",
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at /Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/scripts/qa-api-upgrade/installer-config.mjs:14:8
+
+Bun v1.4.2 (macOS arm64)

@@ -1,0 +1,6 @@
+packages/omo-opencode2/src/index.ts(121,35): error TS2345: Argument of type 'Context' is not assignable to parameter of type 'BuiltinCommandsRegistrationContext'.
+  The types of 'command.transform' are incompatible between these types.
+    Type 'Transform<CommandEditor>' is not assignable to type '(callback: (draft: CommandDraft) => void) => Promise<unknown>'.
+      Types of parameters 'callback' and 'callback' are incompatible.
+        Types of parameters 'draft' and 'input' are incompatible.
+          Type 'CommandEditor' is missing the following properties from type 'CommandDraft': list, get, update, remove

@@ -1,0 +1,132 @@
+[
+  {
+    "name": "version",
+    "verdict": "PASS"
+  },
+  {
+    "name": "help",
+    "verdict": "PASS"
+  },
+  {
+    "name": "serve-help",
+    "verdict": "PASS"
+  },
+  {
+    "name": "bad-input",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: rejects unauthenticated API",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: native command transport control",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: OMO command registry",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: registered OMO goal command must be listed"
+  },
+  {
+    "name": "enabled: rejects missing and malformed commands",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: goal literal dollar payload and agent preservation",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: goal must be accepted by the real host\n\n404 !== 204\n"
+  },
+  {
+    "name": "enabled: ulw-execute routes atlas",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: ulw-execute must be accepted by the real host\n\n404 !== 204\n"
+  },
+  {
+    "name": "enabled: real read and todo tool cycle",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: both todo writes must execute successfully through the host\n\n0 !== 2\n"
+  },
+  {
+    "name": "enabled: todo context appears then clears",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(requests.some((request) => systemText(request).includes(\"<todo-state>\") && systemText(request).includes(TODO_PAYLOAD)))\n"
+  },
+  {
+    "name": "enabled: feature-gated tools visible to model",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: OMO base tools must reach the model"
+  },
+  {
+    "name": "enabled: production hook trace",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: omo.hashline.tag-applied must fire"
+  },
+  {
+    "name": "enabled: suite",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: rejects unauthenticated API",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: native command transport control",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: OMO command registry",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: registered OMO goal command must be listed"
+  },
+  {
+    "name": "disabled: rejects missing and malformed commands",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: goal literal dollar payload and agent preservation",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: goal must be accepted by the real host\n\n404 !== 204\n"
+  },
+  {
+    "name": "disabled: ulw-execute routes atlas",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: ulw-execute must be accepted by the real host\n\n404 !== 204\n"
+  },
+  {
+    "name": "disabled: real read and todo tool cycle",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: both todo writes must execute successfully through the host\n\n0 !== 2\n"
+  },
+  {
+    "name": "disabled: todo context appears then clears",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(requests.some((request) => systemText(request).includes(\"<todo-state>\") && systemText(request).includes(TODO_PAYLOAD)))\n"
+  },
+  {
+    "name": "disabled: feature-gated tools visible to model",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: OMO base tools must reach the model"
+  },
+  {
+    "name": "disabled: production hook trace",
+    "verdict": "FAIL",
+    "error": "AssertionError [ERR_ASSERTION]: omo.hashline.tag-applied must fire"
+  },
+  {
+    "name": "disabled: suite",
+    "verdict": "PASS"
+  },
+  {
+    "name": "real host unchanged",
+    "verdict": "PASS"
+  },
+  {
+    "name": "cleanup completed",
+    "verdict": "PASS"
+  },
+  {
+    "name": "mock protocol",
+    "verdict": "PASS"
+  }
+]

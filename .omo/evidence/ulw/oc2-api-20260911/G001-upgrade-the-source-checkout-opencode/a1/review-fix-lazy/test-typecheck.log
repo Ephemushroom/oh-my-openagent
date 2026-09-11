@@ -1,0 +1,20 @@
+packages/omo-opencode2/src/agents/register-configured.test.ts(41,7): error TS2322: Type '() => Promise<{ data: readonly { id: { [x: number]: string; toString: () => string; charAt: (pos: number) => string; charCodeAt: (index: number) => number; concat: (...strings: string[]) => string; indexOf: (searchString: string, position?: number) => number; ... 47 more ...; "~effect/Brand": { ...; }; }; ... 9 more...' is not assignable to type '(input?: AgentListInput | undefined, requestOptions?: RequestOptions | undefined) => Promise<AgentListOutput>'.
+  Type 'Promise<{ data: readonly { id: { [x: number]: string; toString: () => string; charAt: (pos: number) => string; charCodeAt: (index: number) => number; concat: (...strings: string[]) => string; indexOf: (searchString: string, position?: number | undefined) => number; ... 47 more ...; "~effect/Brand": { ...; }; }; ... ...' is not assignable to type 'Promise<AgentListOutput>'.
+    Property 'location' is missing in type '{ data: readonly { id: { [x: number]: string; toString: () => string; charAt: (pos: number) => string; charCodeAt: (index: number) => number; concat: (...strings: string[]) => string; indexOf: (searchString: string, position?: number) => number; ... 47 more ...; "~effect/Brand": { ...; }; }; ... 9 more ...; permissi...' but required in type 'AgentListOutput'.
+packages/prompts-core/src/atlas-prompts.ts(2,27): error TS2307: Cannot find module '../prompts/atlas/default.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(3,26): error TS2307: Cannot find module '../prompts/atlas/gemini.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(4,23): error TS2307: Cannot find module '../prompts/atlas/glm.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(5,23): error TS2307: Cannot find module '../prompts/atlas/gpt.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(6,24): error TS2307: Cannot find module '../prompts/atlas/kimi.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(7,27): error TS2307: Cannot find module '../prompts/atlas/kimi-k2-7.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(8,26): error TS2307: Cannot find module '../prompts/atlas/kimi-k3.md' or its corresponding type declarations.
+packages/prompts-core/src/atlas-prompts.ts(9,26): error TS2307: Cannot find module '../prompts/atlas/opus-4-7.md' or its corresponding type declarations.
+packages/prompts-core/src/mode-prompts.ts(1,33): error TS2307: Cannot find module '../prompts/mode/hyperplan.md' or its corresponding type declarations.
+packages/prompts-core/src/mode-prompts.ts(2,28): error TS2307: Cannot find module '../prompts/mode/team.md' or its corresponding type declarations.
+packages/prompts-core/src/prometheus-prompts.ts(2,27): error TS2307: Cannot find module '../prompts/prometheus/default.md' or its corresponding type declarations.
+packages/prompts-core/src/ultrawork-prompts.ts(2,25): error TS2307: Cannot find module '../prompts/ultrawork/codex.md' or its corresponding type declarations.
+packages/prompts-core/src/ultrawork-prompts.ts(3,27): error TS2307: Cannot find module '../prompts/ultrawork/default.md' or its corresponding type declarations.
+packages/prompts-core/src/ultrawork-prompts.ts(4,26): error TS2307: Cannot find module '../prompts/ultrawork/gemini.md' or its corresponding type declarations.
+packages/prompts-core/src/ultrawork-prompts.ts(5,23): error TS2307: Cannot find module '../prompts/ultrawork/glm.md' or its corresponding type declarations.
+packages/prompts-core/src/ultrawork-prompts.ts(6,23): error TS2307: Cannot find module '../prompts/ultrawork/gpt.md' or its corresponding type declarations.
+packages/prompts-core/src/ultrawork-prompts.ts(7,27): error TS2307: Cannot find module '../prompts/ultrawork/planner.md' or its corresponding type declarations.

@@ -1,0 +1,443 @@
+diff --git a/packages/omo-opencode2/package.json b/packages/omo-opencode2/package.json
+index 8e7263555..db69ac4d1 100644
+--- a/packages/omo-opencode2/package.json
++++ b/packages/omo-opencode2/package.json
+@@ -3,7 +3,7 @@
+   "version": "0.0.0",
+   "private": true,
+   "type": "module",
+-  "description": "OMO adapter for OpenCode 2 (v2 plugin API). Spike: proves agent registration, tool hooks, session orchestration, synthetic injection, and MCP interop against @opencode-ai/plugin@next.",
++  "description": "OMO adapter for OpenCode 2 (v2 plugin API). Spike: proves agent registration, tool hooks, session orchestration, synthetic injection, and MCP interop against @opencode/plugin.",
+   "license": "MIT",
+   "exports": "./src/index.ts",
+   "scripts": {
+@@ -11,8 +11,8 @@
+     "typecheck": "tsgo --noEmit -p tsconfig.json"
+   },
+   "dependencies": {
+-    "@opencode-ai/plugin": "0.0.0-beta-17793",
+-    "@opencode-ai/schema": "0.0.0-beta-17793",
++    "@opencode/plugin": "0.0.0-beta-19425",
++    "@opencode/schema": "0.0.0-beta-19425",
+     "@oh-my-opencode/agents-core": "workspace:*",
+     "@oh-my-opencode/boulder-state": "workspace:*",
+     "@oh-my-opencode/comment-checker-core": "workspace:*",
+diff --git a/packages/omo-opencode2/src/agents/model-resolution.ts b/packages/omo-opencode2/src/agents/model-resolution.ts
+index 3a763ec6e..726bd5c08 100644
+--- a/packages/omo-opencode2/src/agents/model-resolution.ts
++++ b/packages/omo-opencode2/src/agents/model-resolution.ts
+@@ -1,4 +1,4 @@
+-import type { CatalogDraft } from "@opencode-ai/plugin/promise/catalog"
++import type { CatalogEditor } from "@opencode/plugin/promise/catalog"
+ import { resolveModelPipeline } from "@oh-my-opencode/model-core"
+ import type { ModelRequirement } from "@oh-my-opencode/model-core"
+ import type { OpenCode2AgentOverride } from "../config"
+@@ -37,7 +37,7 @@ function acceptsImageInput(model: CapabilityCarrier): boolean {
+ }
+ 
+ /** Read a catalog transform draft into a snapshot (pure). */
+-export function captureCatalogDraft(draft: CatalogDraft): CatalogSnapshot {
++export function captureCatalogDraft(draft: CatalogEditor): CatalogSnapshot {
+   const snapshot = emptySnapshot()
+   for (const record of draft.provider.list()) {
+     const providerID = record.provider.id as unknown as string
+@@ -67,7 +67,7 @@ export interface CatalogSource {
+   /** The most recently captured catalog. Empty until the catalog populates. */
+   readonly current: CatalogSnapshot;
+   /** Capture from a catalog transform draft; called once per update. */
+-  capture(draft: CatalogDraft): void;
++  capture(draft: CatalogEditor): void;
+ }
+ 
+ /** Create an empty catalog source, to be fed by a catalog.transform callback. */
+diff --git a/packages/omo-opencode2/src/agents/register-categories.ts b/packages/omo-opencode2/src/agents/register-categories.ts
+index ecbe6a2af..307b11f91 100644
+--- a/packages/omo-opencode2/src/agents/register-categories.ts
++++ b/packages/omo-opencode2/src/agents/register-categories.ts
+@@ -1,5 +1,5 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+-import { Agent, Model } from "@opencode-ai/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
++import { Agent, Model } from "@opencode/plugin"
+ import { buildSisyphusJuniorPrompt } from "@oh-my-opencode/agents-core"
+ import { CATEGORY_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+ import type { OpenCode2AgentOverride } from "../config"
+diff --git a/packages/omo-opencode2/src/agents/register-configured.ts b/packages/omo-opencode2/src/agents/register-configured.ts
+index a7d23a853..fbe70a76a 100644
+--- a/packages/omo-opencode2/src/agents/register-configured.ts
++++ b/packages/omo-opencode2/src/agents/register-configured.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { registerCategories } from "./register-categories"
+ import { registerPrimaries } from "./register-primaries"
+diff --git a/packages/omo-opencode2/src/agents/register-primaries.ts b/packages/omo-opencode2/src/agents/register-primaries.ts
+index 3fb795f05..49da7ffcf 100644
+--- a/packages/omo-opencode2/src/agents/register-primaries.ts
++++ b/packages/omo-opencode2/src/agents/register-primaries.ts
+@@ -1,5 +1,5 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+-import { Agent, Model } from "@opencode-ai/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
++import { Agent, Model } from "@opencode/plugin"
+ import {
+   buildDynamicHephaestusPrompt,
+   isHephaestusSupportedModel,
+diff --git a/packages/omo-opencode2/src/agents/register-subagents.ts b/packages/omo-opencode2/src/agents/register-subagents.ts
+index 2c463cf2d..b3be35deb 100644
+--- a/packages/omo-opencode2/src/agents/register-subagents.ts
++++ b/packages/omo-opencode2/src/agents/register-subagents.ts
+@@ -1,5 +1,5 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+-import { Agent, Model } from "@opencode-ai/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
++import { Agent, Model } from "@opencode/plugin"
+ import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+ 
+ import { SUBAGENT_DEFINITIONS } from "./agent-catalog"
+diff --git a/packages/omo-opencode2/src/agents/register.test.ts b/packages/omo-opencode2/src/agents/register.test.ts
+index d367c9453..0d4e3a7f5 100644
+--- a/packages/omo-opencode2/src/agents/register.test.ts
++++ b/packages/omo-opencode2/src/agents/register.test.ts
+@@ -1,6 +1,6 @@
+ import { describe, expect, test } from "bun:test"
+ 
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { registerCategories } from "./register-categories"
+ import { registerPrimaries } from "./register-primaries"
+diff --git a/packages/omo-opencode2/src/features/btw/register.ts b/packages/omo-opencode2/src/features/btw/register.ts
+index c40af5b28..ff8914568 100644
+--- a/packages/omo-opencode2/src/features/btw/register.ts
++++ b/packages/omo-opencode2/src/features/btw/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { createBtwTools } from "./tools"
+ import { registerBtwToolGuard } from "./tool-guard"
+diff --git a/packages/omo-opencode2/src/features/btw/tool-guard.test.ts b/packages/omo-opencode2/src/features/btw/tool-guard.test.ts
+index 312e580f0..7c47e5a8f 100644
+--- a/packages/omo-opencode2/src/features/btw/tool-guard.test.ts
++++ b/packages/omo-opencode2/src/features/btw/tool-guard.test.ts
+@@ -1,7 +1,7 @@
+ import { describe, expect, test } from "bun:test"
+ 
+ import { registerBtwToolGuard } from "./tool-guard"
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ type Message = { role: string; content: unknown[]; metadata?: Record<string, unknown> }
+ 
+ type ContextEvent = {
+diff --git a/packages/omo-opencode2/src/features/btw/tool-guard.ts b/packages/omo-opencode2/src/features/btw/tool-guard.ts
+index 367e346c9..0b76b80ae 100644
+--- a/packages/omo-opencode2/src/features/btw/tool-guard.ts
++++ b/packages/omo-opencode2/src/features/btw/tool-guard.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { getBtwMetadata } from "./metadata"
+ 
+diff --git a/packages/omo-opencode2/src/features/btw/tools.test.ts b/packages/omo-opencode2/src/features/btw/tools.test.ts
+index 160b15925..9da44c325 100644
+--- a/packages/omo-opencode2/src/features/btw/tools.test.ts
++++ b/packages/omo-opencode2/src/features/btw/tools.test.ts
+@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
+ 
+ import { createBtwTools } from "./tools"
+ import type { ChildSessionDeps } from "../../orchestration/child-session"
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ type PromptCall = {
+   sessionID: string
+diff --git a/packages/omo-opencode2/src/features/btw/tools.ts b/packages/omo-opencode2/src/features/btw/tools.ts
+index 10b52d092..906e54ae5 100644
+--- a/packages/omo-opencode2/src/features/btw/tools.ts
++++ b/packages/omo-opencode2/src/features/btw/tools.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { BTW_METADATA_KEY, createBtwMetadata, getBtwMetadata } from "./metadata"
+ import { boundParentTranscript, renderParentTranscript, type TranscriptEntry } from "./parent-context-budget"
+diff --git a/packages/omo-opencode2/src/features/monitor/delivery.ts b/packages/omo-opencode2/src/features/monitor/delivery.ts
+index d980708ff..0aee022b3 100644
+--- a/packages/omo-opencode2/src/features/monitor/delivery.ts
++++ b/packages/omo-opencode2/src/features/monitor/delivery.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { formatMonitorBatch, type EnvelopeRecord } from "./envelope"
+ import type { MonitorCounters, OutputBatch } from "./types"
+diff --git a/packages/omo-opencode2/src/hooks/comment-checker/register.ts b/packages/omo-opencode2/src/hooks/comment-checker/register.ts
+index e39254cee..9c6d477b7 100644
+--- a/packages/omo-opencode2/src/hooks/comment-checker/register.ts
++++ b/packages/omo-opencode2/src/hooks/comment-checker/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ import { readFile } from "node:fs/promises"
+ import { resolve } from "node:path"
+ import {
+diff --git a/packages/omo-opencode2/src/hooks/goal/auto-start.ts b/packages/omo-opencode2/src/hooks/goal/auto-start.ts
+index d98f8289d..bd076e349 100644
+--- a/packages/omo-opencode2/src/hooks/goal/auto-start.ts
++++ b/packages/omo-opencode2/src/hooks/goal/auto-start.ts
+@@ -8,7 +8,7 @@ export type GoalContextEvent = {
+     readonly role?: string
+     readonly content?: readonly {
+       readonly type: string
+-      readonly text?: string
++      readonly text?: string | null
+     }[]
+   }[]
+ }
+diff --git a/packages/omo-opencode2/src/hooks/hashline-read-enhancer/register.ts b/packages/omo-opencode2/src/hooks/hashline-read-enhancer/register.ts
+index 84df974bd..dad8ef265 100644
+--- a/packages/omo-opencode2/src/hooks/hashline-read-enhancer/register.ts
++++ b/packages/omo-opencode2/src/hooks/hashline-read-enhancer/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { tagReadOutput } from "./tag-read-output"
+ 
+diff --git a/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts b/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts
+index 20e9267a6..653034dc4 100644
+--- a/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts
++++ b/packages/omo-opencode2/src/hooks/prometheus-md-only/hook.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ import { 
+   HOOK_NAME, 
+   BLOCKED_TOOLS, 
+diff --git a/packages/omo-opencode2/src/hooks/register-context-hooks.ts b/packages/omo-opencode2/src/hooks/register-context-hooks.ts
+index c5e3de340..d916119a0 100644
+--- a/packages/omo-opencode2/src/hooks/register-context-hooks.ts
++++ b/packages/omo-opencode2/src/hooks/register-context-hooks.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { injectCommandCatalogSystemPart } from "./command-catalog-context"
+ import type { LiveCommand } from "./command-catalog-context"
+diff --git a/packages/omo-opencode2/src/hooks/write-existing-file-guard/hook.ts b/packages/omo-opencode2/src/hooks/write-existing-file-guard/hook.ts
+index d8e08f13f..98728f66a 100644
+--- a/packages/omo-opencode2/src/hooks/write-existing-file-guard/hook.ts
++++ b/packages/omo-opencode2/src/hooks/write-existing-file-guard/hook.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ import { existsSync, realpathSync } from "node:fs"
+ import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from "node:path"
+ 
+diff --git a/packages/omo-opencode2/src/hooks/write-existing-file-guard/tool-execute-before-handler.ts b/packages/omo-opencode2/src/hooks/write-existing-file-guard/tool-execute-before-handler.ts
+index e978dd89e..6fa44779a 100644
+--- a/packages/omo-opencode2/src/hooks/write-existing-file-guard/tool-execute-before-handler.ts
++++ b/packages/omo-opencode2/src/hooks/write-existing-file-guard/tool-execute-before-handler.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ import { existsSync } from "node:fs"
+ import {
+   asRecord,
+diff --git a/packages/omo-opencode2/src/index.ts b/packages/omo-opencode2/src/index.ts
+index df1321f4c..98db4ccff 100644
+--- a/packages/omo-opencode2/src/index.ts
++++ b/packages/omo-opencode2/src/index.ts
+@@ -1,6 +1,6 @@
+ import { appendFileSync, mkdirSync } from "node:fs"
+ import { dirname } from "node:path"
+-import { Plugin } from "@opencode-ai/plugin"
++import { Plugin } from "@opencode/plugin"
+ 
+ import { registerConfiguredAgents } from "./agents/register-configured"
+ import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
+diff --git a/packages/omo-opencode2/src/mcp/register.test.ts b/packages/omo-opencode2/src/mcp/register.test.ts
+index 2538191d4..8b939f977 100644
+--- a/packages/omo-opencode2/src/mcp/register.test.ts
++++ b/packages/omo-opencode2/src/mcp/register.test.ts
+@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
+ import { join } from "node:path"
+ 
+ import { registerBuiltinMcps } from "./register"
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ type DraftServer = [string, Record<string, unknown>]
+ 
+diff --git a/packages/omo-opencode2/src/mcp/register.ts b/packages/omo-opencode2/src/mcp/register.ts
+index 67d4962f1..1838dcbdb 100644
+--- a/packages/omo-opencode2/src/mcp/register.ts
++++ b/packages/omo-opencode2/src/mcp/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { createContext7Config } from "./context7"
+ import { createGrepAppConfig } from "./grep-app"
+diff --git a/packages/omo-opencode2/src/mcp/types.ts b/packages/omo-opencode2/src/mcp/types.ts
+index 3511495c3..807433a6f 100644
+--- a/packages/omo-opencode2/src/mcp/types.ts
++++ b/packages/omo-opencode2/src/mcp/types.ts
+@@ -1,4 +1,4 @@
+-import type { Mcp } from "@opencode-ai/schema/mcp"
++import type { Mcp } from "@opencode/schema/mcp"
+ 
+ /** v2 local MCP server config: command array + cwd + environment. */
+ export type LocalMcpServerConfig = {
+diff --git a/packages/omo-opencode2/src/orchestration/background-tools.ts b/packages/omo-opencode2/src/orchestration/background-tools.ts
+index b7afe2307..02238b7c8 100644
+--- a/packages/omo-opencode2/src/orchestration/background-tools.ts
++++ b/packages/omo-opencode2/src/orchestration/background-tools.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import type { TaskRegistry } from "./task-registry"
+ import type { JsonSchemaLike } from "./task-tool"
+diff --git a/packages/omo-opencode2/src/orchestration/child-session.ts b/packages/omo-opencode2/src/orchestration/child-session.ts
+index a70ce53c9..4fdfc9861 100644
+--- a/packages/omo-opencode2/src/orchestration/child-session.ts
++++ b/packages/omo-opencode2/src/orchestration/child-session.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+ 
+ import type { TaskRecord, TaskRegistry } from "./task-registry"
+diff --git a/packages/omo-opencode2/src/orchestration/task-engine-guidance.test.ts b/packages/omo-opencode2/src/orchestration/task-engine-guidance.test.ts
+index 87b9bab6e..9b57ec532 100644
+--- a/packages/omo-opencode2/src/orchestration/task-engine-guidance.test.ts
++++ b/packages/omo-opencode2/src/orchestration/task-engine-guidance.test.ts
+@@ -1,5 +1,5 @@
+ import { describe, expect, test } from "bun:test"
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { createTaskEngine } from "./task-engine"
+ import { TaskRegistry } from "./task-registry"
+diff --git a/packages/omo-opencode2/src/orchestration/task-engine.ts b/packages/omo-opencode2/src/orchestration/task-engine.ts
+index 0f169980c..250ff701b 100644
+--- a/packages/omo-opencode2/src/orchestration/task-engine.ts
++++ b/packages/omo-opencode2/src/orchestration/task-engine.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import type { TaskRegistry } from "./task-registry"
+ import { guideTaskResult } from "./task-result-guidance"
+diff --git a/packages/omo-opencode2/src/orchestration/task-tool.ts b/packages/omo-opencode2/src/orchestration/task-tool.ts
+index 9c934c3c6..aa6947e20 100644
+--- a/packages/omo-opencode2/src/orchestration/task-tool.ts
++++ b/packages/omo-opencode2/src/orchestration/task-tool.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import type { TaskRegistry } from "./task-registry"
+ import type { ConcurrencyLimiter } from "./concurrency"
+diff --git a/packages/omo-opencode2/src/skills/register-shared-skills.test.ts b/packages/omo-opencode2/src/skills/register-shared-skills.test.ts
+index 9ac0bf14c..b35bda899 100644
+--- a/packages/omo-opencode2/src/skills/register-shared-skills.test.ts
++++ b/packages/omo-opencode2/src/skills/register-shared-skills.test.ts
+@@ -1,7 +1,7 @@
+ import { describe, expect, test } from "bun:test"
+ import { existsSync } from "node:fs"
+ 
+-import type { Skill } from "@opencode-ai/schema/skill"
++import { Skill } from "@opencode/schema/skill"
+ 
+ import { readSharedSkillFiles, registerSharedSkills } from "./register-shared-skills"
+ import type { SharedSkillsRegistrationContext } from "./register-shared-skills"
+@@ -13,6 +13,7 @@ function createDraftCapture(added: Skill.Info[]): SharedSkillsRegistrationContex
+       transform: async (callback) => {
+         callback({
+           list: () => [],
++          get: () => undefined,
+           add: (skill) => added.push(skill),
+           update: () => undefined,
+           remove: () => undefined,
+@@ -34,10 +35,10 @@ describe("registerSharedSkills", () => {
+ 
+     // then
+     const ids = added.map((skill) => skill.id)
+-    expect(ids).toContain("programming")
+-    expect(ids).toContain("git-master")
+-    expect(ids).toContain("ulw-execute")
+-    expect(ids).not.toContain("start-work")
++    expect(ids).toContain(Skill.ID.make("programming"))
++    expect(ids).toContain(Skill.ID.make("git-master"))
++    expect(ids).toContain(Skill.ID.make("ulw-execute"))
++    expect(ids).not.toContain(Skill.ID.make("start-work"))
+     expect(new Set(ids).size).toBe(ids.length)
+   })
+ 
+diff --git a/packages/omo-opencode2/src/skills/register-shared-skills.ts b/packages/omo-opencode2/src/skills/register-shared-skills.ts
+index b0f108d24..5b5ced7f7 100644
+--- a/packages/omo-opencode2/src/skills/register-shared-skills.ts
++++ b/packages/omo-opencode2/src/skills/register-shared-skills.ts
+@@ -3,13 +3,13 @@ import { join } from "node:path"
+ 
+ import { parseFrontmatter } from "@oh-my-opencode/utils"
+ import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills"
+-import type { SkillDraft } from "@opencode-ai/plugin/promise/skill"
+-import { AbsolutePath } from "@opencode-ai/schema/schema"
+-import { Skill } from "@opencode-ai/schema/skill"
++import type { SkillEditor } from "@opencode/plugin/promise/skill"
++import { AbsolutePath } from "@opencode/schema/schema"
++import { Skill } from "@opencode/schema/skill"
+ 
+ export interface SharedSkillsRegistrationContext {
+   readonly skill: {
+-    readonly transform: (callback: (draft: SkillDraft) => void) => Promise<unknown>
++    readonly transform: (callback: (draft: SkillEditor) => void) => Promise<unknown>
+   }
+ }
+ 
+diff --git a/packages/omo-opencode2/src/tools/hashline-edit/register.ts b/packages/omo-opencode2/src/tools/hashline-edit/register.ts
+index cb97b4e8c..8459a312f 100644
+--- a/packages/omo-opencode2/src/tools/hashline-edit/register.ts
++++ b/packages/omo-opencode2/src/tools/hashline-edit/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import type { RawHashlineEdit } from "@oh-my-opencode/hashline-core"
+ import { executeHashlineEdit } from "./execute-hashline-edit"
+diff --git a/packages/omo-opencode2/src/tools/look-at/register.ts b/packages/omo-opencode2/src/tools/look-at/register.ts
+index 9cad229b6..020c88f83 100644
+--- a/packages/omo-opencode2/src/tools/look-at/register.ts
++++ b/packages/omo-opencode2/src/tools/look-at/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import type { CatalogSource } from "../../agents/model-resolution"
+ import { parseLookAtArgs } from "./look-at-arguments"
+diff --git a/packages/omo-opencode2/src/tools/monitor/register.ts b/packages/omo-opencode2/src/tools/monitor/register.ts
+index b85a8bc82..b1a380a9c 100644
+--- a/packages/omo-opencode2/src/tools/monitor/register.ts
++++ b/packages/omo-opencode2/src/tools/monitor/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { loadOpenCode2Config } from "../../config"
+ import { resolveMonitorConfig } from "../../features/monitor/config"
+diff --git a/packages/omo-opencode2/src/tools/session-manager/register.ts b/packages/omo-opencode2/src/tools/session-manager/register.ts
+index 48d31f416..c981387e6 100644
+--- a/packages/omo-opencode2/src/tools/session-manager/register.ts
++++ b/packages/omo-opencode2/src/tools/session-manager/register.ts
+@@ -1,4 +1,4 @@
+-import type { Context } from "@opencode-ai/plugin/promise/plugin"
++import type { Context } from "@opencode/plugin/promise/plugin"
+ 
+ import { createSessionTools, type SessionToolsOptions } from "./tools"
+ 

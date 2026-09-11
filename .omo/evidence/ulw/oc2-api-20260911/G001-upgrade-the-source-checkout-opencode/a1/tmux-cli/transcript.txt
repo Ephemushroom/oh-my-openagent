@@ -1,0 +1,31 @@
+
+╭─    ~/Pr/Pr/A/oh-my-openagent-oc2-api-20260911  on   fix/opencode2-api-
+19425:dev !47 ?4 
+╰─ node packages/omo-opencode2/scripts/qa-api-upgrade.mjs .omo/evidence/ulw/oc2-
+api-20260911/G001-upgrade-the-source-checkout-opencode/a1/tmux-cli --installer;
+qa_result=$?; printf 'TMUX_QA_EXIT=%s\n' "$qa_result"; tmux wait-for -S oc2-api-
+qa-done
+❯ node packages/omo-opencode2/scripts/qa-api-upgrade.mjs .omo/evidence/ulw/oc2-a
+pi-20260911/G001-upgrade-the-source-checkout-opencode/a1/tmux-cli --installer; q
+a_result=$?; printf 'TMUX_QA_EXIT=%s\n' "$qa_result"; tmux wait-for -S oc2-api-q
+a-done
+{
+  "evidence": "/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-2026091
+1/.omo/evidence/ulw/oc2-api-20260911/G001-upgrade-the-source-checkout-opencode/a
+1/tmux-cli",
+  "assertions": 29,
+  "failures": []
+}
+TMUX_QA_EXIT=0
+
+╭─    ~/Pr/Pr/A/oh-my-openagent-oc2-api-20260911  on   fix/opencode2-api-
+19425:dev !47 ?4 
+╰─
+
+
+
+
+
+
+
+
