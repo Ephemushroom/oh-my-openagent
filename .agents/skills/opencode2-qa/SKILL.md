@@ -13,7 +13,10 @@ The core difference: **v1 QA proves a hook fired via the SSE event stream. v2 QA
 proves it via `OMO_SPIKE_TRACE` NDJSON**, because the v2 adapter emits its own
 trace events and the CLI does not expose raw system parts or tool results.
 
-Verified against `opencode2` `0.0.0-next-17444` on Windows with `zhipuai/glm-4.7`.
+Target the exact SDK version in `packages/omo-opencode2/package.json` and record
+the real host's `--version`. Current target: `@opencode/cli` beta-19425 with the
+matching `@opencode/plugin` and `@opencode/schema` packages. Older evidence below
+documents its capture version; it does not prove current compatibility.
 
 ## Golden rules
 
@@ -58,8 +61,10 @@ export OPENCODE_DISABLE_MODELS_FETCH=1
 `USERPROFILE` is mandatory on Windows: without it the binary resolves the real
 home and the isolation sweep fails.
 
-**2. Credentials.** Read the key from the v1 auth store into the child env only.
-Never print, copy, or commit it:
+**2. Model boundary.** Prefer the loopback Responses mock in
+`packages/omo-opencode2/scripts/qa-api-upgrade.mjs`; it uses no user credentials.
+For an explicitly required real-provider check, pass credentials through the
+child environment only. Never print, copy, or commit them:
 
 ```bash
 ZHIPU_API_KEY="$(node -e '...' "$REAL_HOME/.local/share/opencode/auth.json")"
@@ -67,16 +72,19 @@ export ZHIPU_API_KEY
 ```
 
 **3. Plugin wiring.** opencode2 imports the adapter as TypeScript source. Write
-an `opencode.jsonc` into the sandbox project pointing at the real entry file
+an `opencode.jsonc` into the sandbox project pointing at the real entry DIRECTORY
 (`cygpath -m` on Windows, and escape backslashes for JSON):
 
 ```jsonc
-{ "model": "zhipuai/glm-4.7", "plugins": ["<abs path>/packages/omo-opencode2/src/index.ts"] }
+{ "model": "zhipuai/glm-4.7", "plugins": ["<abs path>/packages/omo-opencode2/src"] }
 ```
 
 **4. Trace.** Set `OMO_SPIKE_TRACE` to a per-case file, truncate it, run the
 case, then copy it into `out/`. Drive the binary with
-`opencode2 run --standalone --auto`, under `timeout -k 5 300`.
+`opencode2 run --standalone --auto --print-logs`, under `timeout -k 5 300`.
+`--print-logs` is required to capture the standalone server's diagnostics.
+Exit zero alone does not prove OMO loaded: a rejected or disabled plugin can
+leave the native CLI working without any OMO tools.
 
 **5. Assertions.** Use the `trace_has` / `trace_absent` node heredocs from any
 reference `qa.sh`. They parse the NDJSON, count matching events, write a JSON
