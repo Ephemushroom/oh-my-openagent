@@ -6,7 +6,7 @@ import { updateOpenCode2McpConfig } from "./config-manager/update-opencode2-mcp-
 import { updateOpenCode2PluginConfig } from "./config-manager/update-opencode2-plugin-config"
 import { detectConfigFormat } from "./config-manager/opencode-config-format"
 import type { UpdateOpenCode2McpResult } from "./config-manager/update-opencode2-mcp-config"
-import { fileURLToPath } from "node:url"
+import { resolveOpenCode2PluginEntry } from "./resolve-opencode2-plugin-entry"
 
 export interface OpenCode2InstallResult extends UpdateOpenCode2McpResult {
   configPath: string
@@ -21,13 +21,15 @@ export interface OpenCode2InstallResult extends UpdateOpenCode2McpResult {
  * Also appends the OMO v2 plugin entry to the plugins array.
  */
 export async function runOpenCode2Installer(): Promise<OpenCode2InstallResult> {
+  const plugin = resolveOpenCode2PluginEntry()
+  if (!plugin.exists) throw new Error("OpenCode2 adapter requires a source checkout containing packages/omo-opencode2/src/index.ts")
   const { path } = detectConfigFormat()
   const entries = buildOpenCode2Entries({
     nodeCommand: await resolveNodeRuntime(),
     daemonCliPath: resolveLspDaemonCli(),
   })
   const mcpResult = updateOpenCode2McpConfig({ configPath: path, entries })
-  const pluginResult = updateOpenCode2PluginConfig({ configPath: path, pluginEntry: resolveOpenCode2PluginEntry() })
+  const pluginResult = updateOpenCode2PluginConfig({ configPath: path, pluginEntry: plugin.entry })
   return { 
     ...mcpResult, 
     changed: mcpResult.changed || pluginResult.changed,
@@ -113,17 +115,6 @@ export function buildLspMcpEntry(resolution: LspResolutionInput): OpenCode2McpEn
     command: [resolution.nodeCommand, resolution.daemonCliPath, "mcp"],
     environment,
     codemode: false,
-  }
-}
-
-/** Resolves the absolute path to the OMO v2 plugin entry. */
-export function resolveOpenCode2PluginEntry(): string {
-  try {
-    const require = createRequire(import.meta.url)
-    return require.resolve("@oh-my-opencode/omo-opencode2")
-  } catch {
-    const url = new URL("../../omo-opencode2/index.js", import.meta.url)
-    return fileURLToPath(url)
   }
 }
 

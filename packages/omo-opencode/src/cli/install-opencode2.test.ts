@@ -1,10 +1,48 @@
-import { describe, expect, test } from "bun:test"
+import { describe, expect, spyOn, test } from "bun:test"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { parse } from "jsonc-parser"
+import * as configFormat from "./config-manager/opencode-config-format"
+import * as sourceResolver from "./resolve-opencode2-plugin-entry"
 
 import {
   buildLspMcpEntry,
   buildOpenCode2Entries,
   buildRemoteMcpEntries,
+  runOpenCode2Installer,
 } from "./install-opencode2"
+
+test("#given the production installer #when installing from source #then it writes the loadable directory and repeats without changes", async () => {
+  const root = mkdtempSync(join(tmpdir(), "oc2-production-install-"))
+  const path = join(root, "opencode.jsonc")
+  writeFileSync(path, "{}")
+  const format = spyOn(configFormat, "detectConfigFormat").mockReturnValue({ path, format: "jsonc" })
+  try {
+    await runOpenCode2Installer()
+    expect(parse(readFileSync(path, "utf8")).plugins).toEqual([sourceResolver.resolveOpenCode2PluginEntry().entry])
+    expect((await runOpenCode2Installer()).changed).toBe(false)
+  } finally {
+    format.mockRestore()
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test("#given missing adapter source #when production installation runs #then config remains untouched", async () => {
+  const root = mkdtempSync(join(tmpdir(), "oc2-missing-source-"))
+  const path = join(root, "opencode.jsonc")
+  writeFileSync(path, "{}")
+  const format = spyOn(configFormat, "detectConfigFormat").mockReturnValue({ path, format: "jsonc" })
+  const resolver = spyOn(sourceResolver, "resolveOpenCode2PluginEntry").mockReturnValue({ entry: "", exists: false, searchedFrom: root })
+  try {
+    await expect(runOpenCode2Installer()).rejects.toThrow("source checkout")
+    expect(readFileSync(path, "utf8")).toBe("{}")
+  } finally {
+    resolver.mockRestore()
+    format.mockRestore()
+    rmSync(root, { recursive: true, force: true })
+  }
+})
 
 describe("buildLspMcpEntry", () => {
   test("#given a node runtime and a daemon cli path #when building #then the entry carries command + env + codemode false", () => {
