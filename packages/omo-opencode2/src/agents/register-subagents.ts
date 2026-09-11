@@ -1,5 +1,5 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
-import { Agent, Model } from "@opencode-ai/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
+import { Agent, Model } from "@opencode/plugin"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 
 import { SUBAGENT_DEFINITIONS } from "./agent-catalog"
@@ -31,7 +31,7 @@ export interface RegisterSubagentsOptions {
  * is applied (see ctx.agent.reload()).
  */
 export async function registerSubagents(
-  ctx: Context,
+  ctx: { readonly agent: Pick<Context["agent"], "transform"> },
   options: RegisterSubagentsOptions,
 ): Promise<Set<string>> {
   const registered = new Set<string>()

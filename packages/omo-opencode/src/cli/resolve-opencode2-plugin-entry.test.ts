@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test"
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 
 import { resolveOpenCode2PluginEntry } from "./resolve-opencode2-plugin-entry"
 
@@ -40,7 +40,7 @@ describe("resolveOpenCode2PluginEntry", () => {
 
       // then the walk-up locates the entry
       expect(result.exists).toBe(true)
-      expect(result.entry).toBe(entry)
+      expect(result.entry).toBe(dirname(entry))
     })
   })
 

@@ -1,6 +1,6 @@
 # @oh-my-opencode/omo-opencode2
 
-OpenCode 2 (v2 plugin API, `@opencode-ai/plugin@0.0.0-beta-17793`) adapter for
+OpenCode 2 (v2 plugin API, `@opencode/plugin@0.0.0-beta-19425`) adapter for
 OMO. Ported from v1.
 
 ## Overview
@@ -9,8 +9,10 @@ The v2 adapter re-implements the highest-value v1 surface against the v2 plugin
 API. Where v1 exports a declarative map of 14 named hook handlers, v2 registers
 imperatively inside `setup` against typed draft-mutation APIs.
 
-- Entry: `src/index.ts` (`export default Plugin.define({ id: "omo", setup })`),
-  imported directly by opencode2 as TypeScript source.
+- Entry: configure the `src/` DIRECTORY, containing `index.ts`
+  (`export default Plugin.define({ id: "omo", setup })`). The host imports
+  TypeScript directly; configured file paths are rejected. The package remains
+  source-checkout-only, not part of the published npm payload.
 - Trace: set `OMO_SPIKE_TRACE` to a file path to get NDJSON trace events for QA
   assertions. This is the primary observability surface; the CLI does not expose
   raw system parts or tool results.
@@ -21,7 +23,12 @@ imperatively inside `setup` against typed draft-mutation APIs.
   `session.hook("model.request")`, `session.switchAgent`/`switchModel`/`rename`/
   `wait`, `ModelHookOptions.providerID` scoping, and a `v1/` compat subpath
   (`@opencode-ai/plugin/v1`) for v1-shaped plugins. All changes were additive;
-  the pin bump required zero adapter code changes.
+  that earlier pin bump required zero adapter code changes.
+- Current pin: `@opencode/plugin` and `@opencode/schema` beta-19425. The package
+  scope changed from `@opencode-ai`; the Promise API remains supported. Commands
+  register executable callbacks with `CommandEditor.add`, while agents retain
+  their `update` method. Do not replace every domain's update based on a command
+  transform error.
 
 ## Registered surface
 
@@ -43,8 +50,9 @@ These are v2-API-specific and differ from v1. Read before editing.
   resolution reads `catalog.current` later; a setup-time snapshot is empty and
   silently drops every agent onto its first fallback.
 - **Agent transforms are lazy.** v2 defers `agent.transform` callbacks until first
-  registry materialization; `await ctx.agent.reload()` forces them so the
-  registration summary is not empty.
+  registry materialization. Read with `await ctx.agent.list()` before copying
+  registration sets or the base prompt. `reload()` only invalidates batched
+  state; it is not a materialization barrier.
 - **Prompts are baked once, patched per-request.** v2 has no config-phase prompt
   authority. The static sisyphus prompt is captured at registration via
   `onSisyphusPrompt`; the context hook locates and replaces that system part on
@@ -96,7 +104,8 @@ These are v2-API-specific and differ from v1. Read before editing.
   extended the limit to "monitor-style tools cannot be built"; that was wrong.
 - **`SessionDomain` cannot list sessions or read their messages.** It is
   `Pick<SessionApi, "create" | "get" | "switchAgent" | "switchModel" | "prompt"
-  | "generate" | "command" | "synthetic" | "interrupt" | "rename" | "wait">`.
+  | "generate" | "command" | "synthetic" | "interrupt" | "rename" | "move"
+  | "wait" | "context">`.
   There is no `list` and no `messages`, so session-history tools cannot be built
   on `ctx.session`. opencode2 persists every session to SQLite at
   `$XDG_DATA_HOME/opencode/opencode.db` (`session_v2` plus `session_message`,
@@ -264,7 +273,7 @@ Verified on `0.0.0-next-17444`; reproducer and outcome recorded in
 ## BTW side conversations
 
 `features/btw/` ports v1's BTW side conversations as tool-driven instead of
-TUI-driven: the v2 plugin API has no TUI registration surface, so the
+TUI-driven. This adapter does not implement a TUI entrypoint; the
 capability is expressed as `btw_start` / `btw_reply` / `btw_list` tools the
 model calls. Gated on `btw.enabled` under `[opencode2]` (default off);
 `disabled_hooks` respects the name `btw`.
@@ -388,6 +397,7 @@ and only one of them belongs to the gate:
 | `features/model-fallback/register.ts` | yes | Reactive provider-exhaustion recovery on a main-session error edge. Same shared gate; child sessions are excluded first. |
 | `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
+| `commands/register-builtin-commands.ts` | NO | One prompt per explicit native command invocation, preserving inbox delivery. Distinct commands must not be dropped by the observed-edge gate. Agent-targeted commands also apply the configured agent model. |
 | `features/monitor/delivery.ts` | NO | Fires once per BATCH from one monitor. Two monitors flushing in the same tick are two distinct notifications; a per-session reservation would drop one and lose output. Deduped per batch instead. |
 | `features/team-mode/member-runtime.ts` | NO | Initial prompt to a plugin-owned child session. One write per spawned member, not an observed live-parent edge. |
 | `features/team-mode/mailbox.ts` direct delivery | NO | One queued turn per explicit lead-to-member message; gating would drop distinct concurrent messages. |

@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 
 import type { TaskRecord, TaskRegistry } from "./task-registry"

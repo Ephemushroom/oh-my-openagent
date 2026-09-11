@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { registerCategories } from "./register-categories"
 import { registerPrimaries } from "./register-primaries"
@@ -20,6 +20,7 @@ export type ConfiguredAgentRegistration = {
   readonly subagents: Set<string>
   readonly categories: Set<string>
   readonly sisyphusPrompt: string | undefined
+  readonly models: ReadonlyMap<string, string>
 }
 
 export type ResolvedAgentRegistrationConfig = {
@@ -38,7 +39,11 @@ export function resolveAgentRegistrationConfig(
 
 /** Coordinates the three agent registries from one parsed config snapshot. */
 export async function registerConfiguredAgents(
-  ctx: Context,
+  ctx: Pick<Context, "options"> & {
+    readonly agent: Pick<Context["agent"], "transform"> & {
+      readonly list: () => Promise<Pick<Awaited<ReturnType<Context["agent"]["list"]>>, "data">>
+    }
+  },
   options: RegisterConfiguredAgentsOptions,
 ): Promise<ConfiguredAgentRegistration> {
   const config = loadOpenCode2Config({
@@ -61,5 +66,11 @@ export async function registerConfiguredAgents(
     },
   })
   const categories = await registerCategories(ctx, shared)
-  return { primaries, subagents, categories, sisyphusPrompt }
+  // A read materializes deferred transforms; reload only invalidates in setup's batch.
+  const agents = await ctx.agent.list()
+  const models = new Map<string, string>()
+  for (const agent of agents.data) {
+    if (agent.model) models.set(agent.id, `${agent.model.providerID}/${agent.model.id}`)
+  }
+  return { primaries, subagents, categories, sisyphusPrompt, models }
 }

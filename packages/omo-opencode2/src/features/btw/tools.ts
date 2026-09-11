@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { BTW_METADATA_KEY, createBtwMetadata, getBtwMetadata } from "./metadata"
 import { boundParentTranscript, renderParentTranscript, type TranscriptEntry } from "./parent-context-budget"

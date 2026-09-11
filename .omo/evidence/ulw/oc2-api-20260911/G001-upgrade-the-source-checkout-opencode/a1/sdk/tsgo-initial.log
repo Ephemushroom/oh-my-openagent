@@ -1,0 +1,23 @@
+packages/omo-opencode2/src/index.ts(121,35): error TS2345: Argument of type 'Context' is not assignable to parameter of type 'BuiltinCommandsRegistrationContext'.
+  The types of 'command.transform' are incompatible between these types.
+    Type 'Transform<CommandEditor>' is not assignable to type '(callback: (draft: CommandDraft) => void) => Promise<unknown>'.
+      Types of parameters 'callback' and 'callback' are incompatible.
+        Types of parameters 'draft' and 'input' are incompatible.
+          Type 'CommandEditor' is missing the following properties from type 'CommandDraft': list, get, update, remove
+packages/omo-opencode2/src/index.ts(126,61): error TS2345: Argument of type 'Context' is not assignable to parameter of type 'ConfiguredGoalContext'.
+  Type 'Context' is not assignable to type 'GoalFeatureContext'.
+    The types of 'session.hook' are incompatible between these types.
+      Type 'ModelHooks<SessionHooks>' is not assignable to type '(event: "context", handler: (event: GoalContextEvent) => void | Promise<void>) => Promise<unknown>'.
+        Types of parameters 'callback' and 'handler' are incompatible.
+          Types of parameters 'event' and 'input' are incompatible.
+            Type 'SessionContext' is not assignable to type 'GoalContextEvent'.
+              Types of property 'messages' are incompatible.
+                Type 'Message[]' is not assignable to type 'readonly { readonly role?: string | undefined; readonly content?: readonly { readonly type: string; readonly text?: string | undefined; }[] | undefined; }[]'.
+                  Type 'Message' is not assignable to type '{ readonly role?: string | undefined; readonly content?: readonly { readonly type: string; readonly text?: string | undefined; }[] | undefined; }'.
+                    Types of property 'content' are incompatible.
+                      Type 'readonly ({ readonly type: "text"; readonly text: string; readonly cache?: CacheHint | undefined; readonly metadata?: { readonly [x: string]: unknown; } | undefined; readonly providerMetadata?: { ...; } | undefined; } | ... 4 more ... | ({ ...; } & CompactionContent))[]' is not assignable to type 'readonly { readonly type: string; readonly text?: string | undefined; }[]'.
+                        Type '{ readonly type: "text"; readonly text: string; readonly cache?: CacheHint | undefined; readonly metadata?: { readonly [x: string]: unknown; } | undefined; readonly providerMetadata?: { ...; } | undefined; } | ... 4 more ... | ({ ...; } & CompactionContent)' is not assignable to type '{ readonly type: string; readonly text?: string | undefined; }'.
+                          Type '{ readonly type: "compaction"; readonly provider: string & Brand<"AI.ProviderID">; readonly id?: string | undefined; readonly text?: string | null | undefined; readonly encrypted?: string | undefined; } & { ...; }' is not assignable to type '{ readonly type: string; readonly text?: string | undefined; }'.
+                            Types of property 'text' are incompatible.
+                              Type 'string | null' is not assignable to type 'string | undefined'.
+                                Type 'null' is not assignable to type 'string | undefined'.

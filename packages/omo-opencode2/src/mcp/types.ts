@@ -1,4 +1,4 @@
-import type { Mcp } from "@opencode-ai/schema/mcp"
+import type { Mcp } from "@opencode/schema/mcp"
 
 /** v2 local MCP server config: command array + cwd + environment. */
 export type LocalMcpServerConfig = {

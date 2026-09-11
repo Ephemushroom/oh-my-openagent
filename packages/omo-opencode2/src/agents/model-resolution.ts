@@ -1,4 +1,4 @@
-import type { CatalogDraft } from "@opencode-ai/plugin/promise/catalog"
+import type { CatalogEditor } from "@opencode/plugin/promise/catalog"
 import { resolveModelPipeline } from "@oh-my-opencode/model-core"
 import type { ModelRequirement } from "@oh-my-opencode/model-core"
 import type { OpenCode2AgentOverride } from "../config"
@@ -37,7 +37,7 @@ function acceptsImageInput(model: CapabilityCarrier): boolean {
 }
 
 /** Read a catalog transform draft into a snapshot (pure). */
-export function captureCatalogDraft(draft: CatalogDraft): CatalogSnapshot {
+export function captureCatalogDraft(draft: CatalogEditor): CatalogSnapshot {
   const snapshot = emptySnapshot()
   for (const record of draft.provider.list()) {
     const providerID = record.provider.id as unknown as string
@@ -67,7 +67,7 @@ export interface CatalogSource {
   /** The most recently captured catalog. Empty until the catalog populates. */
   readonly current: CatalogSnapshot;
   /** Capture from a catalog transform draft; called once per update. */
-  capture(draft: CatalogDraft): void;
+  capture(draft: CatalogEditor): void;
 }
 
 /** Create an empty catalog source, to be fed by a catalog.transform callback. */

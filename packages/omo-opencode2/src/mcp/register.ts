@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { createContext7Config } from "./context7"
 import { createGrepAppConfig } from "./grep-app"

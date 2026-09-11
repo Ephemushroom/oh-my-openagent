@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { injectCommandCatalogSystemPart } from "./command-catalog-context"
 import type { LiveCommand } from "./command-catalog-context"
@@ -39,6 +39,7 @@ interface HookEvent {
 }
 
 interface ComposerOptions {
+  trace?: ContextHookDeps["trace"]
   staticSisyphusPrompt: string
   agentList: () => Promise<LiveAgent[]>
   skillList: () => Promise<LiveSkill[]>
@@ -77,6 +78,7 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
       skillListError,
     })
     event.system = rebaked.system
+    options.trace?.("omo.context.sisyphus", { sessionID: event.sessionID, agent: event.agent, rebaked: rebaked.rebaked })
 
     // Step 2: expose concise registered skill and command catalogs.
     event.system = injectSkillCatalogSystemPart(event.system, skillList ?? [])
@@ -153,6 +155,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
     if (modelKey) sessionModels?.record(event.sessionID as unknown as string, modelKey)
 
     const composer = createContextHookComposer({
+      trace,
       staticSisyphusPrompt,
       agentList: async () => {
         const agents = await ctx.agent.list()

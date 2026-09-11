@@ -1,0 +1,319 @@
+{
+  "invocation": [
+    "/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/scripts/qa-api-upgrade.mjs",
+    ".omo/evidence/ulw/oc2-api-20260911/G001-upgrade-the-source-checkout-opencode/a1/command-driver-probe-1"
+  ],
+  "binary": "/Users/Bryan/.bun/bin/opencode2",
+  "red": false,
+  "installer": false,
+  "results": [
+    {
+      "name": "version",
+      "verdict": "PASS"
+    },
+    {
+      "name": "help",
+      "verdict": "PASS"
+    },
+    {
+      "name": "serve-help",
+      "verdict": "PASS"
+    },
+    {
+      "name": "bad-input",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: rejects unauthenticated API",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: native command transport control",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: OMO command registry",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: registered OMO goal command must be listed"
+    },
+    {
+      "name": "enabled: rejects missing and malformed commands",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: goal literal dollar payload and agent preservation",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: goal must be accepted by the real host\n\n404 !== 204\n"
+    },
+    {
+      "name": "enabled: ulw-execute routes atlas",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: ulw-execute must be accepted by the real host\n\n404 !== 204\n"
+    },
+    {
+      "name": "enabled: real read and todo tool cycle",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: read content must carry hashline tags"
+    },
+    {
+      "name": "enabled: todo context appears then clears",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(requests.some((request) => systemText(request).includes(\"<todo-state>\") && systemText(request).includes(TODO_PAYLOAD)))\n"
+    },
+    {
+      "name": "enabled: feature-gated tools visible to model",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: OMO base tools must reach the model"
+    },
+    {
+      "name": "enabled: production hook trace",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: omo.hashline.tag-applied must fire"
+    },
+    {
+      "name": "enabled: suite",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: rejects unauthenticated API",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: native command transport control",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: OMO command registry",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: registered OMO goal command must be listed"
+    },
+    {
+      "name": "disabled: rejects missing and malformed commands",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: goal literal dollar payload and agent preservation",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: goal must be accepted by the real host\n\n404 !== 204\n"
+    },
+    {
+      "name": "disabled: ulw-execute routes atlas",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: ulw-execute must be accepted by the real host\n\n404 !== 204\n"
+    },
+    {
+      "name": "disabled: real read and todo tool cycle",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: read content must carry hashline tags"
+    },
+    {
+      "name": "disabled: todo context appears then clears",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(requests.some((request) => systemText(request).includes(\"<todo-state>\") && systemText(request).includes(TODO_PAYLOAD)))\n"
+    },
+    {
+      "name": "disabled: feature-gated tools visible to model",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: OMO base tools must reach the model"
+    },
+    {
+      "name": "disabled: production hook trace",
+      "verdict": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: omo.hashline.tag-applied must fire"
+    },
+    {
+      "name": "disabled: suite",
+      "verdict": "PASS"
+    },
+    {
+      "name": "real host unchanged",
+      "verdict": "PASS"
+    },
+    {
+      "name": "cleanup completed",
+      "verdict": "PASS"
+    },
+    {
+      "name": "mock protocol",
+      "verdict": "PASS"
+    }
+  ],
+  "before": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "72194c191913acdc3058ae3e64e0ab5aac01bff04b27eff81b10bdea638498bf"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2692,
+      "session_v2": 2336
+    }
+  },
+  "after": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "4b83f385dfbf979776659f92c75d2ef6eb99d9b2d5b1c2f5ad89abf71fdf0713",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "72194c191913acdc3058ae3e64e0ab5aac01bff04b27eff81b10bdea638498bf"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2692,
+      "session_v2": 2336
+    }
+  },
+  "fixtures": [
+    {
+      "mode": "enabled",
+      "project": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+      "env": {
+        "PATH": "/opt/zerobrew/bin:/Users/Bryan/.sdkman/candidates/maven/current/bin:/Users/Bryan/.sdkman/candidates/java/current/bin:/Users/Bryan/.sdkman/candidates/gradle/current/bin:/Users/Bryan/.local/state/fnm_multishells/65295_1789039490379/bin:/Users/Bryan/Library/pnpm/bin:/opt/homebrew/share/google-cloud-sdk/bin:/Users/Bryan/.local/bin:/Users/Bryan/.bun/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/share/dotnet:~/.dotnet/tools:/opt/homebrew/bin:/opt/zerobrew/bin:/opt/zerobrew/prefix/bin:/Users/Bryan/.cargo/bin:/Users/Bryan/Library/Application Support/JetBrains/Toolbox/scripts:/Applications/Obsidian.app/Contents/MacOS:/Users/Bryan/.orbstack/bin",
+        "TMPDIR": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T",
+        "HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home",
+        "USERPROFILE": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home",
+        "PWD": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+        "XDG_DATA_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/data",
+        "XDG_CONFIG_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/config",
+        "XDG_CACHE_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/cache",
+        "XDG_STATE_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/state",
+        "OPENCODE_TEST_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home",
+        "OPENCODE_DISABLE_AUTOUPDATE": "1",
+        "OPENCODE_DISABLE_MODELS_FETCH": "1",
+        "OPENCODE_PRINT_LOGS": "1",
+        "OMO_DISABLE_POSTHOG": "1",
+        "OMO_SEND_ANONYMOUS_TELEMETRY": "0",
+        "OPENAI_API_KEY": "fake-key",
+        "OMO_SPIKE_TRACE": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/trace.ndjson"
+      },
+      "configSource": "direct source directory"
+    },
+    {
+      "mode": "disabled",
+      "project": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/home/project",
+      "env": {
+        "PATH": "/opt/zerobrew/bin:/Users/Bryan/.sdkman/candidates/maven/current/bin:/Users/Bryan/.sdkman/candidates/java/current/bin:/Users/Bryan/.sdkman/candidates/gradle/current/bin:/Users/Bryan/.local/state/fnm_multishells/65295_1789039490379/bin:/Users/Bryan/Library/pnpm/bin:/opt/homebrew/share/google-cloud-sdk/bin:/Users/Bryan/.local/bin:/Users/Bryan/.bun/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/share/dotnet:~/.dotnet/tools:/opt/homebrew/bin:/opt/zerobrew/bin:/opt/zerobrew/prefix/bin:/Users/Bryan/.cargo/bin:/Users/Bryan/Library/Application Support/JetBrains/Toolbox/scripts:/Applications/Obsidian.app/Contents/MacOS:/Users/Bryan/.orbstack/bin",
+        "TMPDIR": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T",
+        "HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/home",
+        "USERPROFILE": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/home",
+        "PWD": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/home/project",
+        "XDG_DATA_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/data",
+        "XDG_CONFIG_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/config",
+        "XDG_CACHE_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/cache",
+        "XDG_STATE_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/state",
+        "OPENCODE_TEST_HOME": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/home",
+        "OPENCODE_DISABLE_AUTOUPDATE": "1",
+        "OPENCODE_DISABLE_MODELS_FETCH": "1",
+        "OPENCODE_PRINT_LOGS": "1",
+        "OMO_DISABLE_POSTHOG": "1",
+        "OMO_SEND_ANONYMOUS_TELEMETRY": "0",
+        "OPENAI_API_KEY": "fake-key",
+        "OMO_SPIKE_TRACE": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/trace.ndjson"
+      },
+      "configSource": "direct source directory"
+    }
+  ],
+  "processes": [
+    {
+      "name": "version",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "--version"
+      ],
+      "pid": 12798,
+      "cwd": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "help",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "run",
+        "--help"
+      ],
+      "pid": 12799,
+      "cwd": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "serve-help",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "serve",
+        "--help"
+      ],
+      "pid": 12800,
+      "cwd": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "bad-input",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "run",
+        "--omo-invalid-option"
+      ],
+      "pid": 12801,
+      "cwd": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+      "code": 1,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "enabled-server",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 12802,
+      "cwd": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/enabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "disabled-server",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 12813,
+      "cwd": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V/disabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    }
+  ],
+  "requestCount": 10,
+  "sandbox": "/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-ztXk4V",
+  "sandboxRemoved": true,
+  "mockClosed": true,
+  "cleanup": [
+    "closed",
+    "closed"
+  ],
+  "omitted": "No host credentials, authorization headers, or inherited environment dumps captured; local fake model only."
+}

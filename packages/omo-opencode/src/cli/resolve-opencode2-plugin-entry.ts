@@ -27,7 +27,7 @@ export function resolveOpenCode2PluginEntry(
   while (true) {
     const candidate = join(current, ...PLUGIN_ENTRY_SEGMENTS)
     if (existsSync(candidate)) {
-      return { entry: candidate, exists: true, searchedFrom: startDir }
+      return { entry: dirname(candidate), exists: true, searchedFrom: startDir }
     }
     if (current === root) {
       return { entry: "", exists: false, searchedFrom: startDir }

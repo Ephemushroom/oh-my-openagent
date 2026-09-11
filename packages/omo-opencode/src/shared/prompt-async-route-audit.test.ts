@@ -61,6 +61,10 @@ const RAW_PROMPT_ALLOWLIST = new Map<string, string>([
     "opencode2 orchestration: ctx.session.prompt on a freshly created child session is the OpenCode2 plugin API with durable admission, not the v1 fire-and-forget client.session.promptAsync this gate guards; child sessions are plugin-owned, never the main session",
   ],
   [
+    path.join(WORKSPACE_ROOT, "packages", "omo-opencode2", "src", "commands", "register-builtin-commands.ts"),
+    "opencode2 native command callback: one awaited prompt per explicit invocation through durable inbox admission, preserving queue/steer delivery; not a repeated idle/error observer or the v1 fire-and-forget API; distinct invocations must not be dropped by the observed-edge gate",
+  ],
+  [
     path.join(WORKSPACE_ROOT, "packages", "omo-opencode2", "src", "features", "btw", "tools.ts"),
     "opencode2 BTW side conversations: ctx.session.prompt targets a plugin-created side session (session.create first) via the OpenCode2 plugin API with durable admission; same class as child-session.ts, never the main session",
   ],

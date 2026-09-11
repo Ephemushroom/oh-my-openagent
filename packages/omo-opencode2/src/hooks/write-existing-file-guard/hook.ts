@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 import { existsSync, realpathSync } from "node:fs"
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from "node:path"
 

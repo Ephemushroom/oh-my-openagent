@@ -1,0 +1,12 @@
+{
+  "scope": "Only qa-api-upgrade.mjs and helper .mjs files in scripts/qa-api-upgrade; no production changes or installs",
+  "mechanism": "Installed opencode2 serve --stdio --port 0 with isolated OPENCODE_PASSWORD; parse stdout readiness URL, preserve stdin ownership lease, use authenticated /api/session/:id/command, never CLI slash prose or direct registry callbacks",
+  "sources": ["official packages/cli/src/services/standalone.ts", "official packages/cli/src/server-process.ts", "official packages/protocol/src/groups/session.ts", "official packages/server/src/handlers/session.ts", "official packages/core/src/session/command.ts"],
+  "files": {
+    "scripts/qa-api-upgrade/host.mjs": "isolated child lifecycle, leased readiness, bounded calls, captured logs, unchanged host DB/config snapshots",
+    "scripts/qa-api-upgrade/fixture.mjs": "sandbox config and real installer resolver/writer when requested, fake Responses SSE read/todo scenario and captured request inputs",
+    "scripts/qa-api-upgrade/scenarios.mjs": "command registry/API positive and invalid-input negative paths, literal dollar payload propagation, atlas durable routing, read tagging and todo context, all goal/team/monitor tools enabled/disabled",
+    "scripts/qa-api-upgrade.mjs": "existing RED loader support plus new real command API suite, exclusive evidence destination, aggregate assertions and finally cleanup receipt"
+  },
+  "verification": "Syntax checks and LSP diagnostics for all changed scripts; invoke real binary in fresh evidence subdirectory; inspect HTTP statuses, mock requests, trace and cleanup. Stop once invocation works even if production assertions stay RED. Preserve loader-red untouched."
+}

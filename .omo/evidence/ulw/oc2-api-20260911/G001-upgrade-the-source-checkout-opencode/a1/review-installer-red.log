@@ -1,0 +1,62 @@
+bun test v1.4.2 (744846f84)
+
+packages/omo-opencode/src/cli/install-opencode2.test.ts:
+18 |   const path = join(root, "opencode.jsonc")
+19 |   writeFileSync(path, "{}")
+20 |   const format = spyOn(configFormat, "detectConfigFormat").mockReturnValue({ path, format: "jsonc" })
+21 |   try {
+22 |     await runOpenCode2Installer()
+23 |     expect(parse(readFileSync(path, "utf8")).plugins).toEqual([sourceResolver.resolveOpenCode2PluginEntry().entry])
+                                                           ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src",
++   "/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode2/src/index.ts",
+  ]
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/install-opencode2.test.ts:23:55)
+(fail) #given the production installer #when installing from source #then it writes the loadable directory and repeats without changes [3.76ms]
+33 |   const path = join(root, "opencode.jsonc")
+34 |   writeFileSync(path, "{}")
+35 |   const format = spyOn(configFormat, "detectConfigFormat").mockReturnValue({ path, format: "jsonc" })
+36 |   const resolver = spyOn(sourceResolver, "resolveOpenCode2PluginEntry").mockReturnValue({ entry: "", exists: false, searchedFrom: root })
+37 |   try {
+38 |     await expect(runOpenCode2Installer()).rejects.toThrow("source checkout")
+                                                       ^
+error: expect(received).rejects.toThrow(expected)
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/install-opencode2.test.ts:38:51)
+(fail) #given missing adapter source #when production installation runs #then config remains untouched [0.84ms]
+
+packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:
+158 | 
+159 |   it("#given a trailing-slash directory URL before a configured legacy entry #when migrating #then options survive in one entry", () => {
+160 |     const entry = join(tempDir, "adapter", "src")
+161 |     writeFileSync(configPath, JSON.stringify({ plugins: [pathToFileURL(`${entry}/`).href, { package: join(entry, "index.ts"), options: { custom: 7 } }] }))
+162 |     updateOpenCode2PluginConfig({ configPath, pluginEntry: entry })
+163 |     expect(parse(readFileSync(configPath, "utf8"))).toEqual({ plugins: [{ package: entry, options: { custom: 7 } }] })
+                                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -2,2 +2,3 @@
+    "plugins": [
++     "file:///var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-test-1789104082629-0.8296254204610718/adapter/src/",
+      {
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-oc2-api-20260911/packages/omo-opencode/src/cli/config-manager/update-opencode2-plugin-config.test.ts:163:53)
+(fail) updateOpenCode2PluginConfig > #given a trailing-slash directory URL before a configured legacy entry #when migrating #then options survive in one entry [0.67ms]
+
+ 20 pass
+ 3 fail
+ 61 expect() calls
+Ran 23 tests across 2 files. [575.00ms]

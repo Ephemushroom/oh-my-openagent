@@ -1,0 +1,118 @@
+[
+  {
+    "name": "version",
+    "verdict": "PASS"
+  },
+  {
+    "name": "help",
+    "verdict": "PASS"
+  },
+  {
+    "name": "serve-help",
+    "verdict": "PASS"
+  },
+  {
+    "name": "bad-input",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: rejects unauthenticated API",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: native command transport control",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: OMO command registry",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: rejects missing and malformed commands",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: goal literal dollar payload and agent preservation",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: ulw-execute routes atlas",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: real read and todo tool cycle",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: todo context appears then clears",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: feature-gated tools visible to model",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: production hook trace",
+    "verdict": "PASS"
+  },
+  {
+    "name": "enabled: suite",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: rejects unauthenticated API",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: native command transport control",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: OMO command registry",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: rejects missing and malformed commands",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: goal literal dollar payload and agent preservation",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: ulw-execute routes atlas",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: real read and todo tool cycle",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: todo context appears then clears",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: feature-gated tools visible to model",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: production hook trace",
+    "verdict": "PASS"
+  },
+  {
+    "name": "disabled: suite",
+    "verdict": "PASS"
+  },
+  {
+    "name": "real host unchanged",
+    "verdict": "PASS"
+  },
+  {
+    "name": "cleanup completed",
+    "verdict": "PASS"
+  },
+  {
+    "name": "mock protocol",
+    "verdict": "PASS"
+  }
+]

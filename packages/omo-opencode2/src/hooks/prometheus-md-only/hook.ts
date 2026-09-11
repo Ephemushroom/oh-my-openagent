@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 import { 
   HOOK_NAME, 
   BLOCKED_TOOLS, 
