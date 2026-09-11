@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { createBtwTools } from "./tools"
 import type { ChildSessionDeps } from "../../orchestration/child-session"
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 type PromptCall = {
   sessionID: string

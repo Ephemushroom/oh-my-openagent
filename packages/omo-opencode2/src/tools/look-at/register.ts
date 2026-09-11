@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import type { CatalogSource } from "../../agents/model-resolution"
 import { parseLookAtArgs } from "./look-at-arguments"

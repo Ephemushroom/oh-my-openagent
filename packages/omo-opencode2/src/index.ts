@@ -1,10 +1,9 @@
 import { appendFileSync, mkdirSync } from "node:fs"
 import { dirname } from "node:path"
-import { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
 
 import { registerConfiguredAgents } from "./agents/register-configured"
-import { createCatalogSource, resolveAgentModel } from "./agents/model-resolution"
-import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
+import { createCatalogSource } from "./agents/model-resolution"
 import { registerBuiltinCommands } from "./commands"
 import { TaskRegistry } from "./orchestration/task-registry"
 import { ConcurrencyLimiter } from "./orchestration/concurrency"
@@ -101,16 +100,12 @@ export default Plugin.define({
     // Phase 1: register the real OMO agent catalog: 11 agents (sisyphus /
     // hephaestus / prometheus / atlas primaries + 7 subagents) plus the
     // delegation categories as subagents. Default agent: sisyphus.
-    const { subagents, primaries, categories, sisyphusPrompt } = await registerConfiguredAgents(ctx, {
+    const { subagents, primaries, categories, sisyphusPrompt, models } = await registerConfiguredAgents(ctx, {
       catalog,
       directory: workspaceDirectory,
       trace,
     })
 
-    // v2 applies agent.transform callbacks lazily (on first registry
-    // materialization); force them now so the summary reflects what was actually
-    // upserted rather than resolving to an empty list.
-    await ctx.agent.reload()
     trace("omo.registration.complete", {
       primaries: [...primaries],
       subagents: [...subagents],
@@ -177,21 +172,14 @@ export default Plugin.define({
       trace,
     })
 
-    const categoryModels = new Map<string, string>()
     const availableSubagents = [...subagents]
     const availableCategories = [...categories]
-    for (const id of availableSubagents) {
-      const requirement = AGENT_MODEL_REQUIREMENTS[id]
-      const resolved = resolveAgentModel(requirement, catalog.current)
-      if (resolved) categoryModels.set(id, resolved.model)
-    }
 
     const resolveCategory = (category: string): { agent: string; model: string } | undefined => {
-      if (!availableCategories.includes(category)) return undefined
-      const requirement = AGENT_MODEL_REQUIREMENTS[category]
-      const resolved = resolveAgentModel(requirement, catalog.current)
-      if (!resolved) return undefined
-      return { agent: category, model: resolved.model }
+      if (!categories.has(category)) return undefined
+      const model = models.get(category)
+      if (!model) return undefined
+      return { agent: category, model }
     }
 
     await ctx.tool.transform((draft) => {
@@ -202,7 +190,7 @@ export default Plugin.define({
         deps,
         availableSubagents,
         availableCategories,
-        categoryModels,
+        categoryModels: models,
         resolveCategory,
         trace,
       })

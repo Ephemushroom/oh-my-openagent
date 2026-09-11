@@ -32,6 +32,9 @@ const DISPATCH_PATTERN = /session\s*\.\s*(prompt|promptAsync|synthetic)\s*\(/g
 // The audit matches source text, so a comment containing a dispatch call shape
 // will also trip it; keep dispatch references out of comments.
 const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, number>>>> = {
+  // Explicit command invocations are distinct inputs admitted by the native
+  // inbox, not competing observers of an idle/error edge. Gating drops inputs.
+  "commands/register-builtin-commands.ts": { prompt: 1 },
   "index.ts": { synthetic: 1 },
   "hooks/goal/register.ts": { synthetic: 1 },
   // Todo continuation. The second idle injector, so it is gated and takes the

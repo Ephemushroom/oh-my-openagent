@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { loadOpenCode2Config } from "../../config"
 import { resolveMonitorConfig } from "../../features/monitor/config"

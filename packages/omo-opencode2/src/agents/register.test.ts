@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { registerCategories } from "./register-categories"
 import { registerPrimaries } from "./register-primaries"

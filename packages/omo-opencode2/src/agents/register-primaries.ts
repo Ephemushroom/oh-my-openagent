@@ -1,5 +1,5 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
-import { Agent, Model } from "@opencode-ai/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
+import { Agent, Model } from "@opencode/plugin"
 import {
   buildDynamicHephaestusPrompt,
   isHephaestusSupportedModel,
@@ -83,7 +83,7 @@ const PRIMARIES: PrimaryDefinition[] = [
  * agent to a hidden subagent (matching the v1 adapter's behaviour).
  */
 export async function registerPrimaries(
-  ctx: Context,
+  ctx: { readonly agent: Pick<Context["agent"], "transform"> },
   options: {
     catalog: CatalogSource;
     systemDefaultModel?: string;

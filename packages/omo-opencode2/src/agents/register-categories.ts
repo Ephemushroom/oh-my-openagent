@@ -1,5 +1,5 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
-import { Agent, Model } from "@opencode-ai/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
+import { Agent, Model } from "@opencode/plugin"
 import { buildSisyphusJuniorPrompt } from "@oh-my-opencode/agents-core"
 import { CATEGORY_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 import type { OpenCode2AgentOverride } from "../config"
@@ -32,7 +32,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
  * Returns the category names actually registered.
  */
 export async function registerCategories(
-  ctx: Context,
+  ctx: { readonly agent: Pick<Context["agent"], "transform"> },
   options: {
     catalog: CatalogSource;
     systemDefaultModel?: string;

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { existsSync } from "node:fs"
 
-import type { Skill } from "@opencode-ai/schema/skill"
+import { Skill } from "@opencode/schema/skill"
 
 import { readSharedSkillFiles, registerSharedSkills } from "./register-shared-skills"
 import type { SharedSkillsRegistrationContext } from "./register-shared-skills"
@@ -13,6 +13,7 @@ function createDraftCapture(added: Skill.Info[]): SharedSkillsRegistrationContex
       transform: async (callback) => {
         callback({
           list: () => [],
+          get: () => undefined,
           add: (skill) => added.push(skill),
           update: () => undefined,
           remove: () => undefined,
@@ -34,10 +35,10 @@ describe("registerSharedSkills", () => {
 
     // then
     const ids = added.map((skill) => skill.id)
-    expect(ids).toContain("programming")
-    expect(ids).toContain("git-master")
-    expect(ids).toContain("ulw-execute")
-    expect(ids).not.toContain("start-work")
+    expect(ids).toContain(Skill.ID.make("programming"))
+    expect(ids).toContain(Skill.ID.make("git-master"))
+    expect(ids).toContain(Skill.ID.make("ulw-execute"))
+    expect(ids).not.toContain(Skill.ID.make("start-work"))
     expect(new Set(ids).size).toBe(ids.length)
   })
 

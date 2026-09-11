@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import { createTaskEngine } from "./task-engine"
 import { TaskRegistry } from "./task-registry"

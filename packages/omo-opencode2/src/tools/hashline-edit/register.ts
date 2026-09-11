@@ -1,4 +1,4 @@
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 
 import type { RawHashlineEdit } from "@oh-my-opencode/hashline-core"
 import { executeHashlineEdit } from "./execute-hashline-edit"

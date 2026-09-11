@@ -3,13 +3,13 @@ import { join } from "node:path"
 
 import { parseFrontmatter } from "@oh-my-opencode/utils"
 import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills"
-import type { SkillDraft } from "@opencode-ai/plugin/promise/skill"
-import { AbsolutePath } from "@opencode-ai/schema/schema"
-import { Skill } from "@opencode-ai/schema/skill"
+import type { SkillEditor } from "@opencode/plugin/promise/skill"
+import { AbsolutePath } from "@opencode/schema/schema"
+import { Skill } from "@opencode/schema/skill"
 
 export interface SharedSkillsRegistrationContext {
   readonly skill: {
-    readonly transform: (callback: (draft: SkillDraft) => void) => Promise<unknown>
+    readonly transform: (callback: (draft: SkillEditor) => void) => Promise<unknown>
   }
 }
 

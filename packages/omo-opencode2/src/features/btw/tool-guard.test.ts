@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 
 import { registerBtwToolGuard } from "./tool-guard"
-import type { Context } from "@opencode-ai/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/promise/plugin"
 type Message = { role: string; content: unknown[]; metadata?: Record<string, unknown> }
 
 type ContextEvent = {

@@ -8,7 +8,7 @@ export type GoalContextEvent = {
     readonly role?: string
     readonly content?: readonly {
       readonly type: string
-      readonly text?: string
+      readonly text?: string | null
     }[]
   }[]
 }
