@@ -1,16 +1,17 @@
 # @oh-my-opencode/omo-opencode2
 
-OpenCode 2 (v2 plugin API, `@opencode/plugin@0.0.0-beta-19425`) adapter for
+OpenCode 2 (native Effect plugin API, `@opencode/plugin@2.0.3`) adapter for
 OMO. Ported from v1.
 
 ## Overview
 
 The v2 adapter re-implements the highest-value v1 surface against the v2 plugin
 API. Where v1 exports a declarative map of 14 named hook handlers, v2 registers
-imperatively inside `setup` against typed draft-mutation APIs.
+inside the activation Effect against typed draft-mutation APIs. The exact
+Effect dependency is `4.0.0-rc.112`, matching the host SDK.
 
 - Entry: configure the `src/` DIRECTORY, containing `index.ts`
-  (`export default Plugin.define({ id: "omo", setup })`). The host imports
+  (a thin export of `Plugin.define({ id: "omo", effect })` in `plugin/setup.ts`). The host imports
   TypeScript directly; configured file paths are rejected. The package remains
   source-checkout-only, not part of the published npm payload.
 - Trace: set `OMO_SPIKE_TRACE` to a file path to get NDJSON trace events for QA
@@ -24,8 +25,8 @@ imperatively inside `setup` against typed draft-mutation APIs.
   `wait`, `ModelHookOptions.providerID` scoping, and a `v1/` compat subpath
   (`@opencode-ai/plugin/v1`) for v1-shaped plugins. All changes were additive;
   that earlier pin bump required zero adapter code changes.
-- Current pin: `@opencode/plugin` and `@opencode/schema` beta-19425. The package
-  scope changed from `@opencode-ai`; the Promise API remains supported. Commands
+- Current pin: `@opencode/plugin` and `@opencode/schema` 2.0.3. The package
+  scope changed from `@opencode-ai`; retained Promise helpers are not the production entry. Commands
   register executable callbacks with `CommandEditor.add`, while agents retain
   their `update` method. Do not replace every domain's update based on a command
   transform error.
@@ -35,7 +36,7 @@ imperatively inside `setup` against typed draft-mutation APIs.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 10 base + 19 gated | `task`, `background_output`, `background_cancel`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + `create_goal`/`update_goal`/`get_goal` when `goal.enabled` + `monitor_start`/`monitor_stop`/`monitor_list`/`monitor_output` when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` |
+| Tools | 11 base + 22 gated | `task`, `background_output`, `background_cancel`, `workflow`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + 3 goal tools when `goal.enabled` + 4 monitor tools when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` + `btw_start`/`btw_reply`/`btw_list` when `btw.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | MCP servers | 3 built-ins | `context7` + `grep_app` (remote), `lsp` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
@@ -50,7 +51,7 @@ These are v2-API-specific and differ from v1. Read before editing.
   resolution reads `catalog.current` later; a setup-time snapshot is empty and
   silently drops every agent onto its first fallback.
 - **Agent transforms are lazy.** v2 defers `agent.transform` callbacks until first
-  registry materialization. Read with `await ctx.agent.list()` before copying
+  registry materialization. Read with `yield* ctx.agent.list()` before copying
   registration sets or the base prompt. `reload()` only invalidates batched
   state; it is not a materialization barrier.
 - **Prompts are baked once, patched per-request.** v2 has no config-phase prompt
@@ -62,10 +63,30 @@ These are v2-API-specific and differ from v1. Read before editing.
   `event.system`, `event.messages`, and `event.tools` together. Composition order
   in `hooks/register-context-hooks.ts` is load-bearing: sisyphus rebake, skill
   catalog, command catalog, rules, then keyword mode last.
-- **Delegation dispatches via `session.synthetic`, not `session.prompt`.** The
-  task engine uses `ctx.session.synthetic({ delivery: "queue" })` with a waiter
-  map keyed by child session ID, settled by an event-subscription pump. This
-  avoids v1's `promptAsync` duplicate-injection bug class.
+- **Managed execution goes through `orchestration/execution/`.** Task, workflow,
+  Team member turns, BTW and delegated look_at share one Executor. Submission
+  persists a queued `RunRef` before returning; activation-scoped workers acquire
+  provider/model (5), Team (4) and session (1) eligibility together. The sole
+  native child prompt site is `execution/session-run.ts`, with preallocated
+  session/input IDs and durable queue admission. Wait for host idle, then inspect
+  the correlated outcome; neither prompt acceptance nor interrupt ACK is completion.
+- **Cancellation retains capacity until drain.** Queued cancellation never creates
+  a host session. Foreground timeout/interruption cancels and drains through
+  `execution/foreground.ts`. `closeOwner` fences new turns and cancels queued
+  turns without waiting on an approving member's own active turn. Forced Team
+  deletion fences every member before draining any, preventing queued launches
+  when the first active member releases capacity.
+- **Persistent records do not imply automatic prompt replay.** Storage is scoped
+  by host location. Terminal results remain queryable; activation drains unfinished
+  started sessions and records interrupted outcomes. Queued records have no session
+  to drain. A filesystem writer lock rejects competing controllers. After a crash,
+  a stale `.omo/execution/<location-hash>.lock` fails closed; remove it only after
+  establishing that its former host is stopped. Distributed takeover is unsupported.
+- **Completion delivery has its own durable outbox.** Pending notifications recover
+  across every storage page and retain stable message IDs. Managed recipients get
+  another serialized Executor generation; root recipients get queued synthetic
+  delivery. Failed delivery remains pending for recovery and does not turn successful
+  work into failure. Distinct completions are not dropped through the idle-edge gate.
 - **v2 types are readonly over mutable runtime drafts.** Core reads arrays back
   after hooks, so in-place rewrite is the expected pattern.
 - **`look_at` gates on the CALLER's vision capability; v1 always delegated.**
@@ -295,9 +316,10 @@ model calls. Gated on `btw.enabled` under `[opencode2]` (default off);
   `child-session.ts`, the plugin creates and owns the side session; each
   `btw_start`/`btw_reply` is a distinct user-initiated call, never an
   idle-edge injection. Pinned in `session-dispatch-audit.test.ts`.
-- **Answers return as tool results through the task engine's waiter pump**,
-  shared with `deps.waitChild`; the side completion never writes into the
-  parent session directly.
+- **Answers return through the shared foreground observer**, not a detached waiter
+  pump. Reply checks the parent owner, and list returns the side session ID. The
+  native context and execute guards deny mutation and delegation inside side
+  sessions, including workflow and Team tools.
 
 ## Runtime model fallback
 
@@ -328,10 +350,10 @@ defaults to 1 and must be at least 1. `disabled_hooks` respects the name
   attempt consumes one retry even if switching or redispatch later fails, which
   prevents a broken provider chain from looping. Exhausted chains and retry
   budgets emit trace events and stop.
-- **Task-engine children are excluded.** Every child session ID remains in the
-  shared `TaskRegistry`; fallback checks that registry before acquiring the gate
-  and emits `omo.model-fallback.skipped-child`. Delegated children retain their
-  own retry path in `orchestration/child-session.ts`.
+- **Managed children are excluded.** Native fallback checks `Executor.managed`
+  before acquiring the gate, and later activity invalidates an in-flight recovery.
+  Fresh foreground task failures retain one retry through the shared model-chain
+  selector, submitting the replacement through Executor for a new capacity check.
 
 ## Team Mode
 
@@ -352,17 +374,38 @@ The 12 tools are `team_create`, `team_delete`, `team_status`, `team_list`,
 `team_send_message`, `team_task_create`, `team_task_list`, `team_task_get`, and
 `team_task_update`. Team creation inserts the current session as lead, then
 spawns at most 4 member sessions concurrently and at most 8 total participants.
+The four-member bound applies to active execution, not idle retained sessions.
 Members default to the registered `sisyphus-junior` agent; a v1-compatible
 `subagent_type` member overrides it, while category members run through
 `sisyphus-junior` with category guidance in their initial prompt.
 
 This first port is mailbox collaboration only. It deliberately has **no tmux
 layout** and **no per-member git worktrees**; both remain follow-ups. Member
-sessions are plugin-owned persistent children created through
-`ctx.session.create` plus one initial prompt. Explicit lead-to-member messages
-are individual queued synthetic turns and are not gated. A member-idle observer
+sessions are plugin-owned persistent children created by Executor. Explicit
+lead-to-member messages become queued Executor message generations, preserving
+session ordering and model/Team limits. A member-idle observer
 that wakes the live lead with unread mailbox summaries does take the single
-shared dispatch gate from `index.ts`.
+shared dispatch gate from `plugin/setup.ts`.
+
+## Workflow
+
+The explicit `workflow` tool accepts `start`, `snapshot`, `wait`, `cancel`, and
+`retry`. A start contains a caller-scoped idempotency `key` and nodes with `id`,
+`prompt`, registered subagent/category `agent`, `model` (`provider/model`), and
+`dependsOn`. Invalid targets and graphs fail before any node is submitted.
+Managed sessions cannot start nested workflows.
+
+Dependencies control order only; node prompts are passed unchanged. A completed
+dependency admits its child without waiting for an unrelated root. Failed
+dependencies block descendants while independent work continues. Results and
+execution references remain in snapshots for explicit consumption.
+
+Retry requires `id`, `expected_generation` and `retry_key`; repeated keys do not
+launch another generation, stale generations conflict, and completed nodes stay
+unchanged. A reopened controller reconciles saved unfinished graphs against
+terminal Executor records and requires explicit retry. It refuses takeover while
+saved executions are still active. Cancellation batches all submitted references
+under the execution mutex so queued nodes cannot start as siblings release slots.
 
 ## Session dispatch
 
@@ -373,7 +416,7 @@ newer reservation, and holds the reservation for `postDispatchHoldMs` after a
 dispatch so the next idle observer does not fire into a session the harness has
 accepted a message for but not yet marked busy.
 
-**One instance, created in `index.ts`, injected into every feature that injects
+**One instance, created in `plugin/setup.ts`, injected into every feature that injects
 on an observed edge.** This is the load-bearing part. Extracting the code is not
 what prevents double injection: two instances would each admit one dispatch, so
 two features would still both inject on the same edge. `createGoalRuntime` and
@@ -395,7 +438,8 @@ and only one of them belongs to the gate:
 | `hooks/todo-continuation/register.ts` | yes | The second idle injector. Takes the SAME gate instance goal does. |
 | `hooks/boulder-continuation/register.ts` | yes | The third idle injector (ulw-execute). Same shared gate; re-reads the plan off disk on every idle. |
 | `features/model-fallback/register.ts` | yes | Reactive provider-exhaustion recovery on a main-session error edge. Same shared gate; child sessions are excluded first. |
-| `index.ts` background completion | NO | Fires once per TASK. Two tasks finishing together are two different notifications; a per-session reservation would silently drop the second and lose a completion. |
+| `plugin/execution-delivery.ts` background completion | NO | Durable per-item notification; managed recipients enqueue an Executor message, roots use synthetic. Two completions must not collapse into one. |
+| `orchestration/execution/session-run.ts` | NO | Single native child prompt site, protected by atomic execution admission and per-session serialization. |
 | `orchestration/child-session.ts` | NO | Prompts a child session the engine created and owns, with no competing observer. |
 | `commands/register-builtin-commands.ts` | NO | One prompt per explicit native command invocation, preserving inbox delivery. Distinct commands must not be dropped by the observed-edge gate. Agent-targeted commands also apply the configured agent model. |
 | `features/monitor/delivery.ts` | NO | Fires once per BATCH from one monitor. Two monitors flushing in the same tick are two distinct notifications; a per-session reservation would drop one and lose output. Deduped per batch instead. |
@@ -406,6 +450,8 @@ and only one of them belongs to the gate:
 The pinned set is enforced by `src/orchestration/session-dispatch-audit.test.ts`,
 which fails the suite when any new dispatch call site or reference appears.
 Update the allowlist only with justification in the commit message.
+The inventory also scans retained legacy Promise helpers; presence there does not
+mean the native entry calls them. Production composition is `plugin/setup.ts`.
 
 ## Conventions
 
