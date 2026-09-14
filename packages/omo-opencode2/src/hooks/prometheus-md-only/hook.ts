@@ -1,4 +1,5 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import { Tool } from "@opencode/schema/tool"
+import { Effect, type Scope } from "effect"
 import { 
   HOOK_NAME, 
   BLOCKED_TOOLS, 
@@ -16,6 +17,20 @@ function isPrometheusAgent(agentName: string | undefined): boolean {
 }
 
 type Trace = (event: string, detail?: Record<string, unknown>) => void
+
+type GuardEvent = {
+  readonly agent?: string
+  readonly tool: string
+  readonly sessionID: string
+  readonly input: unknown
+  readonly status?: string
+  result?: Tool.Result
+}
+
+type GuardContext = { readonly tool: {
+  readonly hook: (name: "execute.before" | "execute.after",
+    handler: (event: GuardEvent) => Effect.Effect<void, Tool.Error>) => Effect.Effect<unknown, never, Scope.Scope>
+} }
 
 interface ContentPartLike {
   type: string
@@ -41,8 +56,10 @@ function appendToResult(result: ToolResultLike, textToAppend: string): ToolResul
   return result
 }
 
-export async function registerPrometheusMdOnly(ctx: Context, trace?: Trace): Promise<void> {
-  await ctx.tool.hook("execute.before", async (event) => {
+export function registerPrometheusMdOnly(ctx: GuardContext, trace?: Trace): Effect.Effect<void, never, Scope.Scope> {
+  return Effect.gen(function* () {
+  yield* ctx.tool.hook("execute.before", (event) => Effect.tryPromise({
+    try: async () => {
     if (!isPrometheusAgent(event.agent)) {
       return
     }
@@ -80,12 +97,12 @@ export async function registerPrometheusMdOnly(ctx: Context, trace?: Trace): Pro
         filePath,
         agent: event.agent,
       })
-      throw new Error(
+      throw new Tool.Error({ message:
         `[${HOOK_NAME}] Prometheus is a planning agent. File operations restricted to .omo/*.md plan files only. ` +
         `Do NOT route this change through a subagent either - delegated implementation is still implementation. ` +
         `Record the intended change as a todo in the plan; implementation starts only when the user runs /ulw-execute. ` +
         `Attempted to modify: ${filePath}.`
-      )
+      })
     }
 
     trace?.(`omo.${HOOK_NAME}.allowed`, {
@@ -94,9 +111,11 @@ export async function registerPrometheusMdOnly(ctx: Context, trace?: Trace): Pro
       filePath,
       agent: event.agent,
     })
-  })
+    },
+    catch: (error) => error instanceof Tool.Error ? error : new Tool.Error({ message: error instanceof Error ? error.message : String(error) }),
+  }))
 
-  await ctx.tool.hook("execute.after", async (event) => {
+  yield* ctx.tool.hook("execute.after", (event) => Effect.sync(() => {
     if (event.status !== "completed") return
     if (!isPrometheusAgent(event.agent)) return
 
@@ -118,5 +137,6 @@ export async function registerPrometheusMdOnly(ctx: Context, trace?: Trace): Pro
       
       event.result = appendToResult(event.result as ToolResultLike, PROMETHEUS_WORKFLOW_REMINDER) as typeof event.result
     }
+  }))
   })
 }

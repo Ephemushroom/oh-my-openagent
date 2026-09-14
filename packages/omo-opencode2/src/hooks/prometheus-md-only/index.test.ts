@@ -3,17 +3,18 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { registerPrometheusMdOnly } from "./index"
 import { PLANNING_CONSULT_WARNING, PROMETHEUS_WORKFLOW_REMINDER } from "./constants"
+import { Effect } from "effect"
 
 interface GuardEvent {
   agent?: string
   tool: string
   status?: string
   sessionID: string
-  input: { filePath?: string; prompt?: string }
+  input: unknown
   result?: { content: string }
 }
 
-type GuardHandler = (event: GuardEvent) => Promise<void>
+type GuardHandler = (event: GuardEvent) => Effect.Effect<void, unknown, never>
 type TraceRecord = { evt: string; det?: Record<string, unknown> }
 
 describe("prometheus-md-only hook", () => {
@@ -25,27 +26,28 @@ describe("prometheus-md-only hook", () => {
     traceMsgs.length = 0
     const ctx = {
       tool: {
-        hook: (name: string, handler: GuardHandler) => {
-          if (name === "execute.before") beforeHook = handler
-          if (name === "execute.after") afterHook = handler
-        },
+          hook: (name: string, handler: GuardHandler) => {
+            if (name === "execute.before") beforeHook = handler
+            if (name === "execute.after") afterHook = handler
+            return Effect.succeed({ dispose: Effect.void })
+          },
       },
     }
 
-    await registerPrometheusMdOnly(ctx as Parameters<typeof registerPrometheusMdOnly>[0], (evt, det) =>
+    await Effect.runPromise(Effect.scoped(registerPrometheusMdOnly(ctx, (evt, det) =>
       traceMsgs.push({ evt, det }),
-    )
+    )))
   })
 
   test("#when agent is prometheus and writes non-md, #then blocks", async () => {
     await expect(
-      beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: "src/index.ts" } }),
+      Effect.runPromise(beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: "src/index.ts" } })),
     ).rejects.toThrow("File operations restricted to .omo/*.md plan files only")
   })
 
   test("#when agent is prometheus and writes outside .omo, #then blocks", async () => {
     await expect(
-      beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: "test.md" } }),
+      Effect.runPromise(beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: "test.md" } })),
     ).rejects.toThrow("File operations restricted to .omo/*.md plan files only")
   })
 
@@ -55,19 +57,19 @@ describe("prometheus-md-only hook", () => {
   // non-markdown write at all rather than being stopped by the hook.
   test("#when agent is prometheus and writes a non-md extension inside .omo, #then blocks", async () => {
     await expect(
-      beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: ".omo/notes.txt" } }),
+      Effect.runPromise(beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: ".omo/notes.txt" } })),
     ).rejects.toThrow("File operations restricted to .omo/*.md plan files only")
   })
 
   test("#when agent is prometheus and writes .omo plan, #then allows", async () => {
     await expect(
-      beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: ".omo/plans/design.md" } }),
+      Effect.runPromise(beforeHook({ agent: "prometheus", tool: "write", sessionID: "sess-1", input: { filePath: ".omo/plans/design.md" } })),
     ).resolves.toBeUndefined()
   })
 
   test("#when agent is NOT prometheus and writes non-md, #then allows", async () => {
     await expect(
-      beforeHook({ agent: "sisyphus", tool: "write", sessionID: "sess-1", input: { filePath: "src/index.ts" } }),
+      Effect.runPromise(beforeHook({ agent: "sisyphus", tool: "write", sessionID: "sess-1", input: { filePath: "src/index.ts" } })),
     ).resolves.toBeUndefined()
   })
 
@@ -80,18 +82,19 @@ describe("prometheus-md-only hook", () => {
       input: { filePath: ".omo/plans/test.md" },
       result: { content: "written" },
     }
-    await afterHook(event)
+    await Effect.runPromise(afterHook(event))
     expect(event.result?.content).toBe("written" + PROMETHEUS_WORKFLOW_REMINDER)
   })
 
   test("#when prometheus delegates with task tool, #then injects planning warning", async () => {
+    const input = { prompt: "do this" }
     const event: GuardEvent = {
       agent: "prometheus",
       tool: "task",
       sessionID: "sess-1",
-      input: { prompt: "do this" },
+      input,
     }
-    await beforeHook(event)
-    expect(event.input.prompt).toBe(PLANNING_CONSULT_WARNING + "do this")
+    await Effect.runPromise(beforeHook(event))
+    expect(input.prompt).toBe(PLANNING_CONSULT_WARNING + "do this")
   })
 })
