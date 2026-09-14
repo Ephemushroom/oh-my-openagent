@@ -1,4 +1,6 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Tool } from "@opencode/schema/tool"
+import { Effect } from "effect"
 
 import type { RawHashlineEdit } from "@oh-my-opencode/hashline-core"
 import { executeHashlineEdit } from "./execute-hashline-edit"
@@ -76,14 +78,14 @@ function readEdits(input: Record<string, unknown>): RawHashlineEdit[] {
  * rather than a CodeMode-wrapped one. Reconciling the two edit entry points is
  * deliberately deferred to a later PR.
  */
-export async function registerHashlineEditTool(ctx: Context, trace?: Trace): Promise<void> {
-  await ctx.tool.transform((draft) => {
+export const registerHashlineEditTool = Effect.fn("omo.registerHashlineEditTool")(function* (ctx: Context, trace?: Trace) {
+  yield* ctx.tool.transform((draft) => {
     draft.add({
       name: HASHLINE_EDIT_TOOL_NAME,
       description: HASHLINE_EDIT_DESCRIPTION,
       input: HASHLINE_EDIT_INPUT,
       options: { codemode: false },
-      execute: async (rawInput) => {
+      execute: (rawInput: unknown) => Effect.tryPromise({ try: async () => {
         const input = (typeof rawInput === "object" && rawInput !== null ? rawInput : {}) as Record<
           string,
           unknown
@@ -100,8 +102,8 @@ export async function registerHashlineEditTool(ctx: Context, trace?: Trace): Pro
         }
         trace?.("omo.hashline.edit-accepted", { filePath })
         return { content: result.message }
-      },
+      }, catch: (error) => new Tool.Error({ message: error instanceof Error ? error.message : String(error) }) }),
     })
   })
   trace?.("omo.hashline.tool-registered", { tool: HASHLINE_EDIT_TOOL_NAME })
-}
+})
