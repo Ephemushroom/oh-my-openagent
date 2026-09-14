@@ -1,0 +1,104 @@
+{
+  "version": "2.0.3",
+  "expectedVersion": "2.0.3",
+  "surface": "dedicated executor fixture; not production plugin parity",
+  "results": [
+    {
+      "name": "background acceptance before held model completion",
+      "verdict": "PASS"
+    },
+    {
+      "name": "atomic Team/model admission without permit hoarding",
+      "verdict": "PASS"
+    },
+    {
+      "name": "queued cancellation launches nothing after capacity opens",
+      "verdict": "PASS"
+    },
+    {
+      "name": "active cancellation settles host before terminal result",
+      "verdict": "PASS"
+    },
+    {
+      "name": "host isolation and owned process cleanup",
+      "verdict": "PASS"
+    }
+  ],
+  "before": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "b14032fba5a7b3916cfa5b0e3185a32cbc278eee3ef45de155f9ffb543e40583",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "72194c191913acdc3058ae3e64e0ab5aac01bff04b27eff81b10bdea638498bf"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2697,
+      "session_v2": 2341
+    }
+  },
+  "after": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "b14032fba5a7b3916cfa5b0e3185a32cbc278eee3ef45de155f9ffb543e40583",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "72194c191913acdc3058ae3e64e0ab5aac01bff04b27eff81b10bdea638498bf"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2697,
+      "session_v2": 2341
+    }
+  },
+  "processes": [
+    {
+      "name": "version",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "--version"
+      ],
+      "pid": 39775,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "native-execution",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 39776,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    }
+  ],
+  "sandboxRemoved": true,
+  "mockClosed": true,
+  "invocation": [
+    "/Users/Bryan/Programme/Project/AI/oh-my-openagent-effect-runtime-20260911/packages/omo-opencode2/scripts/qa-execution.mjs",
+    ".omo/evidence/20260914-opencode2-native/executor-production-gate"
+  ],
+  "isolation": {
+    "HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/home",
+    "USERPROFILE": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/home",
+    "PWD": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/home/project",
+    "XDG_DATA_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/data",
+    "XDG_CONFIG_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/config",
+    "XDG_CACHE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/cache",
+    "XDG_STATE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/state",
+    "OPENCODE_TEST_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-execution-pXG0Cv/enabled/home"
+  },
+  "omitted": "No inherited credentials, raw host configuration or authorization headers recorded."
+}

@@ -1,0 +1,9 @@
+Observed command: bun run build
+Observed exit: 0
+Observed final output: build: all steps completed
+
+Build completed materialization, MCP bundles, TUI, schemas, CLI/Node CLI, Codex installer, main plugin bundle, Node require shim, shared skill assets, declarations, LSP runtime packages, Codex plugin and Senpi plugin staging.
+
+This is a summary of the captured terminal result, not a verbatim build log. No runtime source changes were made to the v1/Codex/Senpi build inputs afterward; the v1 changes are audit tests, and the native v2 adapter remains source-checkout-only. Its final source was verified through package typechecking and actual 2.0.3 host execution.
+
+Unchanged vendored LSP npm installations reported two moderate advisories. No npm audit fix or unrelated dependency update was performed.
