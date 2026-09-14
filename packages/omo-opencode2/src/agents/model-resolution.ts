@@ -1,4 +1,4 @@
-import type { CatalogEditor } from "@opencode/plugin/promise/catalog"
+import type { CatalogEditor } from "@opencode/plugin/effect/catalog"
 import { resolveModelPipeline } from "@oh-my-opencode/model-core"
 import type { ModelRequirement } from "@oh-my-opencode/model-core"
 import type { OpenCode2AgentOverride } from "../config"

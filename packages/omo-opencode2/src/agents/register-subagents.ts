@@ -1,4 +1,4 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
 import { Agent, Model } from "@opencode/plugin"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 
@@ -6,6 +6,7 @@ import { SUBAGENT_DEFINITIONS } from "./agent-catalog"
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
 import type { OpenCode2AgentOverride } from "../config"
+import { Effect } from "effect"
 
 export interface RegisterSubagentsOptions {
   /** Live catalog source; models resolve against its freshest snapshot. */
@@ -30,13 +31,14 @@ export interface RegisterSubagentsOptions {
  * Returns the live set of agent ids registered; it populates once the transform
  * is applied (see ctx.agent.reload()).
  */
-export async function registerSubagents(
+export function registerSubagents(
   ctx: { readonly agent: Pick<Context["agent"], "transform"> },
   options: RegisterSubagentsOptions,
-): Promise<Set<string>> {
+): Effect.Effect<Set<string>, never, import("effect").Scope.Scope> {
+  return Effect.gen(function* () {
   const registered = new Set<string>()
 
-  await ctx.agent.transform((draft) => {
+  yield* ctx.agent.transform((draft) => {
     const snapshot = options.catalog.current
     const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
 
@@ -89,4 +91,5 @@ export async function registerSubagents(
   })
 
   return registered
+  })
 }
