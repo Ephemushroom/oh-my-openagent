@@ -1,4 +1,6 @@
 export { registerBtwFeature } from "./register"
+export { registerBtwFeatureEffect } from "./register"
+export { createNativeBtwTools } from "./native-tools"
 export type { RegisterBtwOptions, BtwRegistration } from "./register"
 export { BTW_METADATA_KEY, BTW_METADATA_VERSION, createBtwMetadata, parseBtwMetadata, getBtwMetadata } from "./metadata"
 export type { BtwMetadata } from "./metadata"
