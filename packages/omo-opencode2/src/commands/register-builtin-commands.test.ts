@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { Agent, Model } from "@opencode/plugin"
-import type { CommandDefinition, CommandEditor, CommandInvocation } from "@opencode/plugin/promise/command"
+import type { CommandDefinition, CommandEditor, CommandInvocation } from "@opencode/plugin/effect/command"
+import { Effect } from "effect"
 import { Session } from "@opencode/schema/session"
 import { Skill } from "@opencode/schema/skill"
 import { registerBuiltinCommands, type BuiltinCommandsRegistrationContext } from "./register-builtin-commands"
@@ -16,20 +17,20 @@ function fixture(agent = Agent.ID.make("sisyphus")) {
   const models: Parameters<BuiltinCommandsRegistrationContext["session"]["switchModel"]>[0]["model"][] = []
   const editor: CommandEditor = { add: (command) => { commands.set(command.name, command) } }
   const context: BuiltinCommandsRegistrationContext = {
-    command: { transform: async (callback) => { callback(editor); return { dispose: async () => undefined } } },
-    agent: { get: async () => { events.push("lookup"); return { data: { model: atlasModel } } } },
+    command: { transform: (callback) => Effect.sync(() => { callback(editor); return { dispose: Effect.void } }) },
+    agent: { get: () => Effect.sync(() => { events.push("lookup"); return { data: { model: atlasModel } } }) },
     session: {
-      get: async () => { events.push("get"); return { agent } },
-      switchAgent: async (input) => { events.push("agent"); expect(input.agent).toBe(Agent.ID.make("atlas")) },
-      switchModel: async (input) => { events.push("model"); models.push(input.model) },
-      prompt: async (input) => { events.push("prompt"); prompts.push(input) },
+      get: () => Effect.sync(() => { events.push("get"); return { agent } }),
+      switchAgent: (input) => Effect.sync(() => { events.push("agent"); expect(input.agent).toBe(Agent.ID.make("atlas")) }),
+      switchModel: (input) => Effect.sync(() => { events.push("model"); models.push(input.model) }),
+      prompt: (input) => Effect.sync(() => { events.push("prompt"); prompts.push(input) }),
     },
   }
   return { commands, context, events, prompts, models }
 }
 
 async function command(f: ReturnType<typeof fixture>, name: string) {
-  await registerBuiltinCommands(f.context)
+  await Effect.runPromise(Effect.scoped(registerBuiltinCommands(f.context)))
   const selected = f.commands.get(name)
   if (!selected) throw new Error(`Missing fixture command: ${name}`)
   return selected
@@ -38,8 +39,8 @@ async function command(f: ReturnType<typeof fixture>, name: string) {
 describe("registerBuiltinCommands", () => {
   test("#given an add-only editor #when registering twice #then the seven commands are executable without session writes", async () => {
     const f = fixture()
-    await registerBuiltinCommands(f.context)
-    await registerBuiltinCommands(f.context)
+    await Effect.runPromise(Effect.scoped(registerBuiltinCommands(f.context)))
+    await Effect.runPromise(Effect.scoped(registerBuiltinCommands(f.context)))
     expect([...f.commands.keys()]).toEqual(EXPECTED_COMMANDS)
     for (const selected of f.commands.values()) expect(typeof selected.execute).toBe("function")
     expect(f.events).toEqual([])
@@ -54,7 +55,7 @@ describe("registerBuiltinCommands", () => {
       prompt: { text, files: [{ uri: "file:///qa.txt" }], agents: [{ name: "explore" }], skills: [{ id: Skill.ID.make("qa-skill") }] },
     }
     const original = structuredClone(input)
-    await selected.execute(input)
+    await Effect.runPromise(selected.execute(input))
     expect(f.events).toEqual(["prompt"])
     expect(f.prompts).toHaveLength(1)
     expect(f.prompts[0]?.text).toContain(text)
@@ -65,7 +66,7 @@ describe("registerBuiltinCommands", () => {
   test.each(["sisyphus", "atlas"])("#given initial agent %s #when ulw-execute runs #then atlas model and variant are selected before submission", async (initial) => {
     const f = fixture(Agent.ID.make(initial))
     const selected = await command(f, "ulw-execute")
-    await selected.execute({ sessionID, delivery: "steer", prompt: { text: "qa-plan" } })
+    await Effect.runPromise(selected.execute({ sessionID, delivery: "steer", prompt: { text: "qa-plan" } }))
     expect(f.events).toEqual(initial === "atlas" ? ["lookup", "get", "model", "prompt"] : ["lookup", "get", "agent", "model", "prompt"])
     expect(f.models).toEqual([atlasModel])
     expect(f.prompts).toHaveLength(1)
@@ -75,8 +76,8 @@ describe("registerBuiltinCommands", () => {
 
   test("#given an agent without a configured model #when selecting it #then the session model is not overwritten", async () => {
     const f = fixture()
-    const selected = await command({ ...f, context: { ...f.context, agent: { get: async () => ({ data: {} }) } } }, "ulw-execute")
-    await selected.execute({ sessionID, delivery: "queue", prompt: { text: "" } })
+    const selected = await command({ ...f, context: { ...f.context, agent: { get: () => Effect.succeed({ data: {} }) } } }, "ulw-execute")
+    await Effect.runPromise(selected.execute({ sessionID, delivery: "queue", prompt: { text: "" } }))
     expect(f.models).toEqual([])
     expect(f.prompts).toHaveLength(1)
   })
@@ -84,7 +85,7 @@ describe("registerBuiltinCommands", () => {
   test("#given two explicit commands on one session #when invoked concurrently #then neither input is dropped", async () => {
     const f = fixture()
     const selected = await command(f, "goal")
-    await Promise.all(["first-payload", "second-payload"].map((text) => selected.execute({ sessionID, delivery: "queue", prompt: { text } })))
+    await Effect.runPromise(Effect.all(["first-payload", "second-payload"].map((text) => selected.execute({ sessionID, delivery: "queue", prompt: { text } })), { concurrency: "unbounded" }))
     expect(f.prompts).toHaveLength(2)
     expect(f.prompts[0]?.text).toContain("first-payload")
     expect(f.prompts[1]?.text).toContain("second-payload")
@@ -93,12 +94,12 @@ describe("registerBuiltinCommands", () => {
   test("#given pending native admission #when a command executes #then its callback awaits that admission", async () => {
     const f = fixture()
     const deferred = Promise.withResolvers<void>()
-    const context = { ...f.context, session: { ...f.context.session, prompt: async () => deferred.promise } }
-    await registerBuiltinCommands(context)
+    const context = { ...f.context, session: { ...f.context.session, prompt: () => Effect.promise(() => deferred.promise) } }
+    await Effect.runPromise(Effect.scoped(registerBuiltinCommands(context)))
     const selected = f.commands.get("goal")
     if (!selected) throw new Error("Missing goal")
     let settled = false
-    const pending = selected.execute({ sessionID, delivery: "steer", prompt: { text: "" } }).then(() => { settled = true })
+    const pending = Effect.runPromise(selected.execute({ sessionID, delivery: "steer", prompt: { text: "" } })).then(() => { settled = true })
     await Promise.resolve()
     expect(settled).toBe(false)
     deferred.resolve()
@@ -108,7 +109,7 @@ describe("registerBuiltinCommands", () => {
 
   test.each(["lookup", "agent", "model", "prompt"])("#given %s rejection #when executing #then failure propagates without another submission", async (failure) => {
     const f = fixture()
-    const rejected = async () => { throw new Error("fixture rejection") }
+    const rejected = () => Effect.fail(new Error("fixture rejection"))
     const context = {
       ...f.context,
       agent: failure === "lookup" ? { get: rejected } : f.context.agent,
@@ -118,10 +119,10 @@ describe("registerBuiltinCommands", () => {
         prompt: failure === "prompt" ? rejected : f.context.session.prompt,
       },
     }
-    await registerBuiltinCommands(context)
+    await Effect.runPromise(Effect.scoped(registerBuiltinCommands(context)))
     const selected = f.commands.get("ulw-execute")
     if (!selected) throw new Error("Missing ulw-execute")
-    await expect(selected.execute({ sessionID, delivery: "steer", prompt: { text: "qa" } })).rejects.toThrow("fixture rejection")
+    await expect(Effect.runPromise(selected.execute({ sessionID, delivery: "steer", prompt: { text: "qa" } }))).rejects.toThrow("fixture rejection")
     expect(f.prompts).toEqual([])
   })
 })
