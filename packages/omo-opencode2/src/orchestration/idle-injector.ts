@@ -1,4 +1,56 @@
 import type { SessionDispatchGate } from "./session-dispatch-gate"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Session } from "@opencode/schema/session"
+import { Cause, Effect, Queue, Scope } from "effect"
+
+export type NativeIdlePorts = {
+  readonly run: <A>(effect: Effect.Effect<A, unknown>) => Promise<A>
+  readonly sessionExists: (sessionID: string) => Promise<boolean>
+  readonly dispatch: (sessionID: string, prompt: string) => Promise<void>
+  readonly settle: () => Promise<void>
+}
+
+type NativeIdleJob = Effect.Effect<void, never>
+export type NativeIdleDispatch = (sessionID: string, prompt: string) => Effect.Effect<void, unknown>
+
+export function createNativeIdlePorts(ctx: { readonly session: Pick<Context["session"], "get" | "synthetic"> }, dispatch?: NativeIdleDispatch): Effect.Effect<NativeIdlePorts, never, Scope.Scope> {
+  return Effect.gen(function* () {
+    const jobs = yield* Queue.unbounded<NativeIdleJob>()
+    const scope = yield* Effect.scope
+    const pending = new Set<(error: unknown) => void>()
+    let closed = false
+    const request = <A>(effect: Effect.Effect<A, unknown>): Promise<A> => new Promise((resolve, reject) => {
+      if (closed) { reject(new Error("Idle continuation scope closed")); return }
+      const fail = (error: unknown): void => {
+        pending.delete(fail)
+        reject(error)
+      }
+      pending.add(fail)
+      const accepted = Queue.offerUnsafe(jobs, effect.pipe(
+        Effect.map((value) => Effect.sync(() => { pending.delete(fail); resolve(value) })),
+        Effect.flatten,
+        Effect.catchCause((cause) => Effect.sync(() => fail(Cause.squash(cause)))),
+      ))
+      if (!accepted) fail(new Error("Idle continuation queue closed"))
+    })
+    yield* Effect.forkScoped(Effect.forever(Effect.gen(function* () {
+      yield* Effect.forkIn(yield* Queue.take(jobs), scope)
+    })))
+    yield* Effect.addFinalizer(() => Effect.gen(function* () {
+      closed = true
+      for (const fail of pending) fail(new Error("Idle continuation scope closed"))
+      pending.clear()
+      yield* Queue.shutdown(jobs)
+    }))
+    return {
+      run: request,
+      sessionExists: (sessionID) => request(ctx.session.get({ sessionID: Session.ID.make(sessionID) }).pipe(Effect.map(() => true))),
+      dispatch: (sessionID, prompt) => request(dispatch ? dispatch(sessionID, prompt)
+        : ctx.session.synthetic({ sessionID: Session.ID.make(sessionID), text: prompt, delivery: "queue", resume: true }).pipe(Effect.asVoid)),
+      settle: () => request(Effect.sleep("150 millis")),
+    }
+  })
+}
 
 export type IdleInjectorEvent = {
   readonly type: string
