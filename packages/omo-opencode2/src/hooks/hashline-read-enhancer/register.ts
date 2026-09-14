@@ -1,4 +1,6 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import type { Tool } from "@opencode/schema/tool"
+import { Effect } from "effect"
 
 import { tagReadOutput } from "./tag-read-output"
 
@@ -27,7 +29,7 @@ function isTextPart(part: ContentPartLike): part is ContentPartLike & { text: st
  * and other parts pass through untouched. Tagging is idempotent, so repeated
  * `execute.after` invocations never double tag.
  */
-export function applyHashlineTagsToResult(result: ToolResultLike): ToolResultLike {
+export function applyHashlineTagsToResult(result: Tool.Result): Tool.Result {
   const content = result.content
   if (typeof content === "string") {
     return { ...result, content: tagReadOutput(content) }
@@ -51,16 +53,16 @@ function isReadTool(toolName: string): boolean {
  * `LINE#ID` hashes. The handler is cheap and idempotent because it fires for
  * every tool call.
  */
-export async function registerHashlineReadEnhancer(ctx: Context, trace?: Trace): Promise<void> {
-  await ctx.tool.hook("execute.after", (event) => {
+export function registerHashlineReadEnhancer(ctx: Context, trace?: Trace): Effect.Effect<void, never, import("effect").Scope.Scope> {
+  return Effect.asVoid(ctx.tool.hook("execute.after", (event) => Effect.sync(() => {
     if (!isReadTool(event.tool) || event.status !== "completed") {
       return
     }
     try {
-      event.result = applyHashlineTagsToResult(event.result as ToolResultLike) as typeof event.result
+      event.result = applyHashlineTagsToResult(event.result)
       trace?.("omo.hashline.tag-applied", { tool: event.tool, sessionID: event.sessionID })
     } catch (error) {
       trace?.("omo.hashline.tag-error", { tool: event.tool, message: String(error) })
     }
-  })
+  })))
 }
