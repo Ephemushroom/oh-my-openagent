@@ -1,7 +1,6 @@
 import { classifyProviderExhaustionFallbackSignal } from "@oh-my-opencode/model-core"
 
 import { nextFallbackModel } from "../../orchestration/child-session"
-import type { TaskRegistry } from "../../orchestration/task-registry"
 import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
 
 export type ModelFallbackEvent = {
@@ -21,7 +20,7 @@ export type ModelFallbackTrace = (event: string, detail?: Record<string, unknown
 
 export type ModelFallbackRuntimeOptions = {
   readonly gate: SessionDispatchGate
-  readonly registry: TaskRegistry
+  readonly isManaged: (sessionID: string) => Promise<boolean>
   readonly maxRetries: number
   readonly getSession: (sessionID: string) => Promise<ModelFallbackSessionInfo>
   readonly switchModel: (sessionID: string, model: { readonly providerID: string; readonly id: string }) => Promise<void>
@@ -35,8 +34,9 @@ export type ModelFallbackRuntime = {
 }
 
 export function createModelFallbackRuntime(options: ModelFallbackRuntimeOptions): ModelFallbackRuntime {
-  const { gate, getSession, maxRetries, redispatch, registry, switchModel, trace } = options
+  const { gate, getSession, maxRetries, redispatch, isManaged, switchModel, trace } = options
   const retryCounts = new Map<string, number>()
+  const pending = new Map<string, symbol>()
   let disposed = false
 
   const exhausted = (sessionID: string, reason: string, detail: Record<string, unknown> = {}): void => {
@@ -57,19 +57,22 @@ export function createModelFallbackRuntime(options: ModelFallbackRuntimeOptions)
     const signal = classifyProviderExhaustionFallbackSignal(data?.error)
     if (signal === undefined) return
 
-    const childTask = registry.list().find((record) => record.childSessionID === sessionID)
-    if (childTask !== undefined) {
-      trace?.("omo.model-fallback.skipped-child", { sessionID, taskID: childTask.id })
-      return
-    }
-
     const retryCount = retryCounts.get(sessionID) ?? 0
     if (retryCount >= maxRetries) {
       exhausted(sessionID, "max_retries")
       return
     }
 
+    if (pending.has(sessionID)) return
+    const token = Symbol(sessionID)
+    pending.set(sessionID, token)
+    const current = () => !disposed && pending.get(sessionID) === token
     try {
+      if (await isManaged(sessionID)) {
+        trace?.("omo.model-fallback.skipped-child", { sessionID })
+        return
+      }
+      if (!current()) return
       const outcome = await gate.run(sessionID, async (markDispatched) => {
         let session: ModelFallbackSessionInfo
         try {
@@ -81,6 +84,7 @@ export function createModelFallbackRuntime(options: ModelFallbackRuntimeOptions)
           return
         }
 
+        if (!current()) return
         const agent = session.agent
         const currentRef = session.model
         if (!agent || !currentRef?.providerID || !currentRef.id) {
@@ -113,6 +117,7 @@ export function createModelFallbackRuntime(options: ModelFallbackRuntimeOptions)
         })
 
         await switchModel(sessionID, nextRef)
+        if (!current()) return
         markDispatched()
         await redispatch(sessionID)
         trace?.("omo.model-fallback.switched", {
@@ -128,6 +133,8 @@ export function createModelFallbackRuntime(options: ModelFallbackRuntimeOptions)
       exhausted(sessionID, "switch_or_redispatch", {
         message: error instanceof Error ? error.message : String(error),
       })
+    } finally {
+      if (pending.get(sessionID) === token) pending.delete(sessionID)
     }
   }
 
@@ -135,15 +142,27 @@ export function createModelFallbackRuntime(options: ModelFallbackRuntimeOptions)
     handleEvent: async (event) => {
       if (disposed) return
       const sessionID = typeof event.data?.sessionID === "string" ? event.data.sessionID : undefined
-      if (event.type === "session.execution.succeeded" || event.type === "session.deleted") {
-        if (sessionID) retryCounts.delete(sessionID)
-        return
+      switch (event.type) {
+        case "session.execution.succeeded":
+        case "session.deleted":
+          if (sessionID) { retryCounts.delete(sessionID); pending.delete(sessionID) }
+          return
+        case "session.execution.started":
+        case "session.input.admitted":
+        case "session.execution.interrupted":
+          if (sessionID) pending.delete(sessionID)
+          return
+        case "session.execution.failed":
+          await handleFailure(event)
+          return
+        default:
+          return
       }
-      if (event.type === "session.execution.failed") await handleFailure(event)
     },
     dispose: () => {
       disposed = true
       retryCounts.clear()
+      pending.clear()
     },
   }
 }
