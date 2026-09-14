@@ -5,10 +5,21 @@ import type { MonitorCounters, OutputBatch } from "./types"
 
 export type DeliveryTrace = (event: string, detail?: Record<string, unknown>) => void
 
-export interface MonitorDeliveryDeps {
-  readonly ctx: Pick<Context, "session">
-  readonly trace?: DeliveryTrace
+export type MonitorDispatchInput = {
+  readonly sessionID: string
+  readonly text: string
+  readonly description: string
+  readonly metadata: Readonly<Record<string, string | number>>
+  readonly delivery: "queue"
+  readonly resume: false
 }
+
+export type MonitorDeliveryDeps = {
+  readonly trace?: DeliveryTrace
+} & (
+  | { readonly dispatch: (input: MonitorDispatchInput) => Promise<unknown> }
+  | { readonly ctx: Pick<Context, "session"> }
+)
 
 /**
  * Delivers monitor batches into the parent session.
@@ -49,21 +60,23 @@ export class MonitorDelivery {
     const text = formatMonitorBatch(record, batch, counters)
 
     try {
-      await this.deps.ctx.session.synthetic({
+      const input: MonitorDispatchInput = {
         sessionID: record.parentSessionId,
         text,
         description: `Monitor output: ${record.label}`,
         metadata: { source: "omo.monitor.output", monitor_id: record.id, batch_seq: batch.batchSeq },
         delivery: "queue",
         resume: false,
-      })
+      }
+      if ("dispatch" in this.deps) await this.deps.dispatch(input)
+      else await this.deps.ctx.session.synthetic(input)
     } catch (error) {
       // A failed delivery must not poison the dedupe set, or the batch is lost.
       this.deliveredSources.delete(source)
       this.deps.trace?.("omo.monitor.delivery-failed", {
         monitorId: record.id,
         batchSeq: batch.batchSeq,
-        error: String(error),
+        error: error instanceof Error ? error.message : String(error),
       })
       return false
     }
