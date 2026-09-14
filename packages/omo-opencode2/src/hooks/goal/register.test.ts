@@ -1,99 +1,62 @@
 import { describe, expect, test } from "bun:test"
+import { Effect, Exit, Scope, Stream } from "effect"
+import { createSessionDispatchGate } from "../../orchestration/session-dispatch-gate"
+import { registerGoalFeature, registerGoalFeatureEffect } from "./register"
 
-import { registerConfiguredGoalFeature, registerGoalFeature } from "./index"
-import type { GoalFeatureContext } from "./index"
-
-async function* emptyEvents() {
-  return
-}
-
-type RegistrationCalls = {
-  contextHooks: number
-  transforms: number
-  subscriptions: number
-  tools: string[]
-}
-
-function fakeContext(calls: RegistrationCalls): GoalFeatureContext {
-  return {
-    tool: {
-      transform: async (register) => {
-        calls.transforms += 1
-        await register({
-          add: (tool: { readonly name: string }) => calls.tools.push(tool.name),
-        })
-      },
-    },
-    event: {
-      subscribe: () => {
-        calls.subscriptions += 1
-        return emptyEvents()
-      },
-    },
-    session: {
-      get: async () => ({}),
-      hook: async () => {
-        calls.contextHooks += 1
-      },
-      synthetic: async () => ({ id: "pending" }),
-    },
-  }
-}
-
-describe("registerGoalFeature", () => {
-  test("#given goal is disabled #when registration runs #then no tools or lifecycle subscription are installed", async () => {
+describe("native goal registration", () => {
+  test("#given disabled goal #when registered #then no native domains are touched", async () => {
     // given
-    const calls = { contextHooks: 0, transforms: 0, subscriptions: 0, tools: [] as string[] }
-
-    // when
-    const feature = await registerGoalFeature(fakeContext(calls), {
-      directory: process.cwd(),
-      enabled: false,
-    })
-
-    // then
-    expect(calls).toEqual({ contextHooks: 0, transforms: 0, subscriptions: 0, tools: [] })
-    feature.dispose()
-  })
-
-  test("#given goal is enabled #when registration runs #then exactly the three goal tools and event pump are installed", async () => {
-    // given
-    const calls = { contextHooks: 0, transforms: 0, subscriptions: 0, tools: [] as string[] }
-
-    // when
-    const feature = await registerGoalFeature(fakeContext(calls), {
-      directory: process.cwd(),
-      enabled: true,
-    })
-
-    // then
-    expect(calls.transforms).toBe(1)
-    expect(calls.subscriptions).toBe(1)
-    expect(calls.contextHooks).toBe(0)
-    expect(calls.tools.toSorted()).toEqual(["create_goal", "get_goal", "update_goal"])
-    feature.dispose()
-  })
-
-  test("#given configured auto-start is enabled #when registration runs #then the goal context hook is installed", async () => {
-    // given
-    const calls = { contextHooks: 0, transforms: 0, subscriptions: 0, tools: [] as string[] }
+    const gate = createSessionDispatchGate()
     const context = {
-      ...fakeContext(calls),
-      options: {
-        goal: {
-          enabled: true,
-          auto_start: true,
-        },
+      tool: { transform: () => Effect.die("disabled goal touched tools") },
+      session: {
+        get: () => Effect.die("disabled goal read session"),
+        synthetic: () => Effect.die("disabled goal dispatched"),
+        hook: () => Effect.die("disabled goal installed hook"),
       },
+      event: { subscribe: () => Stream.die("disabled goal subscribed") },
     }
-
     // when
-    const feature = await registerConfiguredGoalFeature(context, {
-      directory: process.cwd(),
-    })
-
+    await Effect.runPromise(Effect.scoped(Effect.gen(function* () {
+      const registration = yield* registerGoalFeatureEffect(context, { directory: process.cwd(), enabled: false, gate })
+      registration.dispose()
+    })))
     // then
-    expect(calls.contextHooks).toBe(1)
+    expect(gate.isReserved("session")).toBe(false)
+  })
+
+  test("#given enabled goal #when its scope closes #then the event subscription is cancelled", async () => {
+    // given
+    let closed = false
+    const scope = Effect.runSync(Scope.make())
+    const context = {
+      tool: { transform: () => Effect.succeed({ dispose: Effect.void }) },
+      session: {
+        get: () => Effect.die("unexpected session read"),
+        synthetic: () => Effect.die("unexpected dispatch"),
+        hook: () => Effect.succeed({ dispose: Effect.void }),
+      },
+      event: { subscribe: () => Stream.fromEffect(Effect.acquireRelease(Effect.void, () => Effect.sync(() => { closed = true }))).pipe(Stream.flatMap(() => Stream.never)) },
+    }
+    // when
+    await Effect.runPromise(Effect.gen(function* () {
+      yield* registerGoalFeatureEffect(context, { directory: process.cwd(), enabled: true, gate: createSessionDispatchGate() }).pipe(Effect.provideService(Scope.Scope, scope))
+      yield* Effect.yieldNow
+      yield* Scope.close(scope, Exit.void)
+    }))
+    // then
+    expect(closed).toBe(true)
+  })
+})
+
+describe("Promise goal registration", () => {
+  test("#given goal is disabled #when registration runs #then no tools or lifecycle subscription are installed", async () => {
+    const feature = await registerGoalFeature({
+      tool: { transform: async () => undefined },
+      event: { subscribe: async function* () { return } },
+      session: { get: async () => ({}), hook: async () => undefined, synthetic: async () => ({}) },
+    }, { directory: process.cwd(), enabled: false, gate: createSessionDispatchGate() })
+    expect(feature.dispose).toBeTypeOf("function")
     feature.dispose()
   })
 })

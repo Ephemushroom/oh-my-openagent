@@ -4,7 +4,7 @@ export type {
   RegisterConfiguredBoulderContinuationOptions,
 } from "./configured-register"
 export { buildBoulderContinuationPrompt } from "./prompt"
-export { registerBoulderContinuation } from "./register"
+export { registerBoulderContinuation, registerBoulderContinuationEffect } from "./register"
 export type {
   BoulderContinuationContext,
   RegisteredBoulderContinuation,

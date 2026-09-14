@@ -3,7 +3,8 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Agent, Model } from "@opencode/plugin"
-import type { AgentEditor } from "@opencode/plugin/promise/agent"
+import type { AgentEditor } from "@opencode/plugin/effect/agent"
+import { Effect } from "effect"
 
 import { registerConfiguredAgents, resolveAgentRegistrationConfig } from "./register-configured"
 import { createCatalogSource } from "./model-resolution"
@@ -34,14 +35,14 @@ function createDeferredContext() {
       default_agent: "atlas",
     },
     agent: {
-      transform: async (callback) => {
+      transform: (callback) => Effect.sync(() => {
         callbacks.add(callback)
-        return { dispose: async () => { callbacks.delete(callback) } }
-      },
-      list: async () => {
+        return { dispose: Effect.sync(() => { callbacks.delete(callback) }) }
+      }),
+      list: () => Effect.sync(() => {
         for (const callback of callbacks) callback(editor)
         return { data: [...agents.values()] }
-      },
+      }),
     },
   }
   return { ctx, agents, getDefault: () => defaultAgent }
@@ -65,7 +66,7 @@ describe("registerConfiguredAgents with deferred transforms", () => {
     // given
     const { ctx, getDefault } = createDeferredContext()
     // when
-    const result = await registerConfiguredAgents(ctx, { catalog: createCatalogSource(), directory })
+    const result = await Effect.runPromise(Effect.scoped(registerConfiguredAgents(ctx, { catalog: createCatalogSource(), directory })))
     // then
     expect([...result.primaries]).toEqual(["sisyphus", "hephaestus", "prometheus", "atlas"])
     expect([...result.subagents].sort()).toEqual(
@@ -82,7 +83,7 @@ describe("registerConfiguredAgents with deferred transforms", () => {
     const { ctx, agents } = createDeferredContext()
     const expected = buildSisyphusPromptForModel("custom-primary/sisyphus-model", [], [], [], [], false)
     // when
-    const result = await registerConfiguredAgents(ctx, { catalog: createCatalogSource(), directory })
+    const result = await Effect.runPromise(Effect.scoped(registerConfiguredAgents(ctx, { catalog: createCatalogSource(), directory })))
     // then
     expect(result.sisyphusPrompt).toBe(expected)
     expect(agents.get("sisyphus")?.system).toBe(expected)
@@ -95,7 +96,7 @@ describe("registerConfiguredAgents with deferred transforms", () => {
     // given
     const { ctx, agents } = createDeferredContext()
     // when
-    const result = await registerConfiguredAgents(ctx, { catalog: createCatalogSource(), directory })
+    const result = await Effect.runPromise(Effect.scoped(registerConfiguredAgents(ctx, { catalog: createCatalogSource(), directory })))
     // then
     expect(result.models?.get(id)).toBe(model)
     expect(agents.get(id)?.model).toEqual(Model.Ref.parse(model))

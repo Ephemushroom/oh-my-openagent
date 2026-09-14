@@ -1,4 +1,5 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Effect, type Scope } from "effect"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import {
@@ -120,16 +121,16 @@ export function createCommentCheckerAfterHandler(
   }
 }
 
-export async function registerCommentChecker(
+export function registerCommentChecker(
   ctx: Context,
   trace?: Trace,
   runtime: CommentCheckerRuntime = createDefaultCommentCheckerRuntime(),
-): Promise<void> {
+): Effect.Effect<void, never, Scope.Scope> {
   const handle = createCommentCheckerAfterHandler(runtime, trace)
-  await ctx.tool.hook("execute.after", async (event) => {
-    await handle(event)
+  return Effect.gen(function* () {
+    yield* ctx.tool.hook("execute.after", (event) => Effect.promise(() => handle(event)))
+    yield* Effect.sync(() => trace?.("omo.comment-checker.registered", { tools: [...MUTATION_TOOLS] }))
   })
-  trace?.("omo.comment-checker.registered", { tools: [...MUTATION_TOOLS] })
 }
 
 function extractCheckRequests(event: CompletedEvent, tool: string): readonly CheckRequest[] {

@@ -6,6 +6,11 @@ import {
   type TeamModeConfig,
   type TeamSpec,
 } from "@oh-my-opencode/team-core"
+import { Agent } from "@opencode/schema/agent"
+import { Model } from "@opencode/schema/model"
+import { Session } from "@opencode/schema/session"
+import type { Effect } from "effect"
+import type { Executor, Owner } from "../../orchestration/execution/types"
 
 import { persistProjectTeamSpec } from "./storage"
 import { TeamSessionRegistry } from "./session-registry"
@@ -17,6 +22,9 @@ type MemberRuntimeOptions = {
   readonly config: TeamModeConfig
   readonly sessions: TeamSessionRegistry
   readonly trace?: TeamTrace
+  readonly executor?: Executor
+  readonly run?: <A>(effect: Effect.Effect<A, unknown>) => Promise<A>
+  readonly models?: ReadonlyMap<string, string>
 }
 
 type SpawnedMember = { readonly sessionID: string; readonly name: string }
@@ -42,6 +50,9 @@ export class TeamMemberRuntime {
   readonly #config: TeamModeConfig
   readonly #sessions: TeamSessionRegistry
   readonly #trace: TeamTrace
+  readonly #executor: Executor | undefined
+  readonly #run: (<A>(effect: Effect.Effect<A, unknown>) => Promise<A>) | undefined
+  readonly #models: ReadonlyMap<string, string> | undefined
 
   constructor(options: MemberRuntimeOptions) {
     this.#ctx = options.ctx
@@ -49,6 +60,9 @@ export class TeamMemberRuntime {
     this.#config = options.config
     this.#sessions = options.sessions
     this.#trace = options.trace ?? (() => undefined)
+    this.#executor = options.executor
+    this.#run = options.run
+    this.#models = options.models
   }
 
   async create(spec: TeamSpec, leadSessionID: string): Promise<RuntimeState> {
@@ -68,7 +82,7 @@ export class TeamMemberRuntime {
           const member = workers[nextIndex]
           nextIndex += 1
           if (!member) return
-          const spawnedMember = await this.#spawnMember(spec, runtime.teamRunId, member)
+           const spawnedMember = await this.#spawnMember(spec, runtime.teamRunId, leadSessionID, member)
           spawned.push(spawnedMember)
         }
       }))
@@ -87,7 +101,9 @@ export class TeamMemberRuntime {
     if (!participant) return
     await transitionRuntimeState(participant.teamRunId, (state) => ({
       ...state,
-      members: state.members.map((member) => member.name === participant.memberName ? { ...member, status } : member),
+      members: state.members.map((member) => member.name === participant.memberName && member.status !== "completed" && member.status !== "shutdown_approved"
+        ? { ...member, status }
+        : member),
     }), this.#config)
     this.#trace("omo.team.member-status", { teamRunId: participant.teamRunId, memberName: participant.memberName, status })
   }
@@ -102,24 +118,43 @@ export class TeamMemberRuntime {
     }), this.#config)
   }
 
-  async #spawnMember(spec: TeamSpec, teamRunId: string, member: Member): Promise<SpawnedMember> {
+  async #spawnMember(spec: TeamSpec, teamRunId: string, leadSessionID: string, member: Member): Promise<SpawnedMember> {
     const agent = memberAgent(member)
-    const child = await this.#ctx.session.create({ agent, title: `Team ${spec.name}/${member.name}` })
-    this.#sessions.register(child.id, { teamRunId, memberName: member.name, role: "member" })
+    const modelName = this.#models?.get(member.kind === "category" ? member.category : agent)
+    if (!this.#executor || !this.#run) {
+      const child = await this.#ctx.session.create({ agent, title: `Team ${spec.name}/${member.name}` })
+      this.#sessions.register(child.id, { teamRunId, memberName: member.name, role: "member" })
+      await transitionRuntimeState(teamRunId, (state) => ({
+        ...state,
+        members: state.members.map((runtimeMember) => runtimeMember.name === member.name
+          ? { ...runtimeMember, sessionId: child.id, status: "running", subagent_type: agent }
+          : runtimeMember),
+      }), this.#config)
+      this.#trace("omo.team.member-started", { teamRunId, memberName: member.name, sessionID: child.id, agent })
+      await this.#ctx.session.prompt({ sessionID: child.id, text: memberPrompt(spec, member, teamRunId) })
+      return { sessionID: child.id, name: member.name }
+    }
+    if (!modelName) throw new Error(`No model registered for ${member.kind === "category" ? member.category : agent}`)
+    const childID = Session.ID.create()
+    this.#sessions.register(childID, { teamRunId, memberName: member.name, role: "member" })
     await transitionRuntimeState(teamRunId, (state) => ({
       ...state,
       members: state.members.map((runtimeMember) => runtimeMember.name === member.name
         ? {
           ...runtimeMember,
-          sessionId: child.id,
+           sessionId: childID,
           status: "running",
           subagent_type: agent,
           ...(member.kind === "category" ? { category: member.category } : {}),
         }
         : runtimeMember),
     }), this.#config)
-    this.#trace("omo.team.member-started", { teamRunId, memberName: member.name, sessionID: child.id, agent })
-    await this.#ctx.session.prompt({ sessionID: child.id, text: memberPrompt(spec, member, teamRunId) })
-    return { sessionID: child.id, name: member.name }
+    const owner: Owner = { kind: "team", callerSessionID: Session.ID.make(leadSessionID), rootSessionID: Session.ID.make(leadSessionID), teamRunID: teamRunId, member: member.name }
+    const ref = await this.#run(this.#executor.submit({
+      kind: "fresh", owner, sessionID: childID, agent: Agent.ID.make(agent), model: Model.Ref.parse(modelName),
+      text: memberPrompt(spec, member, teamRunId), description: `Team ${spec.name}/${member.name}`, background: true,
+    }))
+    this.#trace("omo.team.member-started", { teamRunId, memberName: member.name, sessionID: childID, agent, taskID: ref.taskID })
+    return { sessionID: childID, name: member.name }
   }
 }

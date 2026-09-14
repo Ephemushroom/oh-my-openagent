@@ -1,4 +1,5 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Effect, Scope } from "effect"
 
 import { injectCommandCatalogSystemPart } from "./command-catalog-context"
 import type { LiveCommand } from "./command-catalog-context"
@@ -24,7 +25,7 @@ export interface ContextHookDeps {
 }
 
 interface SystemPartLike {
-  type: string
+  readonly type: string
   text?: string
   [key: string]: unknown
 }
@@ -34,7 +35,7 @@ interface HookEvent {
   agent: string
   model: { id: string; providerID: string; variant?: string }
   system: SystemPartLike[]
-  messages: Array<{ role?: string; content?: Array<{ type: string; text?: string }> }>
+  messages: ReadonlyArray<{ readonly role?: string; readonly content?: ReadonlyArray<{ readonly type: string; readonly text?: string }> }>
   tools: Record<string, { description?: string; input?: unknown }>
 }
 
@@ -70,7 +71,7 @@ export function createContextHookComposer(options: ComposerOptions): (event: Hoo
     const rebaked = rebakeSisyphusSystemPart({
       model: `${event.model.providerID}/${event.model.id}`,
       staticSisyphusPrompt: options.staticSisyphusPrompt,
-      system: event.system,
+      system: event.system.map((part) => ({ type: part.type, text: part.text ?? "" })),
       tools: event.tools,
       agentList,
       agentListError,
@@ -145,21 +146,23 @@ export async function lastRealUserText(messages: HookEvent["messages"]): Promise
  * Registers dynamic Sisyphus rebaking and keyword-mode injection on the
  * session context hook. Non-fatal on live catalog failure.
  */
-export async function registerContextHooks(deps: ContextHookDeps): Promise<void> {
+export function registerContextHooks(deps: ContextHookDeps): Effect.Effect<void, never, Scope.Scope> {
   const { ctx, staticSisyphusPrompt, trace, workspaceDirectory, todoStore, sessionModels } = deps
 
-  await ctx.session.hook("context", async (event) => {
+  return Effect.asVoid(ctx.session.hook("context", (event) => Effect.gen(function* () {
     // The context hook is the only surface that reports the caller's model
     // alongside its session id, so it is where look_at's gate gets its input.
     const modelKey = formatModelKey(event.model)
-    if (modelKey) sessionModels?.record(event.sessionID as unknown as string, modelKey)
+    if (modelKey) sessionModels?.record(String(event.sessionID), modelKey)
 
+    const agents = yield* ctx.agent.list()
+    const skills = yield* ctx.skill.list()
+    const commands = yield* ctx.command.list()
     const composer = createContextHookComposer({
       trace,
       staticSisyphusPrompt,
       agentList: async () => {
-        const agents = await ctx.agent.list()
-        const data = (agents as { data?: Array<{ id: string; name?: string; description?: string; mode?: string }> }).data ?? []
+        const data = agents.data
         trace?.("omo.context.agents", { count: data.length })
         return data.map((agent) => ({
           id: agent.id,
@@ -169,8 +172,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
         }))
       },
       skillList: async () => {
-        const skills = await ctx.skill.list()
-        const data = (skills as { data?: Array<{ name: string; description?: string; location?: string }> }).data ?? []
+        const data = skills.data
         trace?.("omo.context.skills", { count: data.length })
         return data.map((skill) => ({
           name: skill.name,
@@ -179,7 +181,6 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
         }))
       },
       commandList: async () => {
-        const commands = await ctx.command.list()
         trace?.("omo.context.commands", { count: commands.data.length })
         return commands.data.map((command) => ({
           name: command.name,
@@ -219,7 +220,21 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
       lastUserText: lastRealUserText,
     })
 
-    const output = await composer(event as unknown as HookEvent)
+    const output = yield* Effect.promise(() => composer({
+      sessionID: String(event.sessionID),
+      agent: String(event.agent),
+      model: event.model,
+      system: event.system,
+      messages: event.messages.map((message) => ({
+        role: message.role,
+        content: (message.content ?? []).map((part) => ({
+          type: part.type,
+          ...(part.type === "text" || part.type === "compaction" ? { text: part.text ?? undefined } : {}),
+        })),
+      })),
+      tools: event.tools,
+    }))
+    event.system.splice(0, event.system.length, ...output.system.map((part) => ({ type: "text" as const, text: part.text ?? "" })))
     const ultraworkParts = output.system.filter((part) => part.text?.includes("<ultrawork-mode>")).length
     const hyperplanParts = output.system.filter((part) => part.text?.includes("<hyperplan-mode>")).length
     const hyperplanUltraworkParts = output.system.filter((part) =>
@@ -227,7 +242,7 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
     ).length
     const todoParts = output.system.filter((part) => part.text?.includes("<todo-state>")).length
     trace?.("omo.context.composed", {
-      sessionID: (event as unknown as { sessionID?: string }).sessionID,
+      sessionID: String(event.sessionID),
       systemParts: output.system.length,
       modeTagged: ultraworkParts + hyperplanParts + hyperplanUltraworkParts > 0,
       ultraworkParts,
@@ -235,5 +250,5 @@ export async function registerContextHooks(deps: ContextHookDeps): Promise<void>
       hyperplanUltraworkParts,
       todoParts,
     })
-  })
+  }).pipe(Effect.orDie)))
 }

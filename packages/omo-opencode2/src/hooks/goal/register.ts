@@ -1,4 +1,10 @@
+
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Session } from "@opencode/schema/session"
+import { Tool } from "@opencode/schema/tool"
+import { Effect, Schema, Stream } from "effect"
 import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
+import { createNativeIdlePorts, type NativeIdleDispatch } from "../../orchestration/idle-injector"
 import { createGoalAutoStartHandler } from "./auto-start"
 import type { GoalContextEvent, GoalSessionInfo } from "./auto-start"
 import { createGoalController } from "./controller"
@@ -46,6 +52,75 @@ export type GoalFeatureContext = {
 
 export type RegisteredGoalFeature = {
   readonly dispose: () => void
+}
+
+export type NativeGoalRegistrationOptions = {
+  readonly dispatch?: NativeIdleDispatch
+  readonly directory: string
+  readonly enabled: boolean
+  readonly autoStart?: boolean
+  readonly gate: SessionDispatchGate
+  readonly trace?: GoalTrace
+}
+
+export type NativeGoalRegistration = {
+  readonly dispose: () => void
+}
+
+export function registerGoalFeatureEffect(
+  ctx: { readonly tool: Pick<Context["tool"], "transform">;
+    readonly session: Pick<Context["session"], "get" | "synthetic" | "hook">;
+    readonly event: { readonly subscribe: () => Stream.Stream<GoalEvent, unknown, import("effect").Scope.Scope> } },
+  options: NativeGoalRegistrationOptions,
+): Effect.Effect<NativeGoalRegistration, never, import("effect").Scope.Scope> {
+  return Effect.gen(function* () {
+    if (!options.enabled) {
+      options.trace?.("omo.goal.disabled", { tools: [] })
+      return { dispose: () => undefined }
+    }
+
+    const controller = createGoalController({ projectDir: options.directory })
+    const ports = yield* createNativeIdlePorts(ctx, options.dispatch)
+    const tools = createGoalTools({ controller, trace: options.trace })
+    yield* ctx.tool.transform((draft) => {
+      for (const tool of tools) {
+        draft.add({
+          name: tool.name,
+          description: tool.description,
+          input: tool.input,
+          options: tool.options,
+          execute: (input, toolContext) => Effect.tryPromise({
+            try: () => tool.execute(input, { sessionID: toolContext.sessionID }),
+            catch: (error) => new Tool.Error({ message: error instanceof Error ? error.message : String(error) }),
+          }).pipe(Effect.map((result) => ({ content: result.content }))),
+        })
+      }
+    }).pipe(Effect.orDie)
+    options.trace?.("omo.goal.registered", { tools: tools.map((tool) => tool.name) })
+
+    if (options.autoStart) {
+      yield* ctx.session.hook("context", (event) => Effect.promise(() => createGoalAutoStartHandler({
+        controller,
+        getSessionInfo: (sessionID) => ports.run(ctx.session.get({ sessionID: Session.ID.make(sessionID) })).catch(() => null),
+        trace: options.trace,
+      })(event))).pipe(Effect.orDie)
+      options.trace?.("omo.goal.auto-start-registered")
+    }
+
+    const runtime = createGoalRuntime({
+      controller,
+      gate: options.gate,
+      sessionExists: ports.sessionExists,
+      dispatchContinuation: ports.dispatch,
+      settle: ports.settle,
+      trace: options.trace,
+    })
+    const worker = Stream.runForEach(ctx.event.subscribe(), (event) =>
+      Effect.forkScoped(Effect.promise(() => runtime.handleEvent(event))).pipe(Effect.asVoid))
+    yield* Effect.forkScoped(worker)
+    yield* Effect.addFinalizer(() => Effect.sync(() => runtime.dispose()))
+    return { dispose: () => runtime.dispose() }
+  })
 }
 
 export async function registerGoalFeature(

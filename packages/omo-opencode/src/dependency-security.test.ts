@@ -110,7 +110,7 @@ describe("dependency security", () => {
     expect(bunLock.workspaces?.[""]?.dependencies?.picomatch).toBe(`^${MINIMUM_SAFE_PICOMATCH_VERSION}`)
   })
 
-  it("#given effect is only needed by OpenCode internals #when root dependencies are locked #then the root package does not depend on effect directly", () => {
+  it("#given distinct native and v1 SDK runtimes #when dependencies are locked #then Effect stays adapter-scoped and both SDK pins are preserved", () => {
     const packageJson = JSON.parse(readFileSync(join(REPO_ROOT, "package.json"), "utf-8")) as {
       dependencies?: Record<string, string>
     }
@@ -122,16 +122,23 @@ describe("dependency security", () => {
     expect(opencodePluginDependencies).toMatchObject({
       dependencies: expect.objectContaining({ effect: expect.any(String) }),
     })
-    expect(bunLock.packages?.effect?.[0]).toBe("effect@4.0.0-beta.83")
+    expect(bunLock.packages?.effect?.[0]).toBe("effect@4.0.0-rc.112")
+    expect(bunLock.packages?.["@opencode-ai/plugin/effect"]?.[0]).toBe("effect@4.0.0-beta.83")
+    expect(bunLock.packages?.["@opencode/plugin"]?.[2]).toMatchObject({
+      dependencies: { effect: "4.0.0-rc.112" },
+    })
+    const nativeManifest = JSON.parse(readFileSync(join(REPO_ROOT, "packages/omo-opencode2/package.json"), "utf-8"))
+    expect(nativeManifest.dependencies.effect).toBe("4.0.0-rc.112")
   })
 
   // The scan spawns `git grep -P` over every first-party source and already bounds that spawn at
   // 60s so a stalled grep fails deterministically. The case therefore has to outlive its own
   // guard: on the 5s default the test died before the spawn budget could ever apply, which is the
   // Windows failure. The assertion is unchanged - only the ceiling now exceeds what it wraps.
-  it("#given first-party TypeScript sources #when dependency imports are scanned #then no source imports effect directly", async () => {
+  it("#given first-party TypeScript sources #when dependency imports are scanned #then only the native OpenCode2 adapter imports Effect directly", async () => {
     const effectImports = await findFirstPartyEffectImports()
 
-    expect(effectImports).toEqual([])
+    expect(effectImports.filter((path) => !path.startsWith("packages/omo-opencode2/"))).toEqual([])
+    expect(effectImports.some((path) => path.startsWith("packages/omo-opencode2/"))).toBe(true)
   }, 90_000)
 })

@@ -8,6 +8,8 @@ import { createTeamQueryTools } from "./query-tools"
 import { TeamSessionRegistry } from "./session-registry"
 import { createTeamTaskTools } from "./task-tools"
 import type { TeamFeatureContext, TeamToolDefinition, TeamTrace } from "./types"
+import type { Effect } from "effect"
+import type { Executor } from "../../orchestration/execution/types"
 
 type TeamToolsOptions = {
   readonly ctx: Pick<TeamFeatureContext, "session">
@@ -18,6 +20,8 @@ type TeamToolsOptions = {
   readonly mailbox: TeamMailbox
   readonly resolveSessionID: (toolCtx: unknown) => string | undefined
   readonly trace?: TeamTrace
+  readonly executor?: Executor
+  readonly run?: <A>(effect: Effect.Effect<A, unknown>) => Promise<A>
 }
 
 export function createTeamTools(options: TeamToolsOptions): TeamToolDefinition[] {

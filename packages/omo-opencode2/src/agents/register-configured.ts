@@ -1,4 +1,5 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Effect } from "effect"
 
 import { registerCategories } from "./register-categories"
 import { registerPrimaries } from "./register-primaries"
@@ -38,14 +39,14 @@ export function resolveAgentRegistrationConfig(
 }
 
 /** Coordinates the three agent registries from one parsed config snapshot. */
-export async function registerConfiguredAgents(
+export const registerConfiguredAgents = Effect.fn("omo.registerConfiguredAgents")(function* (
   ctx: Pick<Context, "options"> & {
     readonly agent: Pick<Context["agent"], "transform"> & {
-      readonly list: () => Promise<Pick<Awaited<ReturnType<Context["agent"]["list"]>>, "data">>
+      readonly list: () => Effect.Effect<Pick<Effect.Success<ReturnType<Context["agent"]["list"]>>, "data">, unknown>
     }
   },
   options: RegisterConfiguredAgentsOptions,
-): Promise<ConfiguredAgentRegistration> {
+) {
   const config = loadOpenCode2Config({
     directory: options.directory,
     options: { ...ctx.options },
@@ -57,20 +58,20 @@ export async function registerConfiguredAgents(
     ...(options.trace ? { trace: options.trace } : {}),
     ...(agentOverrides ? { agentOverrides } : {}),
   }
-  const subagents = await registerSubagents(ctx, shared)
-  const primaries = await registerPrimaries(ctx, {
+  const subagents = yield* registerSubagents(ctx, shared)
+  const primaries = yield* registerPrimaries(ctx, {
     ...shared,
     defaultAgent,
     onSisyphusPrompt: (prompt) => {
       sisyphusPrompt = prompt
     },
   })
-  const categories = await registerCategories(ctx, shared)
+  const categories = yield* registerCategories(ctx, shared)
   // A read materializes deferred transforms; reload only invalidates in setup's batch.
-  const agents = await ctx.agent.list()
+  const agents = yield* ctx.agent.list()
   const models = new Map<string, string>()
   for (const agent of agents.data) {
     if (agent.model) models.set(agent.id, `${agent.model.providerID}/${agent.model.id}`)
   }
-  return { primaries, subagents, categories, sisyphusPrompt, models }
-}
+  return { primaries, subagents, categories, sisyphusPrompt, models } satisfies ConfiguredAgentRegistration
+})

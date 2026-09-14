@@ -1,0 +1,9 @@
+Observed type validation, exit 0:
+bunx --no-install tsgo --ignoreConfig --noEmit --target ESNext --module ESNext --moduleResolution bundler --strict --skipLibCheck --esModuleInterop --types bun-types packages/prompts-core/src/markdown-modules.d.ts <all changed/new .test.ts paths under packages/omo-opencode2>
+
+Observed native QA plugin type validation, exit 0:
+bunx --no-install tsgo --ignoreConfig --noEmit --target ESNext --module ESNext --moduleResolution bundler --strict --skipLibCheck --esModuleInterop --types bun-types packages/omo-opencode2/scripts/qa-execution/plugin/index.ts
+
+The native QA fixture initially exposed an ExecutionError in Plugin.effect's error channel. Its activation now converts initialization failure with Effect.orDie, matching the SDK's Effect<void, never, Scope> contract. The updated native fixture was driven again: executor-production-gate/receipt.json has 5 passing checks.
+
+This is a command/result summary, not fabricated compiler stdout. Successful compiler commands emitted no output. LSP initialization failed because the configured TypeScript 7 installation lacks tsserver.js.

@@ -4,7 +4,7 @@ export type {
   RegisterConfiguredTodoContinuationOptions,
 } from "./configured-register"
 export { buildTodoContinuationPrompt } from "./prompt"
-export { registerTodoContinuation } from "./register"
+export { registerTodoContinuation, registerTodoContinuationEffect } from "./register"
 export type {
   RegisteredTodoContinuation,
   RegisterTodoContinuationOptions,

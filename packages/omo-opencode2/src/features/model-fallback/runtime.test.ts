@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
 import { createSessionDispatchGate } from "../../orchestration/session-dispatch-gate"
-import { TaskRegistry } from "../../orchestration/task-registry"
 import { createModelFallbackRuntime } from "./runtime"
 import type { ModelFallbackEvent, ModelFallbackTrace } from "./runtime"
 
@@ -20,10 +19,10 @@ function createFixture(options: { readonly maxRetries?: number; readonly gate?: 
   const redispatches: string[] = []
   const traces: Array<{ readonly event: string; readonly detail?: Record<string, unknown> }> = []
   const trace: ModelFallbackTrace = (event, detail) => traces.push(detail === undefined ? { event } : { event, detail })
-  const registry = new TaskRegistry()
+  const managedSessions = new Set<string>()
   const runtime = createModelFallbackRuntime({
     gate: options.gate ?? createSessionDispatchGate({ postDispatchHoldMs: 1 }),
-    registry,
+    isManaged: async (sessionID) => managedSessions.has(sessionID),
     maxRetries: options.maxRetries ?? 1,
     getSession: async () => ({ agent: "oracle", model: CURRENT_MODEL }),
     switchModel: async (sessionID, model) => {
@@ -34,7 +33,7 @@ function createFixture(options: { readonly maxRetries?: number; readonly gate?: 
     },
     trace,
   })
-  return { redispatches, registry, runtime, switches, traces }
+  return { redispatches, managedSessions, runtime, switches, traces }
 }
 
 describe("model fallback runtime", () => {
@@ -73,14 +72,7 @@ describe("model fallback runtime", () => {
   test("#given an eligible failure from a task-engine child session #when handled #then it is skipped", async () => {
     // given
     const fixture = createFixture()
-    const task = fixture.registry.create({
-      parentSessionID: "parent",
-      agent: "oracle",
-      model: "openai/gpt-5.6-sol",
-      description: "child",
-      background: false,
-    })
-    fixture.registry.update(task.id, { childSessionID: SESSION_ID, status: "running" })
+    fixture.managedSessions.add(SESSION_ID)
 
     // when
     await fixture.runtime.handleEvent(QUOTA_FAILURE)
@@ -89,7 +81,7 @@ describe("model fallback runtime", () => {
     expect(fixture.switches).toEqual([])
     expect(fixture.traces).toContainEqual({
       event: "omo.model-fallback.skipped-child",
-      detail: { sessionID: SESSION_ID, taskID: task.id },
+      detail: { sessionID: SESSION_ID },
     })
   })
 
@@ -143,7 +135,7 @@ describe("model fallback runtime", () => {
     const traces: Array<{ readonly event: string; readonly detail?: Record<string, unknown> }> = []
     const runtime = createModelFallbackRuntime({
       gate: createSessionDispatchGate(),
-      registry: new TaskRegistry(),
+      isManaged: async () => false,
       maxRetries: 1,
       getSession: async () => ({ agent: "hephaestus", model: CURRENT_MODEL }),
       switchModel: async (sessionID) => {

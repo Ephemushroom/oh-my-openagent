@@ -35,7 +35,6 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // Explicit command invocations are distinct inputs admitted by the native
   // inbox, not competing observers of an idle/error edge. Gating drops inputs.
   "commands/register-builtin-commands.ts": { prompt: 1 },
-  "index.ts": { synthetic: 1 },
   "hooks/goal/register.ts": { synthetic: 1 },
   // Todo continuation. The second idle injector, so it is gated and takes the
   // SAME gate instance goal does; two instances would let both inject on one
@@ -45,6 +44,7 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // gate, same reason. Default-off; re-reads the plan off disk on every idle.
   "hooks/boulder-continuation/register.ts": { synthetic: 1 },
   "orchestration/child-session.ts": { prompt: 1 },
+  "orchestration/execution/session-run.ts": { prompt: 1 },
   // BTW side conversations. The plugin creates and owns the side session
   // (session.create + prompt with omo_btw metadata) exactly like the task
   // engine's child sessions: there is no competing observer, and each
@@ -58,7 +58,7 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // continuation. It MUST use the one plugin-wide gate because goal/todo/
   // boulder may observe an adjacent terminal edge and otherwise inject too.
   // Child sessions are excluded before this call site is reached.
-  "features/model-fallback/register.ts": { synthetic: 1 },
+  "features/model-fallback/register.ts": { synthetic: 2 },
   // Monitor output delivery. NOT gated, for the same reason as background
   // completion: it fires once per BATCH, from a specific monitor. Two monitors
   // flushing in the same tick are two distinct notifications, and a per-session
@@ -67,6 +67,14 @@ const PINNED_DISPATCH_SITES: Readonly<Record<string, Readonly<Record<string, num
   // `monitor-output:<id>:batch-<seq>` in features/monitor/delivery.ts, which is
   // the correct granularity here.
   "features/monitor/delivery.ts": { synthetic: 1 },
+  // Native monitor dispatch checks managed ownership before its root-only fallback.
+  "tools/monitor/register.ts": { synthetic: 1 },
+  // Standalone native idle ports are used by legacy-compatible registration tests;
+  // production injectors receive the shared execution-aware delivery callback.
+  "orchestration/idle-injector.ts": { synthetic: 1 },
+  // Per-item root delivery preserves its stable ID; managed recipients instead
+  // enqueue an Executor message generation. Observed-edge callers retain their gate.
+  "plugin/execution-delivery.ts": { synthetic: 1 },
   // Team member bootstrap. The adapter creates and owns each child session,
   // then submits its initial assignment once. This is not an observed edge and
   // has no competing writer, so it remains outside the shared parent gate.

@@ -1,0 +1,151 @@
+{
+  "verdict": "PASS",
+  "version": "2.0.3",
+  "results": [
+    {
+      "name": "native plugin tools visible in actual model request",
+      "verdict": "PASS"
+    },
+    {
+      "name": "workflow start and wait execute a real model-backed node",
+      "verdict": "PASS"
+    },
+    {
+      "name": "Team create message status and delete via native tools",
+      "verdict": "PASS"
+    },
+    {
+      "name": "invalid workflow rejected without child model dispatch",
+      "verdict": "PASS"
+    },
+    {
+      "name": "frontier advances without a wave barrier and same-key start is idempotent",
+      "verdict": "PASS"
+    },
+    {
+      "name": "explicit retry preserves successful nodes and enforces idempotent keys and generation checks",
+      "verdict": "PASS"
+    },
+    {
+      "name": "workflow cancellation drains five held executions without starting its queued node",
+      "verdict": "PASS"
+    },
+    {
+      "name": "host restart retains terminal history and requires explicit retry before new work",
+      "verdict": "PASS"
+    },
+    {
+      "name": "active host shutdown settles owned work and a reopened runtime can explicitly retry it",
+      "verdict": "PASS"
+    },
+    {
+      "name": "real host unchanged and owned resources cleaned",
+      "verdict": "PASS"
+    }
+  ],
+  "before": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "b14032fba5a7b3916cfa5b0e3185a32cbc278eee3ef45de155f9ffb543e40583",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "72194c191913acdc3058ae3e64e0ab5aac01bff04b27eff81b10bdea638498bf"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2696,
+      "session_v2": 2341
+    }
+  },
+  "after": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "b14032fba5a7b3916cfa5b0e3185a32cbc278eee3ef45de155f9ffb543e40583",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "72194c191913acdc3058ae3e64e0ab5aac01bff04b27eff81b10bdea638498bf"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2696,
+      "session_v2": 2341
+    }
+  },
+  "processes": [
+    {
+      "name": "version",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "--version"
+      ],
+      "pid": 30855,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "workflow-team",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 30856,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "workflow-team-restarted",
+      "executable": "/Users/Bryan/.bun/bin/opencode2",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 30876,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    }
+  ],
+  "sandboxRemoved": true,
+  "mockClosed": true,
+  "cleanup": [
+    {
+      "status": "fulfilled"
+    },
+    {
+      "status": "fulfilled"
+    }
+  ],
+  "invocation": [
+    "/Users/Bryan/Programme/Project/AI/oh-my-openagent-effect-runtime-20260911/packages/omo-opencode2/scripts/qa-workflow-team.mjs",
+    ".omo/evidence/20260914-opencode2-native/workflow-production-active-restart"
+  ],
+  "isolation": {
+    "HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home",
+    "USERPROFILE": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home",
+    "PWD": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home/project",
+    "XDG_DATA_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/data",
+    "XDG_CONFIG_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/config",
+    "XDG_CACHE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/cache",
+    "XDG_STATE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/state",
+    "OPENCODE_TEST_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-workflow-team-GCG7bU/enabled/home"
+  },
+  "omitted": "No inherited credentials, raw real-host configs or authorization headers recorded."
+}

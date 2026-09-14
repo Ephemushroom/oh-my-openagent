@@ -1,0 +1,14 @@
+{
+  "taskId": "1",
+  "task": {
+    "version": 1,
+    "id": "1",
+    "subject": "QA assignment",
+    "description": "QA tasklist payload",
+    "status": "pending",
+    "blocks": [],
+    "blockedBy": [],
+    "createdAt": 1789377470357,
+    "updatedAt": 1789377470357
+  }
+}

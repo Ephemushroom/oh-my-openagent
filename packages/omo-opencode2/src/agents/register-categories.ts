@@ -1,4 +1,4 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
 import { Agent, Model } from "@opencode/plugin"
 import { buildSisyphusJuniorPrompt } from "@oh-my-opencode/agents-core"
 import { CATEGORY_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
@@ -6,6 +6,7 @@ import type { OpenCode2AgentOverride } from "../config"
 
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
+import { Effect } from "effect"
 
 /**
  * Category descriptions. These are the v2-facing one-liners for each delegation
@@ -31,7 +32,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
  *
  * Returns the category names actually registered.
  */
-export async function registerCategories(
+export function registerCategories(
   ctx: { readonly agent: Pick<Context["agent"], "transform"> },
   options: {
     catalog: CatalogSource;
@@ -39,10 +40,11 @@ export async function registerCategories(
     agentOverrides?: Record<string, OpenCode2AgentOverride>;
     trace?: (event: string, detail?: Record<string, unknown>) => void;
   },
-): Promise<Set<string>> {
+): Effect.Effect<Set<string>, never, import("effect").Scope.Scope> {
+  return Effect.gen(function* () {
   const registered = new Set<string>()
 
-  await ctx.agent.transform((draft) => {
+  yield* ctx.agent.transform((draft) => {
     const snapshot = options.catalog.current
     const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
     for (const [name, requirement] of Object.entries(CATEGORY_MODEL_REQUIREMENTS)) {
@@ -75,4 +77,5 @@ export async function registerCategories(
   })
 
   return registered
+  })
 }

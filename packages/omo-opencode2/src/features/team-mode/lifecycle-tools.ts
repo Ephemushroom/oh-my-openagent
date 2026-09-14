@@ -11,6 +11,9 @@ import { TeamSessionRegistry } from "./session-registry"
 import { parseInlineTeamSpec } from "./storage"
 import { inputRecord, requiredString } from "./tool-input"
 import type { TeamFeatureContext, TeamToolDefinition, TeamTrace } from "./types"
+import type { Effect } from "effect"
+import type { Executor } from "../../orchestration/execution/types"
+import { Session } from "@opencode/schema/session"
 
 type LifecycleToolsOptions = {
   readonly ctx: Pick<TeamFeatureContext, "session">
@@ -20,6 +23,8 @@ type LifecycleToolsOptions = {
   readonly mailbox: TeamMailbox
   readonly resolveSessionID: (toolCtx: unknown) => string | undefined
   readonly trace?: TeamTrace
+  readonly executor?: Executor
+  readonly run?: <A>(effect: Effect.Effect<A, unknown>) => Promise<A>
 }
 
 function participantFor(options: LifecycleToolsOptions, teamRunId: string, toolCtx: unknown) {
@@ -83,7 +88,20 @@ export function createTeamLifecycleTools(options: LifecycleToolsOptions): TeamTo
       const participant = participantFor(options, teamRunId, toolCtx)
       if (participant.role !== "lead") throw new Error("team_delete is lead-only")
       let state = await loadRuntimeState(teamRunId, options.config)
-      await Promise.all(state.members.filter((member) => member.agentType !== "leader" && member.sessionId).map((member) => options.ctx.session.interrupt({ sessionID: member.sessionId ?? "" }).catch(() => undefined)))
+       const members = state.members.filter((member) => member.agentType !== "leader" && member.sessionId)
+        if (options.executor && options.run) {
+          const executor = options.executor
+          const run = options.run
+           const records = await run(executor.list())
+           const owners = new Map<string, typeof records[number]["owner"]>()
+           for (const record of records) {
+             if (record.owner.kind === "team" && record.owner.teamRunID === teamRunId) owners.set(record.owner.member, record.owner)
+           }
+           for (const owner of owners.values()) await run(executor.closeOwner(owner))
+           await Promise.all([...owners.values()].map((owner) => run(executor.stopOwner(owner, "force"))))
+       } else {
+         await Promise.all(members.map((member) => options.ctx.session.interrupt({ sessionID: member.sessionId ?? "" }).catch(() => undefined)))
+       }
       if (state.status === "active" || state.status === "shutdown_requested") state = await transitionRuntimeState(teamRunId, (current) => ({ ...current, status: "deleting" }), options.config)
       if (state.status === "deleting") await transitionRuntimeState(teamRunId, (current) => ({ ...current, status: "deleted" }), options.config)
       options.sessions.unregisterTeam(teamRunId)
@@ -131,6 +149,14 @@ function shutdownDecisionTool(options: LifecycleToolsOptions, decision: "approve
       const now = Date.now()
       const reason = decision === "reject" ? requiredString(input, "reason") : undefined
       await resolveShutdown(teamRunId, memberName, options.config, (request) => decision === "approve" ? { ...request, approvedAt: now } : { ...request, rejectedAt: now, rejectedReason: reason })
+      if (decision === "approve" && options.executor && options.run) {
+        const state = await loadRuntimeState(teamRunId, options.config)
+        const member = state.members.find((entry) => entry.name === memberName)
+        if (!member?.sessionId || member.agentType === "leader") throw new Error("shutdown target must be a member")
+        const record = await options.run(options.executor.managed(Session.ID.make(member.sessionId)))
+        if (record) await options.run(options.executor.closeOwner(record.owner))
+        await options.runtime.updateMemberStatus(member.sessionId, "shutdown_approved")
+      }
       trace(`omo.team.shutdown-${decision}d`, { teamRunId, memberName })
       return { content: JSON.stringify({ teamRunId, memberName, status: `shutdown_${decision}d`, reason }) }
     },

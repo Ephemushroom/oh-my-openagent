@@ -1,4 +1,4 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
 import { Agent, Model } from "@opencode/plugin"
 import {
   buildDynamicHephaestusPrompt,
@@ -10,6 +10,7 @@ import { buildSisyphusPromptForModel } from "./sisyphus-prompt"
 
 import { resolveAgentModel } from "./model-resolution"
 import type { CatalogSource } from "./model-resolution"
+import { Effect } from "effect"
 import { AGENT_MODEL_REQUIREMENTS } from "@oh-my-opencode/model-core"
 import type { OpenCode2AgentOverride } from "../config"
 
@@ -82,7 +83,7 @@ const PRIMARIES: PrimaryDefinition[] = [
  * with OpenCode 2, and set the harness default + downgrade the built-in `build`
  * agent to a hidden subagent (matching the v1 adapter's behaviour).
  */
-export async function registerPrimaries(
+export function registerPrimaries(
   ctx: { readonly agent: Pick<Context["agent"], "transform"> },
   options: {
     catalog: CatalogSource;
@@ -93,10 +94,11 @@ export async function registerPrimaries(
     /** Called with the exact static Sisyphus prompt baked at registration time. */
     onSisyphusPrompt?: (prompt: string) => void;
   },
-): Promise<Set<string>> {
-  const registered = new Set<string>()
+): Effect.Effect<Set<string>, never, import("effect").Scope.Scope> {
+  return Effect.gen(function* () {
+    const registered = new Set<string>()
 
-  await ctx.agent.transform((draft) => {
+  yield* ctx.agent.transform((draft) => {
     const snapshot = options.catalog.current
     const effectiveDefault = options.systemDefaultModel ?? snapshot.systemDefaultModel
     for (const def of PRIMARIES) {
@@ -164,4 +166,5 @@ export async function registerPrimaries(
   })
 
   return registered
+  })
 }

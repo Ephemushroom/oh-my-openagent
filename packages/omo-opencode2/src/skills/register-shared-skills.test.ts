@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { existsSync } from "node:fs"
 
 import { Skill } from "@opencode/schema/skill"
+import { Effect } from "effect"
 
 import { readSharedSkillFiles, registerSharedSkills } from "./register-shared-skills"
 import type { SharedSkillsRegistrationContext } from "./register-shared-skills"
@@ -10,7 +11,7 @@ import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills"
 function createDraftCapture(added: Skill.Info[]): SharedSkillsRegistrationContext {
   return {
     skill: {
-      transform: async (callback) => {
+      transform: (callback) => Effect.sync(() => {
         callback({
           list: () => [],
           get: () => undefined,
@@ -18,8 +19,8 @@ function createDraftCapture(added: Skill.Info[]): SharedSkillsRegistrationContex
           update: () => undefined,
           remove: () => undefined,
         })
-        return { dispose: async () => undefined }
-      },
+        return { dispose: Effect.void }
+      }),
     },
   }
 }
@@ -31,7 +32,7 @@ describe("registerSharedSkills", () => {
     const context = createDraftCapture(added)
 
     // when
-    await registerSharedSkills(context)
+    await Effect.runPromise(Effect.scoped(registerSharedSkills(context)))
 
     // then
     const ids = added.map((skill) => skill.id)
@@ -47,7 +48,7 @@ describe("registerSharedSkills", () => {
     const added: Skill.Info[] = []
 
     // when
-    await registerSharedSkills(createDraftCapture(added))
+    await Effect.runPromise(Effect.scoped(registerSharedSkills(createDraftCapture(added))))
 
     // then
     const gitMaster = added.find((skill) => skill.id === "git-master")

@@ -14,9 +14,12 @@ proves it via `OMO_SPIKE_TRACE` NDJSON**, because the v2 adapter emits its own
 trace events and the CLI does not expose raw system parts or tool results.
 
 Target the exact SDK version in `packages/omo-opencode2/package.json` and record
-the real host's `--version`. Current target: `@opencode/cli` beta-19425 with the
-matching `@opencode/plugin` and `@opencode/schema` packages. Older evidence below
-documents its capture version; it does not prove current compatibility.
+the real host's `--version`. Current target: OpenCode 2.0.3 (`@opencode/cli@2.0.3`
+matching `@opencode/plugin@2.0.3` and `@opencode/schema@2.0.3` with
+`effect@4.0.0-rc.112`). The production entry is native Effect via
+`@opencode/plugin/effect`. Historical beta receipts (beta-17823, beta-19425)
+document their capture versions and are preserved as historical evidence, but do
+not prove 2.0.3 compatibility.
 
 ## Golden rules
 
@@ -100,6 +103,19 @@ a stated reason, not for convenience:
   state, and the plugin never writes it.
 - `*/tool-output/*`: parent-harness scratch, written by the agent driving QA,
   not by the isolated child.
+
+## Native execution runtime QA boundaries
+
+The native Effect runtime introduces unified execution handling via `Executor`. Assert against these concrete runtime contracts:
+
+- **Queued acceptance vs child completion.** Background task calls must return accepted `TaskID` and generation references before child execution finishes. Held mock models prove the caller receives an immediate reference while admission permits stay held until settlement.
+- **Synchronous admission budgets.** Model limit (5), team limit (4), and session limit (1) reserve together in a single synchronous decision. Test that cancelling queued work frees the reservation without ever spawning child sessions.
+- **LockPath crash fail-closed behavior.** The writer creates `.omo/execution/${locationKey}.lock` with non-recursive directory creation. A crashed process that leaves the lock behind must cause subsequent startup to fail closed with conflict, requiring explicit manual recovery.
+- **Storage records and restart reconciliation.** Execution records persist under `execution/${locationKey}/${taskID}/${generation}` in plugin storage. Restart maintains queryable terminal records, while unfinished runs drain and reconcile to `interrupted` status, never automatically replaying prompts.
+- **Per-item notifications vs root observer gate.** Background completions persist in `notifications/${locationKey}/` and dispatch via outbox queue. These per-item notifications are distinct from `session-dispatch-gate.ts`, which only coordinates competing observers on a single idle or error edge.
+- **Workflow tool actions.** Drive acyclic graphs through `workflow` (`start`, `snapshot`, `wait`, `cancel`, `retry`). Assert that `dependsOn` enforces order only, independent branches continue past failed siblings, and retry preserves completed nodes.
+- **Team Mode boundary.** Run `packages/omo-opencode2/scripts/qa-native-team.mjs` with a fresh evidence directory. Its held-response scenario must prove four Team executions leave the fifth model slot available to ordinary work, and forced deletion closes every member's admission before released capacity can start queued members.
+- **Workflow lifecycle.** Run `packages/omo-opencode2/scripts/qa-workflow-team.mjs` with a fresh evidence directory. It exercises generation/key-aware retries, preserved successful nodes, frontier progress, batch cancellation, active host shutdown and explicit retry after restart. This complements, not replaces, the original 33-check `qa-api-upgrade.mjs --installer` baseline.
 
 ## Contract accuracy
 

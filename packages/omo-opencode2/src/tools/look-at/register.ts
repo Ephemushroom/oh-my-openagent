@@ -1,10 +1,18 @@
 import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context as EffectContext } from "@opencode/plugin/effect/plugin"
+import { Agent } from "@opencode/schema/agent"
+import { Model } from "@opencode/schema/model"
+import { Tool } from "@opencode/schema/tool"
+import { Session } from "@opencode/schema/session"
+import { Effect } from "effect"
 
 import type { CatalogSource } from "../../agents/model-resolution"
 import { parseLookAtArgs } from "./look-at-arguments"
 import { LOOK_AT_DESCRIPTION } from "./tool-description"
 import type { SessionModelRegistry } from "./session-model-registry"
 import { resolveLookAtRoute } from "./vision-gate"
+import type { Executor, Owner } from "../../orchestration/execution/types"
+import { runForeground } from "../../orchestration/execution/foreground"
 
 type Trace = (event: string, detail?: Record<string, unknown>) => void
 
@@ -53,6 +61,38 @@ export interface RegisterLookAtOptions {
   delegate: LookAtDelegate
   trace?: Trace
 }
+
+export type RegisterNativeLookAtOptions = {
+  readonly catalog: CatalogSource
+  readonly sessionModels: SessionModelRegistry
+  readonly executor: Executor
+  readonly trace?: Trace
+}
+
+export const registerLookAtToolEffect = Effect.fn("omo.registerLookAtToolEffect")(function* (ctx: EffectContext, options: RegisterNativeLookAtOptions) {
+  yield* ctx.tool.transform((draft) => draft.add({
+    name: LOOK_AT_TOOL_NAME,
+    description: LOOK_AT_DESCRIPTION,
+    input: LOOK_AT_INPUT,
+    options: { codemode: false },
+    execute: (rawInput: unknown, context: { readonly sessionID: string }) => Effect.gen(function* () {
+        const parsed = parseLookAtArgs(rawInput)
+        if (!parsed.ok) return { content: `Error: ${parsed.error}` }
+        const sessionID = context.sessionID
+        const route = resolveLookAtRoute({ sessionModel: options.sessionModels.read(sessionID), snapshot: options.catalog.current })
+        if (route.kind === "passthrough") return { content: buildPassthroughGuidance(parsed.args.filePaths, route.model) }
+        if (route.kind === "unavailable") return { content: `Error: cannot examine media because ${route.reason === "catalog-cold" ? "the model catalog has not loaded yet" : "no model in the catalog accepts image input"}. Connect a vision-capable provider, then retry.` }
+        const visionModel = Model.Ref.parse(route.visionModel)
+        const managed = yield* options.executor.managed(Session.ID.make(sessionID))
+        const owner: Owner = { kind: "look_at", callerSessionID: Session.ID.make(sessionID), rootSessionID: managed?.owner.rootSessionID ?? Session.ID.make(sessionID) }
+        const { record: result } = yield* runForeground(options.executor, { kind: "fresh", owner, agent: Agent.ID.make("multimodal-looker"), model: visionModel, text: buildDelegatePrompt(parsed.args.filePaths, parsed.args.goal), description: `look_at: ${parsed.args.goal}`.slice(0, 80), background: false, immediate: managed !== undefined }, 120000)
+        if (result.status !== "completed") return yield* new Tool.Error({ message: result.reason ?? `Media execution ${result.status}` })
+        options.trace?.("omo.lookat.delegated", { model: route.model, visionModel: route.visionModel, files: parsed.args.filePaths.length })
+        return { content: result.output }
+      }).pipe(Effect.mapError((error) => new Tool.Error({ message: error instanceof Error ? error.message : String(error) }))),
+  }))
+  options.trace?.("omo.lookat.native-registered", { tool: LOOK_AT_TOOL_NAME })
+})
 
 function buildDelegatePrompt(filePaths: string[], goal: string): string {
   const files = filePaths.map((path) => `- ${path}`).join("\n")

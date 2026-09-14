@@ -1,4 +1,8 @@
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Effect, Stream } from "effect"
+
 import type { IdleInjectorEvent, IdleInjectorTrace } from "../../orchestration/idle-injector"
+import { createNativeIdlePorts, type NativeIdleDispatch } from "../../orchestration/idle-injector"
 import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
 import type { TodoItem } from "../../orchestration/todo-store"
 import { createTodoContinuationRuntime } from "./runtime"
@@ -25,6 +29,7 @@ export type TodoContinuationContext = {
 }
 
 export type RegisterTodoContinuationOptions = {
+  readonly dispatch?: NativeIdleDispatch
   readonly enabled: boolean
   readonly getTodos: (sessionID: string) => readonly TodoItem[]
   // The plugin-wide instance, shared with goal so the two cannot both inject
@@ -36,6 +41,35 @@ export type RegisterTodoContinuationOptions = {
 
 export type RegisteredTodoContinuation = {
   readonly dispose: () => void
+}
+
+export function registerTodoContinuationEffect(
+  ctx: { readonly session: Pick<Context["session"], "get" | "synthetic">;
+    readonly event: { readonly subscribe: () => Stream.Stream<IdleInjectorEvent, unknown, import("effect").Scope.Scope> } },
+  options: RegisterTodoContinuationOptions,
+): Effect.Effect<RegisteredTodoContinuation, never, import("effect").Scope.Scope> {
+  return Effect.gen(function* () {
+    if (!options.enabled) {
+      options.trace?.("omo.todo.disabled")
+      return { dispose: () => undefined }
+    }
+    const ports = yield* createNativeIdlePorts(ctx, options.dispatch)
+    const runtime = createTodoContinuationRuntime({
+      gate: options.gate,
+      getTodos: options.getTodos,
+      maxConsecutive: options.maxConsecutive,
+       sessionExists: ports.sessionExists,
+       dispatchContinuation: ports.dispatch,
+       settle: ports.settle,
+      trace: options.trace,
+    })
+    const worker = Stream.runForEach(ctx.event.subscribe(), (event) =>
+      Effect.forkScoped(Effect.promise(() => runtime.handleEvent(event))).pipe(Effect.asVoid))
+    yield* Effect.forkScoped(worker)
+    yield* Effect.addFinalizer(() => Effect.sync(() => runtime.dispose()))
+    options.trace?.("omo.todo.registered", { maxConsecutive: options.maxConsecutive ?? null })
+    return { dispose: () => runtime.dispose() }
+  })
 }
 
 export async function registerTodoContinuation(

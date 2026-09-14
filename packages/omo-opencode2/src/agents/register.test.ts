@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test"
 
-import type { Context } from "@opencode/plugin/promise/plugin"
+import { Agent } from "@opencode/schema/agent"
+import type { AgentEditor } from "@opencode/plugin/effect/agent"
+import { Effect } from "effect"
 
 import { registerCategories } from "./register-categories"
 import { registerPrimaries } from "./register-primaries"
@@ -16,21 +18,7 @@ import type { OpenCode2AgentOverride } from "../config"
  * fields, so a plain-object draft is sufficient and faithful for unit testing.
  */
 
-type MutableAgent = {
-  name: unknown
-  description?: string
-  mode?: string
-  hidden?: boolean
-  color?: string
-  system?: string
-  model?: { id: string; providerID: string; variant?: string }
-  request: { settings: Record<string, unknown>; headers: Record<string, string>; body: Record<string, unknown> }
-  permissions: { action: string; resource: string; effect: string }[]
-}
-
-function emptyAgent(): MutableAgent {
-  return { name: undefined, request: { settings: {}, headers: {}, body: {} }, permissions: [] }
-}
+type MutableAgent = ReturnType<AgentEditor["list"]>[number]
 
 function createMockContext(input: {
   availableModels?: string[]
@@ -71,9 +59,9 @@ function createMockContext(input: {
     },
   } as unknown as Parameters<CatalogSource["capture"]>[0])
 
-  const ctx = {
+  const ctx: Parameters<typeof registerPrimaries>[0] = {
     agent: {
-      transform: async (cb: (draft: unknown) => void) => {
+      transform: (cb) => Effect.sync(() => {
         cb({
           list: () => [...agents.values()],
           get: (id: string) => agents.get(id),
@@ -81,7 +69,7 @@ function createMockContext(input: {
             defaultAgent = id
           },
           update: (id: string, fn: (agent: MutableAgent) => void) => {
-            const agent = agents.get(id) ?? emptyAgent()
+            const agent = agents.get(id) ?? Agent.Info.default(Agent.ID.make(id))
             fn(agent)
             agents.set(id, agent)
           },
@@ -89,10 +77,10 @@ function createMockContext(input: {
             agents.delete(id)
           },
         })
-      },
-      reload: async () => {},
+        return { dispose: Effect.void }
+      }),
     },
-  } as unknown as Context
+  }
 
   return { ctx, catalog, agents, getDefault: () => defaultAgent }
 }
@@ -146,7 +134,7 @@ describe("registerSubagents", () => {
   test("#given a catalog #when registering #then all seven subagents are upserted as subagents with a prompt", async () => {
     const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    const registered = await registerSubagents(ctx, { catalog })
+    const registered = await Effect.runPromise(Effect.scoped(registerSubagents(ctx, { catalog })))
 
     expect([...registered].sort()).toEqual(
       ["oracle", "librarian", "explore", "multimodal-looker", "metis", "momus", "sisyphus-junior"].sort(),
@@ -162,7 +150,7 @@ describe("registerSubagents", () => {
   test("#given a catalog #when registering oracle #then write/edit/task are denied", async () => {
     const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    await registerSubagents(ctx, { catalog })
+    await Effect.runPromise(Effect.scoped(registerSubagents(ctx, { catalog })))
 
     const oracle = agents.get("oracle")
     const effects = new Map(oracle?.permissions.map((rule) => [rule.action, rule.effect]))
@@ -174,25 +162,25 @@ describe("registerSubagents", () => {
   test("#given an available chain model #when registering #then the agent model resolves from the catalog", async () => {
     const { ctx, catalog, agents } = createMockContext({ availableModels: ["openai/gpt-5.6-sol"], defaultModel: "zhipuai/glm-4.7" })
 
-    await registerSubagents(ctx, { catalog })
+    await Effect.runPromise(Effect.scoped(registerSubagents(ctx, { catalog })))
 
     const oracle = agents.get("oracle")
-    expect(oracle?.model?.providerID).toBe("openai")
-    expect(oracle?.model?.id).toBe("gpt-5.6-sol")
+    expect(String(oracle?.model?.providerID)).toBe("openai")
+    expect(String(oracle?.model?.id)).toBe("gpt-5.6-sol")
   })
 
   test("#given a per-agent model override #when registering #then the override overrides the catalog", async () => {
     const { ctx, catalog, agents } = createMockContext({ availableModels: ["openai/gpt-5.6-sol"], defaultModel: "zhipuai/glm-4.7" })
 
-    await registerSubagents(ctx, {
+    await Effect.runPromise(Effect.scoped(registerSubagents(ctx, {
       catalog,
       agentOverrides: { oracle: { model: "anthropic/claude-3-5-sonnet", variant: "latest" } },
-    })
+    })))
 
     const oracle = agents.get("oracle")
-    expect(oracle?.model?.providerID).toBe("anthropic")
-    expect(oracle?.model?.id).toBe("claude-3-5-sonnet")
-    expect(oracle?.model?.variant).toBe("latest")
+    expect(String(oracle?.model?.providerID)).toBe("anthropic")
+    expect(String(oracle?.model?.id)).toBe("claude-3-5-sonnet")
+    expect(String(oracle?.model?.variant)).toBe("latest")
   })
 })
 
@@ -203,21 +191,21 @@ describe("registerPrimaries", () => {
       defaultModel: "zhipuai/glm-4.7",
     })
 
-    const registered = await registerPrimaries(ctx, { catalog })
+    const registered = await Effect.runPromise(Effect.scoped(registerPrimaries(ctx, { catalog })))
 
     expect([...registered].sort()).toEqual(["atlas", "hephaestus", "prometheus", "sisyphus"].sort())
     for (const id of registered) {
       expect(agents.get(id)?.mode).toBe("primary")
       expect(agents.get(id)?.system?.length).toBeGreaterThan(0)
     }
-    expect(agents.get("hephaestus")?.model?.id).toBe("gpt-5.6-sol")
+    expect(String(agents.get("hephaestus")?.model?.id)).toBe("gpt-5.6-sol")
     expect(getDefault()).toBe("sisyphus")
   })
 
   test("#given a non-GPT system default on a cold catalog #when registering #then hephaestus is skipped but the other primaries register", async () => {
     const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    const registered = await registerPrimaries(ctx, { catalog })
+    const registered = await Effect.runPromise(Effect.scoped(registerPrimaries(ctx, { catalog })))
 
     expect([...registered].sort()).toEqual(["atlas", "prometheus", "sisyphus"].sort())
     expect(agents.get("hephaestus")).toBeUndefined()
@@ -230,7 +218,7 @@ describe("registerPrimaries", () => {
       defaultModel: "zhipuai/glm-4.7",
     })
 
-    const registered = await registerPrimaries(ctx, { catalog })
+    const registered = await Effect.runPromise(Effect.scoped(registerPrimaries(ctx, { catalog })))
 
     expect(registered.has("hephaestus")).toBe(false)
     expect(agents.get("hephaestus")).toBeUndefined()
@@ -239,7 +227,7 @@ describe("registerPrimaries", () => {
   test("#given a catalog #when registering #then the built-in build agent is downgraded to a hidden subagent", async () => {
     const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    await registerPrimaries(ctx, { catalog })
+    await Effect.runPromise(Effect.scoped(registerPrimaries(ctx, { catalog })))
 
     expect(agents.get("build")?.mode).toBe("subagent")
     expect(agents.get("build")?.hidden).toBe(true)
@@ -248,7 +236,7 @@ describe("registerPrimaries", () => {
   test("#given a defaultAgent option #when registering #then it applies that as the default agent", async () => {
     const { ctx, catalog, getDefault } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    await registerPrimaries(ctx, { catalog, defaultAgent: "atlas" })
+    await Effect.runPromise(Effect.scoped(registerPrimaries(ctx, { catalog, defaultAgent: "atlas" })))
 
     expect(getDefault()).toBe("atlas")
   })
@@ -258,7 +246,7 @@ describe("registerCategories", () => {
   test("#given a catalog #when registering #then all eight categories register as subagents with the executor prompt", async () => {
     const { ctx, catalog, agents } = createMockContext({ defaultModel: "zhipuai/glm-4.7" })
 
-    const registered = await registerCategories(ctx, { catalog })
+    const registered = await Effect.runPromise(Effect.scoped(registerCategories(ctx, { catalog })))
 
     expect([...registered].sort()).toEqual(
       ["visual-engineering", "ultrabrain", "deep", "artistry", "quick", "unspecified-low", "unspecified-high", "writing"].sort(),

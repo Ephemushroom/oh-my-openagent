@@ -14,6 +14,8 @@ import {
 import { buildEnvelope } from "@oh-my-opencode/team-core/team-mailbox/poll"
 
 import type { SessionDispatchGate } from "../../orchestration/session-dispatch-gate"
+import type { Executor } from "../../orchestration/execution/types"
+import { Effect } from "effect"
 import { TeamSessionRegistry } from "./session-registry"
 import type { TeamFeatureContext, TeamTrace } from "./types"
 
@@ -23,6 +25,8 @@ type TeamMailboxOptions = {
   readonly sessions: TeamSessionRegistry
   readonly gate: SessionDispatchGate
   readonly trace?: TeamTrace
+  readonly executor?: Executor
+  readonly run?: <A>(effect: Effect.Effect<A, unknown>) => Promise<A>
 }
 
 export type SendTeamMessageInput = {
@@ -40,6 +44,8 @@ export class TeamMailbox {
   readonly #sessions: TeamSessionRegistry
   readonly #gate: SessionDispatchGate
   readonly #trace: TeamTrace
+  readonly #executor: Executor | undefined
+  readonly #run: (<A>(effect: Effect.Effect<A, unknown>) => Promise<A>) | undefined
 
   constructor(options: TeamMailboxOptions) {
     this.#ctx = options.ctx
@@ -47,6 +53,8 @@ export class TeamMailbox {
     this.#sessions = options.sessions
     this.#gate = options.gate
     this.#trace = options.trace ?? (() => undefined)
+    this.#executor = options.executor
+    this.#run = options.run
   }
 
   async send(input: SendTeamMessageInput): Promise<{ readonly messageId: string; readonly deliveredTo: string[] }> {
@@ -126,14 +134,22 @@ export class TeamMailbox {
     for (const recipientName of recipients) {
       const recipient = runtime.members.find((member) => member.name === recipientName)
       if (!recipient?.sessionId || recipient.agentType === "leader") continue
-      await this.#ctx.session.synthetic({
-        sessionID: recipient.sessionId,
-        text: buildEnvelope(message),
-        description: `Team message from ${message.from}`,
-        metadata: { source: "omo.team.direct-message", teamRunId: runtime.teamRunId, messageId: message.messageId },
-        delivery: "queue",
-        resume: true,
-      })
+       if (this.#executor && this.#run) {
+         const records = await this.#run(this.#executor.list())
+         const memberRecords = records.filter((record) => record.owner.kind === "team" && record.owner.teamRunID === runtime.teamRunId && record.owner.member === recipient.name)
+         const previous = memberRecords.at(-1)
+         if (!previous) throw new Error(`No execution found for team member: ${recipient.name}`)
+         await this.#run(this.#executor.submit({ kind: "message", owner: previous.owner, previous: previous.ref, text: buildEnvelope(message), description: `Team message from ${message.from}`, metadata: { source: "omo.team.direct-message", teamRunId: runtime.teamRunId, messageId: message.messageId }, background: true }))
+       } else {
+         await this.#ctx.session.synthetic({
+           sessionID: recipient.sessionId,
+           text: buildEnvelope(message),
+           description: `Team message from ${message.from}`,
+           metadata: { source: "omo.team.direct-message", teamRunId: runtime.teamRunId, messageId: message.messageId },
+           delivery: "queue",
+           resume: true,
+         })
+       }
       await ackMessages(runtime.teamRunId, recipient.name, [message.messageId], this.#config)
       this.#trace("omo.team.message-delivered", { teamRunId: runtime.teamRunId, messageId: message.messageId, recipient: recipient.name })
     }

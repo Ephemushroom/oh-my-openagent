@@ -2,13 +2,14 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { Effect, Stream } from "effect"
 
 import { registerWriteExistingFileGuard } from "./index"
 
 describe("write-existing-file-guard hook", () => {
   let tempDir: string
   let mockCtx: any
-  let beforeHook: (event: any) => Promise<void>
+  let beforeHook: (event: any) => Effect.Effect<void, unknown, never>
   let publishEvent: (event: any) => void
 
   beforeEach(async () => {
@@ -40,12 +41,13 @@ describe("write-existing-file-guard hook", () => {
           if (name === "execute.before") {
             beforeHook = handler
           }
+          return Effect.succeed({ dispose: Effect.void })
         }
       },
-      event: eventIterable
+       event: { subscribe: () => Stream.fromAsyncIterable(eventIterable, (error) => error) }
     }
 
-    await registerWriteExistingFileGuard(mockCtx, undefined, tempDir)
+    await Effect.runPromise(Effect.scoped(registerWriteExistingFileGuard(mockCtx, undefined, tempDir)))
   })
 
   afterEach(() => {
@@ -59,29 +61,29 @@ describe("write-existing-file-guard hook", () => {
     writeFileSync(file, "hello")
 
     // Read
-    await beforeHook({
+    await Effect.runPromise(beforeHook({
       tool: "read",
       sessionID: "sess-1",
       input: { filePath: file }
-    })
+    }))
 
     // Write - should not throw
-    await expect(beforeHook({
+    await expect(Effect.runPromise(beforeHook({
       tool: "write",
       sessionID: "sess-1",
       input: { filePath: file }
-    })).resolves.toBeUndefined()
+    }))).resolves.toBeUndefined()
   })
 
   test("#when tool is 'write' on existing file without read, #then blocks", async () => {
     const file = join(tempDir, "test.txt")
     writeFileSync(file, "hello")
 
-    await expect(beforeHook({
+    await expect(Effect.runPromise(beforeHook({
       tool: "write",
       sessionID: "sess-1",
       input: { filePath: file }
-    })).rejects.toThrow("File already exists")
+    }))).rejects.toThrow("File already exists")
   })
 
   test("#when tool is 'write' with overwrite flag, #then allows", async () => {
@@ -94,8 +96,8 @@ describe("write-existing-file-guard hook", () => {
       input: { filePath: file, overwrite: true }
     }
 
-    await expect(beforeHook(event)).resolves.toBeUndefined()
-    expect("overwrite" in (event.input as any)).toBe(false)
+    await expect(Effect.runPromise(beforeHook(event))).resolves.toBeUndefined()
+    expect("overwrite" in event.input).toBe(false)
   })
 
   test("#when file is inside .omo workspace, #then allows existing write", async () => {
@@ -104,10 +106,10 @@ describe("write-existing-file-guard hook", () => {
     const file = join(omoDir, "plan.md")
     writeFileSync(file, "hello")
 
-    await expect(beforeHook({
+    await expect(Effect.runPromise(beforeHook({
       tool: "write",
       sessionID: "sess-1",
       input: { filePath: file }
-    })).resolves.toBeUndefined()
+    }))).resolves.toBeUndefined()
   })
 })
