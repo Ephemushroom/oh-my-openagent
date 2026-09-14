@@ -3,13 +3,14 @@ import { join } from "node:path"
 
 import { parseFrontmatter } from "@oh-my-opencode/utils"
 import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills"
-import type { SkillEditor } from "@opencode/plugin/promise/skill"
+import type { SkillEditor } from "@opencode/plugin/effect/skill"
+import { Effect } from "effect"
 import { AbsolutePath } from "@opencode/schema/schema"
 import { Skill } from "@opencode/schema/skill"
 
 export interface SharedSkillsRegistrationContext {
   readonly skill: {
-    readonly transform: (callback: (draft: SkillEditor) => void) => Promise<unknown>
+    readonly transform: (callback: (draft: SkillEditor) => void) => Effect.Effect<unknown, never, import("effect").Scope.Scope>
   }
 }
 
@@ -59,14 +60,15 @@ export function readSharedSkillFiles(root: string): readonly SharedSkillFile[] {
   return skills
 }
 
-export async function registerSharedSkills(
+export function registerSharedSkills(
   ctx: SharedSkillsRegistrationContext,
   trace?: (event: string, detail?: Record<string, unknown>) => void,
-): Promise<void> {
+): Effect.Effect<void, never, import("effect").Scope.Scope> {
+  return Effect.gen(function* () {
   const path = sharedSkillsRootPath()
   const skills = readSharedSkillFiles(path)
 
-  await ctx.skill.transform((draft) => {
+  yield* ctx.skill.transform((draft) => {
     for (const skill of skills) {
       draft.add(
         Skill.Info.make({
@@ -81,4 +83,5 @@ export async function registerSharedSkills(
   })
 
   trace?.("omo.skills.registered", { path, count: skills.length })
+  })
 }
