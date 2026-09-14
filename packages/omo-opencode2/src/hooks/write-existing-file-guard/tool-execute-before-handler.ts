@@ -1,4 +1,4 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
 import { existsSync } from "node:fs"
 import {
   asRecord,
@@ -91,7 +91,7 @@ export function isOmoWorkspacePath(canonicalPath: string): boolean {
 
 export async function handleWriteExistingFileGuardToolExecuteBefore(params: {
   ctx: Context
-  event: any
+  event: Parameters<Context["tool"]["hook"]>[1] extends (event: infer T) => unknown ? T : never
   readPermissionsBySession: Map<string, Set<string>>
   sessionLastAccess: Map<string, number>
   getCanonicalSessionRoot: () => string
@@ -150,8 +150,7 @@ export async function handleWriteExistingFileGuardToolExecuteBefore(params: {
 
   const overwriteEnabled = isOverwriteEnabled(args?.overwrite)
   if (argsRecord && "overwrite" in argsRecord) {
-    const { overwrite: _, ...rest } = argsRecord
-    event.input = rest
+    delete argsRecord.overwrite
   }
 
   if (!existsSync(resolvedPath)) {

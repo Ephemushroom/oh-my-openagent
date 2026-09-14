@@ -1,4 +1,6 @@
-import type { Context } from "@opencode/plugin/promise/plugin"
+import type { Context } from "@opencode/plugin/effect/plugin"
+import { Tool } from "@opencode/schema/tool"
+import { Effect, Stream, type Scope } from "effect"
 import { existsSync, realpathSync } from "node:fs"
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from "node:path"
 
@@ -58,7 +60,7 @@ export function isOverwriteEnabled(value: boolean | string | undefined): boolean
 
 type Trace = (event: string, detail?: Record<string, unknown>) => void
 
-export async function registerWriteExistingFileGuard(ctx: Context, trace?: Trace, directory?: string): Promise<void> {
+export function registerWriteExistingFileGuard(ctx: Context, trace?: Trace, directory?: string): Effect.Effect<void, never, Scope.Scope> {
   const readPermissionsBySession = new Map<string, Set<string>>()
   const sessionLastAccess = new Map<string, number>()
   const maxTrackedSessions = MAX_TRACKED_SESSIONS
@@ -73,26 +75,30 @@ export async function registerWriteExistingFileGuard(ctx: Context, trace?: Trace
     return canonicalSessionRoot
   }
 
-  void (async () => {
-    for await (const event of ctx.event.subscribe()) {
-      if (event.type === "session.deleted") {
-        readPermissionsBySession.delete(event.id)
-        sessionLastAccess.delete(event.id)
-      }
-    }
-  })()
+  return Effect.gen(function* () {
+    yield* ctx.tool.hook("execute.before", (event) => Effect.tryPromise({
+      try: () => handleWriteExistingFileGuardToolExecuteBefore({
+        ctx,
+        event,
+        readPermissionsBySession,
+        sessionLastAccess,
+        getCanonicalSessionRoot,
+        maxTrackedSessions,
+        maxTrackedPathsPerSession,
+        trace,
+        directory: workDir,
+      }),
+      catch: (error) => new Tool.Error({ message: error instanceof Error ? error.message : String(error) }),
+    }))
 
-  await ctx.tool.hook("execute.before", async (event) => {
-    await handleWriteExistingFileGuardToolExecuteBefore({
-      ctx,
-      event,
-      readPermissionsBySession,
-      sessionLastAccess,
-      getCanonicalSessionRoot,
-      maxTrackedSessions,
-      maxTrackedPathsPerSession,
-      trace,
-      directory: workDir,
-    })
+    yield* ctx.event.subscribe().pipe(
+      Stream.runForEach((event) => Effect.sync(() => {
+        if (event.type === "session.deleted") {
+          readPermissionsBySession.delete(event.id)
+          sessionLastAccess.delete(event.id)
+        }
+      })),
+      Effect.forkScoped,
+    )
   })
 }
