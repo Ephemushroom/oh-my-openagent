@@ -1,12 +1,12 @@
 import { isPlainObject } from "@oh-my-opencode/utils"
 import {
-  loadOmoConfig,
   mergeOmoConfigRecords,
 } from "@oh-my-opencode/omo-config-core"
 import type { OmoConfigEnv } from "@oh-my-opencode/omo-config-core"
 
 import { OpenCode2ConfigSchema } from "./schema"
 import type { OpenCode2Config } from "./schema"
+import { loadOpenCode2Layers } from "./config-layers"
 
 export type LoadOpenCode2ConfigOptions = {
   directory: string;
@@ -56,9 +56,11 @@ function applyUserSecurityKeys(
     ? userView.browser_automation_engine
     : undefined
   const playwrightMcpArgs = userBrowserEngine?.playwright_mcp_args
+  const { mcp_env_allowlist: _projectAllowlist, ...unrestricted } = target
+  if (browserAutomationEngine) delete browserAutomationEngine.playwright_mcp_args
 
   return {
-    ...target,
+    ...unrestricted,
     ...(mcpEnvAllowlist !== undefined ? { mcp_env_allowlist: mcpEnvAllowlist } : {}),
     ...(browserAutomationEngine !== undefined
       ? {
@@ -72,7 +74,7 @@ function applyUserSecurityKeys(
 }
 
 export function loadOpenCode2Config(options: LoadOpenCode2ConfigOptions): OpenCode2ConfigResult {
-  const loaded = loadOmoConfig({ cwd: options.directory, env: options.environment })
+  const loaded = loadOpenCode2Layers(options.directory, options.environment)
   const selectedProfile = loaded.profile
 
   const views: Record<string, unknown>[] = []
@@ -130,7 +132,7 @@ export function loadOpenCode2Config(options: LoadOpenCode2ConfigOptions): OpenCo
       config: OpenCode2ConfigSchema.parse({}), // return stripped empty object on schema failure
       rawConfig,
       diagnostics,
-      sources: loaded.sources.filter(s => s.loaded).map(s => s.path),
+      sources: loaded.layers.map((layer) => layer.source.path),
     }
   }
 
@@ -138,6 +140,6 @@ export function loadOpenCode2Config(options: LoadOpenCode2ConfigOptions): OpenCo
     config: parsed.data,
     rawConfig,
     diagnostics,
-    sources: loaded.sources.filter(s => s.loaded).map(s => s.path),
+    sources: loaded.layers.map((layer) => layer.source.path),
   }
 }

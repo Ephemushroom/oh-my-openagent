@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "teamRunId": "33642bb8-1e75-4a26-a6de-342d5d721380",
+  "teamName": "native-qa",
+  "specSource": "project",
+  "createdAt": 1789562727645,
+  "status": "active",
+  "leadSessionId": "ses_f55bfd5f0ffe02tkHOf4Nxmqt9",
+  "members": [
+    {
+      "name": "lead",
+      "sessionId": "ses_f55bfd5f0ffe02tkHOf4Nxmqt9",
+      "agentType": "leader",
+      "subagent_type": "sisyphus",
+      "status": "idle",
+      "pendingInjectedMessageIds": []
+    },
+    {
+      "name": "worker",
+      "sessionId": "ses_f55bfd31effeVHU0R8We5G8VLY",
+      "agentType": "general-purpose",
+      "subagent_type": "sisyphus-junior",
+      "category": "quick",
+      "status": "idle",
+      "pendingInjectedMessageIds": []
+    }
+  ],
+  "shutdownRequests": [],
+  "bounds": {
+    "maxMembers": 8,
+    "maxParallelMembers": 4,
+    "maxMessagesPerRun": 10000,
+    "maxWallClockMinutes": 120,
+    "maxMemberTurns": 500
+  },
+  "tasks": {
+    "pending": 1,
+    "claimed": 0,
+    "in_progress": 0,
+    "completed": 0,
+    "deleted": 0,
+    "total": 1
+  },
+  "messages": []
+}

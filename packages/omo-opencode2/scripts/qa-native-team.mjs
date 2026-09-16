@@ -23,10 +23,10 @@ let fixture
 try {
   model = await createTeamModel(evidence)
   fixture = createFixture({ sandbox, mode: "enabled", repo, mockUrl: model.url })
-  const optionsPath = join(fixture.project, ".omo/omo.json")
+  const optionsPath = fixture.omoConfigPath
   const config = JSON.parse(readFileSync(optionsPath, "utf8"))
-  config["[opencode2]"].btw = { enabled: true }
-  config["[opencode2]"].monitor = { enabled: true, allowed_commands: ["bun"], batch_max_lines: 1 }
+  config.btw = { enabled: true }
+  config.monitor = { enabled: true, allowed_commands: ["bun"], batch_max_lines: 1 }
   writeFileSync(optionsPath, JSON.stringify(config))
   const version = await runner.run("version", ["--version"], fixture)
   assert.match(version.output, /2\.0\.3/)

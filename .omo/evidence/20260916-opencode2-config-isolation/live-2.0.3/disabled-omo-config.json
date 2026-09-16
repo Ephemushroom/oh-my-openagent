@@ -1,0 +1,1 @@
+{"agents":{"sisyphus":{"model":"openai/gpt-fake"},"atlas":{"model":"openai/gpt-atlas"},"explore":{"model":"openai/gpt-explore"},"quick":{"model":"openai/gpt-quick"}},"disabled_mcps":["lsp","context7","grep_app"],"telemetry":false,"goal":{"enabled":false},"team_mode":{"enabled":false},"monitor":{"enabled":false}}
