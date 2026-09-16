@@ -57,7 +57,7 @@ function createContextStub(): {
 
 async function writeConfig(cwd: string, enabled: boolean): Promise<void> {
   await mkdir(join(cwd, ".omo"), { recursive: true })
-  await writeFile(join(cwd, ".omo", "omo.json"), JSON.stringify({ "[opencode2]": { team_mode: { enabled } } }))
+  await writeFile(join(cwd, ".omo", "opencode2.json"), JSON.stringify({ team_mode: { enabled } }))
 }
 
 describe("registerTeamMode", () => {

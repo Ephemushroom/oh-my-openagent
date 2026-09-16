@@ -40,7 +40,7 @@ function createContextWith(initial: DraftServer[]): {
 function writeOmoConfig(dir: string, config: Record<string, unknown>): void {
   const fs = require("node:fs") as typeof import("node:fs")
   fs.mkdirSync(`${dir}/.omo`, { recursive: true })
-  fs.writeFileSync(`${dir}/.omo/omo.json`, JSON.stringify(config))
+  fs.writeFileSync(`${dir}/.omo/opencode2.json`, JSON.stringify(config))
 }
 
 describe("registerBuiltinMcps", () => {
