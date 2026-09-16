@@ -1,0 +1,2 @@
+timestamp=2026-09-16T12:39:39.211Z level=INFO run=6c73e1bd message="cli starting" version=2.0.3 channel=latest local=false args="[\"--version\"]" role=cli
+opencode v2.0.3

@@ -1,0 +1,175 @@
+{
+  "ok": true,
+  "accepted": true,
+  "rejectedReasons": [],
+  "deduped": false,
+  "audit": {
+    "kind": "revise_criterion",
+    "source": "cli",
+    "targetGoalIds": [
+      "G001-separate-fork-opencode2-settings-int"
+    ],
+    "evidence": "Tests and live receipts exist in .omo/evidence/20260916-opencode2-config-isolation",
+    "rationale": "Replace generated generic criterion with exact user-facing isolation scenario",
+    "invariant": {
+      "accepted": true,
+      "structuralInvariantAccepted": true,
+      "evidenceBackedNecessity": true,
+      "noEasierCompletion": true,
+      "rejectedReasons": [],
+      "reasons": []
+    },
+    "criterionId": "C001",
+    "before": {
+      "updatedAt": "2026-09-16T12:52:56.877Z",
+      "goalCount": 1,
+      "goalIds": [
+        "G001-separate-fork-opencode2-settings-int"
+      ],
+      "goals": [
+        {
+          "id": "G001-separate-fork-opencode2-settings-int",
+          "title": "Separate fork OpenCode2 settings into ~/.omo/opencode2.json and proje...",
+          "objective": "Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/opencode2.json with JSONC fallback, preserving profiles/options and v1 configuration. Prove distinct loaders choose conflicting files independently; missing/malformed v2 never falls back to v1; guarded project paths and user-only keys remain safe; real2.0.3 config/model/feature routing and v1 bytes unchanged; targeted tests/typecheck and scoped live QA pass; review and repository PR delivery completed with task-owned cleanup. Full implementation plan .omo/plans/opencode2-config-isolation.md. Stop when this complete isolated configuration behavior and verified delivery hold.",
+          "status": "in_progress",
+          "successCriteria": [
+            {
+              "id": "C001",
+              "scenario": "happy path for: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/...",
+              "userModel": "happy",
+              "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 1.",
+              "essential": true,
+              "capturedEvidence": null,
+              "status": "pending"
+            },
+            {
+              "id": "C002",
+              "scenario": "edge case (boundary/empty/malformed)",
+              "userModel": "edge",
+              "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/....",
+              "essential": true,
+              "capturedEvidence": null,
+              "status": "pending"
+            },
+            {
+              "id": "C003",
+              "scenario": "regression: adjacent surface still works",
+              "userModel": "regression",
+              "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/....",
+              "essential": false,
+              "capturedEvidence": null,
+              "status": "pending"
+            }
+          ],
+          "attempt": 1,
+          "createdAt": "2026-09-16T12:35:44.758Z",
+          "updatedAt": "2026-09-16T12:52:56.877Z",
+          "startedAt": "2026-09-16T12:52:56.877Z"
+        }
+      ],
+      "activeGoalId": "G001-separate-fork-opencode2-settings-int"
+    },
+    "after": {
+      "updatedAt": "2026-09-16T12:52:56.901Z",
+      "goalCount": 1,
+      "goalIds": [
+        "G001-separate-fork-opencode2-settings-int"
+      ],
+      "goals": [
+        {
+          "id": "G001-separate-fork-opencode2-settings-int",
+          "title": "Separate fork OpenCode2 settings into ~/.omo/opencode2.json and proje...",
+          "objective": "Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/opencode2.json with JSONC fallback, preserving profiles/options and v1 configuration. Prove distinct loaders choose conflicting files independently; missing/malformed v2 never falls back to v1; guarded project paths and user-only keys remain safe; real2.0.3 config/model/feature routing and v1 bytes unchanged; targeted tests/typecheck and scoped live QA pass; review and repository PR delivery completed with task-owned cleanup. Full implementation plan .omo/plans/opencode2-config-isolation.md. Stop when this complete isolated configuration behavior and verified delivery hold.",
+          "status": "in_progress",
+          "successCriteria": [
+            {
+              "id": "C001",
+              "scenario": "Dedicated user/project settings control v2 model routing and feature gates while original v1 config files remain unchanged",
+              "userModel": "happy",
+              "expectedEvidence": "Real2.0.3 production35checks and12Team checks, plus both-loader model and byte-equality regression",
+              "essential": true,
+              "capturedEvidence": null,
+              "status": "pending"
+            },
+            {
+              "id": "C002",
+              "scenario": "edge case (boundary/empty/malformed)",
+              "userModel": "edge",
+              "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/....",
+              "essential": true,
+              "capturedEvidence": null,
+              "status": "pending"
+            },
+            {
+              "id": "C003",
+              "scenario": "regression: adjacent surface still works",
+              "userModel": "regression",
+              "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/....",
+              "essential": false,
+              "capturedEvidence": null,
+              "status": "pending"
+            }
+          ],
+          "attempt": 1,
+          "createdAt": "2026-09-16T12:35:44.758Z",
+          "updatedAt": "2026-09-16T12:52:56.901Z",
+          "startedAt": "2026-09-16T12:52:56.877Z"
+        }
+      ],
+      "activeGoalId": "G001-separate-fork-opencode2-settings-int"
+    }
+  },
+  "plan": {
+    "version": 1,
+    "evidenceLayoutVersion": 2,
+    "createdAt": "2026-09-16T12:35:44.758Z",
+    "updatedAt": "2026-09-16T12:52:56.901Z",
+    "briefPath": ".omo/ulw-loop/oc2-config-20260916/brief.md",
+    "goalsPath": ".omo/ulw-loop/oc2-config-20260916/goals.json",
+    "ledgerPath": ".omo/ulw-loop/oc2-config-20260916/ledger.jsonl",
+    "codexGoalMode": "aggregate",
+    "goals": [
+      {
+        "id": "G001-separate-fork-opencode2-settings-int",
+        "title": "Separate fork OpenCode2 settings into ~/.omo/opencode2.json and proje...",
+        "objective": "Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/opencode2.json with JSONC fallback, preserving profiles/options and v1 configuration. Prove distinct loaders choose conflicting files independently; missing/malformed v2 never falls back to v1; guarded project paths and user-only keys remain safe; real2.0.3 config/model/feature routing and v1 bytes unchanged; targeted tests/typecheck and scoped live QA pass; review and repository PR delivery completed with task-owned cleanup. Full implementation plan .omo/plans/opencode2-config-isolation.md. Stop when this complete isolated configuration behavior and verified delivery hold.",
+        "status": "in_progress",
+        "successCriteria": [
+          {
+            "id": "C001",
+            "scenario": "Dedicated user/project settings control v2 model routing and feature gates while original v1 config files remain unchanged",
+            "userModel": "happy",
+            "expectedEvidence": "Real2.0.3 production35checks and12Team checks, plus both-loader model and byte-equality regression",
+            "essential": true,
+            "capturedEvidence": null,
+            "status": "pending"
+          },
+          {
+            "id": "C002",
+            "scenario": "edge case (boundary/empty/malformed)",
+            "userModel": "edge",
+            "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/....",
+            "essential": true,
+            "capturedEvidence": null,
+            "status": "pending"
+          },
+          {
+            "id": "C003",
+            "scenario": "regression: adjacent surface still works",
+            "userModel": "regression",
+            "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Separate fork OpenCode2 settings into ~/.omo/opencode2.json and project .omo/....",
+            "essential": false,
+            "capturedEvidence": null,
+            "status": "pending"
+          }
+        ],
+        "attempt": 1,
+        "createdAt": "2026-09-16T12:35:44.758Z",
+        "updatedAt": "2026-09-16T12:52:56.901Z",
+        "startedAt": "2026-09-16T12:52:56.877Z"
+      }
+    ],
+    "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/oc2-config-20260916/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/oc2-config-20260916/ledger.jsonl as the audit trail.",
+    "activeGoalId": "G001-separate-fork-opencode2-settings-int"
+  }
+}
