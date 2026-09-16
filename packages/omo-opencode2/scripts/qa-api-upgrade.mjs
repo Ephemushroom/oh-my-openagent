@@ -67,6 +67,11 @@ try {
       assert.ok(requests.length > 0)
       assert.ok(requests.every((request) => !request.tools.includes("background_output")))
     })
+    await check(`${mode}: original OMO configuration unchanged`, () => {
+      for (const path of fixture.originalOmoPaths) assert.equal(readFileSync(path, "utf8"), fixture.originalOmoText)
+      writeFileSync(join(evidence, `${mode}-omo-config.json`), readFileSync(fixture.omoConfigPath))
+      writeFileSync(join(evidence, `${mode}-original-omo.json`), fixture.originalOmoText)
+    })
   }
 } catch (error) {
   results.push({ name: "driver", verdict: "FAIL", error: String(error) })

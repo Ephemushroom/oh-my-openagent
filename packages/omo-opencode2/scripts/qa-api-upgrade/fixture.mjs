@@ -10,6 +10,7 @@ export function createFixture(options) {
   const project = join(home, "project")
   const config = join(root, "config")
   mkdirSync(join(project, ".omo"), { recursive: true })
+  mkdirSync(join(home, ".omo"), { recursive: true })
   mkdirSync(join(config, "opencode"), { recursive: true })
   const env = {
     PATH: process.env.PATH, TMPDIR: tmpdir(), HOME: home, USERPROFILE: home, PWD: project,
@@ -39,15 +40,21 @@ export function createFixture(options) {
       } } },
   }))
   const enabled = mode === "enabled"
-  writeFileSync(join(project, ".omo/omo.json"), JSON.stringify({ "[opencode2]": {
+  const omoConfigPath = join(home, ".omo/opencode2.json")
+  writeFileSync(omoConfigPath, JSON.stringify({
     agents: { sisyphus: { model: "openai/gpt-fake" }, atlas: { model: "openai/gpt-atlas" },
       explore: { model: "openai/gpt-explore" }, quick: { model: "openai/gpt-quick" } },
     disabled_mcps: ["lsp", "context7", "grep_app"], telemetry: false,
     goal: { enabled }, team_mode: { enabled }, monitor: { enabled },
-  } }))
+  }))
+  const originalOmoText = JSON.stringify({ agents: { sisyphus: { model: "v1-only/unavailable" } },
+    "[opencode2]": { goal: { enabled: !enabled }, team_mode: { enabled: !enabled }, monitor: { enabled: !enabled },
+      agents: { explore: { model: "v1-only/unavailable" }, quick: { model: "v1-only/unavailable" } } } })
+  const originalOmoPaths = [join(home, ".omo/omo.jsonc"), join(project, ".omo/omo.json")]
+  for (const path of originalOmoPaths) writeFileSync(path, originalOmoText)
   const readPath = join(project, "qa-input.txt")
   writeFileSync(readPath, "QA_NATIVE_READ_PAYLOAD\nsecond fixture line\n")
-  return { root, project, env, mode, enabled, readPath, configPath, pluginEntry }
+  return { root, project, env, mode, enabled, readPath, configPath, pluginEntry, omoConfigPath, originalOmoPaths, originalOmoText }
 }
 
 export async function installFixture(fixture, options) {

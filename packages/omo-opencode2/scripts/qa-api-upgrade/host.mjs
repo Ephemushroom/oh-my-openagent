@@ -10,7 +10,8 @@ export function hostState() {
   const data = process.env.XDG_DATA_HOME ?? join(homedir(), ".local/share")
   const config = process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config")
   const configs = [join(config, "opencode/opencode.json"), join(config, "opencode/opencode.jsonc"),
-    join(homedir(), ".omo/omo.json"), join(homedir(), ".omo/omo.jsonc")]
+    join(homedir(), ".omo/omo.json"), join(homedir(), ".omo/omo.jsonc"),
+    join(homedir(), ".omo/opencode2.json"), join(homedir(), ".omo/opencode2.jsonc")]
   const db = join(data, "opencode/opencode.db")
   const sql = (query) => execFileSync("sqlite3", ["-readonly", db, query], { encoding: "utf8" }).trim()
   const tables = existsSync(db) ? sql("SELECT name FROM sqlite_master WHERE type='table';").split("\n") : []
