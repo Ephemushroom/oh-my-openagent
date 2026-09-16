@@ -229,6 +229,11 @@ oh-my-openagent ships in two editions of one product. **Ultimate** = this OpenCo
 
 One unified file configures every omo harness (OpenCode plugin, Senpi, Codex). Legacy `oh-my-openagent.json[c]` / `oh-my-opencode.json[c]` files and `~/.omo/config.jsonc` are read by nothing but the migration engine.
 
+Fork-local OpenCode2 is the exception: its plugin settings live in
+`~/.omo/opencode2.json` and walked project `.omo/opencode2.json` files (`.jsonc`
+fallback). It never reads or migrates the unified OMO files. See
+[`packages/omo-opencode2/AGENTS.md`](packages/omo-opencode2/AGENTS.md#dedicated-opencode2-configuration).
+
 ```
 Project layers (nearest wins): <pwd up to $HOME>/.omo/omo.json[c]   ($HOME itself skipped)
                             ↓ merged onto

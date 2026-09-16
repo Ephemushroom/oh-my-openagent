@@ -82,6 +82,12 @@ an `opencode.jsonc` into the sandbox project pointing at the real entry DIRECTOR
 { "model": "zhipuai/glm-4.7", "plugins": ["<abs path>/packages/omo-opencode2/src"] }
 ```
 
+OMO settings are separate from that host config: write `<sandbox-home>/.omo/opencode2.json`
+with adapter settings at its root, or `<project>/.omo/opencode2.json` for project
+overrides (`.jsonc` fallback). Seed conflicting `omo.json[c]` in isolation tests to
+prove v1 settings are ignored, and verify their bytes are unchanged. Include real
+`~/.omo/opencode2.json` and `.jsonc` in the before/after host-state hash comparison.
+
 **4. Trace.** Set `OMO_SPIKE_TRACE` to a per-case file, truncate it, run the
 case, then copy it into `out/`. Drive the binary with
 `opencode2 run --standalone --auto --print-logs`, under `timeout -k 5 300`.
