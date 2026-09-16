@@ -2,6 +2,14 @@
 
 `omo.json` (or `omo.jsonc`) is the single harness-spanning configuration surface owned by [`@oh-my-opencode/omo-config-core`](../../packages/omo-config-core/AGENTS.md). It is the only config file read by the OpenCode plugin, by the Senpi adapter (task, config-watch), and by Codex. The legacy OpenCode-family files (`oh-my-openagent.json[c]` / `oh-my-opencode.json[c]`) and `~/.omo/config.jsonc` are read by nothing but the migration engine (see [Migration from legacy files](#migration-from-legacy-files)).
 
+The fork-local **OpenCode2 adapter** is separate: it reads `~/.omo/opencode2.json`
+(or `.jsonc`) and walked project `.omo/opencode2.json` overrides. It does not read
+this unified file. Put v2 settings such as `agents`, `team_mode` and `btw` directly
+at the root of its dedicated file. Copy desired settings from an old `[opencode2]`
+block, including any agent overrides you previously inherited, without renaming
+or replacing the original OMO config. See the
+[OpenCode2 configuration contract](../../packages/omo-opencode2/AGENTS.md#dedicated-opencode2-configuration).
+
 Files may be JSONC: `//` comments and trailing commas are allowed. Strict typed blocks reject malformed values and report a diagnostic rather than silently accepting them; unknown keys are ignored with an `unknown-keys` diagnostic (see [Safety and failure handling](#file-locations-and-precedence)) so a retired or mistyped key never costs you the rest of the layer. The `[opencode]` block is intentionally a freeform record so it can carry the full plugin configuration.
 
 ## File locations and precedence

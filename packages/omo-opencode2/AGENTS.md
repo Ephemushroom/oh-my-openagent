@@ -256,7 +256,7 @@ ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
 
 - **A user-defined server entry always wins.** The transform checks the draft
   before `set`; an existing name is deferred to the user, never overwritten.
-- **`disabled_mcps` under `[opencode2]`** removes a built-in entirely.
+- **`disabled_mcps` in `opencode2.json`** removes a built-in entirely.
 - **Materialization must be forced.** v2 `State` defers transform application
   when registration happens inside a batch — the same laziness
   `agent.transform` shows at setup — so `registerBuiltinMcps` calls
@@ -274,29 +274,51 @@ ships a native `ctx.websearch` domain, so a remote Exa/Tavily MCP adds nothing.
   an explicit user MCP entry is preserved. Stale `[opencode2].codegraph`
   settings are stripped by the adapter schema without discarding other settings.
 
-## Configuration keys live under `[opencode2]`, never at the root
+## Dedicated OpenCode2 configuration
 
-`@oh-my-opencode/omo-config-core` rejects unknown keys at the config ROOT, and it
-discards a rejected file WHOLE. A root-level adapter key such as
-`{ "monitor": {...} }` or `{ "boulder": {...} }` therefore invalidates the entire
-`.omo/omo.json`, every key in it is silently lost, and `sources` comes back empty.
-There is no error at the call site; the feature just looks disabled.
+The fork reads `~/.omo/opencode2.json`, with `opencode2.jsonc` as a fallback.
+Project overrides use `.omo/opencode2.json` (then `.jsonc`), walked from the working
+directory toward home and merged farthest-first. Home is loaded once as the user
+layer. Symlinked project config files and `.omo` directories are skipped.
 
-Correct shape:
+Settings belong at the root of this dedicated file:
 
 ```jsonc
-{ "[opencode2]": { "monitor": { "enabled": true, "allowed_commands": ["npm"] } } }
+{
+  "team_mode": { "enabled": true },
+  "btw": { "enabled": true },
+  "monitor": { "enabled": true, "allowed_commands": ["bun"] }
+}
 ```
 
-Verified on `0.0.0-next-17444`; reproducer and outcome recorded in
-`.omo/evidence/20260820-opencode2-monitor-tools/`.
+Copied `[opencode2]` blocks and profiles inside the dedicated file remain supported.
+Precedence remains base user/project, block user/project, selected profile base,
+selected profile block, then host plugin options. Profile selection retains
+`OMO_PROFILE`, `OCX_PROFILE` and the host profile-directory convention.
+
+The v2 loader never reads or migrates `omo.json[c]` or legacy oh-my-* config files.
+Those remain owned by original OMO. Missing or malformed v2 settings never fall
+back to v1 settings. To migrate, copy the desired `[opencode2]` settings into the
+new file and explicitly copy any formerly inherited agent overrides. Do not rename
+or replace the original OMO file. The shared schema is not the schema of this file.
+
+This separates plugin settings, not host `opencode.json` plugin lists, authentication
+or project runtime state such as Team specs and boulder plans. The source installer
+still configures the selected host's plugin/MCP entries; it does not create or
+migrate this settings file. Restart the OpenCode2 host/server after configuration
+changes, not only an attached terminal client.
+
+If both hosts currently share a host config with incompatible plugin entries,
+give OpenCode2 its own `OPENCODE_CONFIG_DIR` as well, including on the server and
+when invoking the source installer. Leave the original host directory intact.
+The plugin-settings filename does not change how the host finds its own config.
 
 ## BTW side conversations
 
 `features/btw/` ports v1's BTW side conversations as tool-driven instead of
 TUI-driven. This adapter does not implement a TUI entrypoint; the
 capability is expressed as `btw_start` / `btw_reply` / `btw_list` tools the
-model calls. Gated on `btw.enabled` under `[opencode2]` (default off);
+model calls. Gated on `btw.enabled` in `opencode2.json` (default off);
 `disabled_hooks` respects the name `btw`.
 
 - **The BTW tag rides prompt metadata, not session metadata.** v2 `Session.Info`
@@ -324,7 +346,7 @@ model calls. Gated on `btw.enabled` under `[opencode2]` (default off);
 ## Runtime model fallback
 
 `features/model-fallback/` provides default-off reactive model fallback. Enable
-it under `[opencode2]` with `model_fallback.enabled: true`; `max_retries`
+it in `opencode2.json` with `model_fallback.enabled: true`; `max_retries`
 defaults to 1 and must be at least 1. `disabled_hooks` respects the name
 `model_fallback`.
 
@@ -358,7 +380,7 @@ defaults to 1 and must be at least 1. `disabled_hooks` respects the name
 ## Team Mode
 
 `features/team-mode/` ports the first tool-driven Team Mode surface to v2. It is
-default-off and requires `[opencode2].team_mode.enabled=true`; `disabled_hooks`
+default-off and requires `team_mode.enabled=true` in `opencode2.json`; `disabled_hooks`
 respects the name `team_mode`. When disabled, all 12 `team_*` tools are absent.
 
 The adapter reuses `@oh-my-opencode/team-core` for normalized/validated team
