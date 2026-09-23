@@ -26,12 +26,6 @@ export const OpenCode2BoulderSettingsSchema = z.object({
   enabled: z.boolean().optional(),
 }).strip()
 
-export const OpenCode2BtwSettingsSchema = z.object({
-  enabled: z.boolean().optional(),
-  /** Per-turn timeout for side conversation answers, milliseconds. */
-  timeout_ms: z.number().int().min(1000).optional(),
-}).strip()
-
 export const OpenCode2ModelFallbackSettingsSchema = z.object({
   enabled: z.boolean().optional(),
   max_retries: z.number().int().min(1).optional(),
@@ -65,7 +59,6 @@ export const OpenCode2ConfigSchema = z.object({
   todo_continuation: OpenCode2TodoContinuationSettingsSchema.optional(),
   boulder: OpenCode2BoulderSettingsSchema.optional(),
   monitor: OpenCode2MonitorSettingsSchema.optional(),
-  btw: OpenCode2BtwSettingsSchema.optional(),
   model_fallback: OpenCode2ModelFallbackSettingsSchema.optional(),
   team_mode: OpenCode2TeamModeSettingsSchema.optional(),
   disabled_hooks: z.array(z.string()).optional(),
@@ -77,7 +70,6 @@ export type OpenCode2GoalSettings = z.infer<typeof OpenCode2GoalSettingsSchema>
 export type OpenCode2TodoContinuationSettings = z.infer<typeof OpenCode2TodoContinuationSettingsSchema>
 export type OpenCode2BoulderSettings = z.infer<typeof OpenCode2BoulderSettingsSchema>
 export type OpenCode2MonitorSettings = z.infer<typeof OpenCode2MonitorSettingsSchema>
-export type OpenCode2BtwSettings = z.infer<typeof OpenCode2BtwSettingsSchema>
 export type OpenCode2ModelFallbackSettings = z.infer<typeof OpenCode2ModelFallbackSettingsSchema>
 export type OpenCode2TeamModeSettings = z.infer<typeof OpenCode2TeamModeSettingsSchema>
 export type OpenCode2Config = z.infer<typeof OpenCode2ConfigSchema>
