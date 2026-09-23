@@ -1,6 +1,6 @@
 # @oh-my-opencode/omo-opencode2
 
-OpenCode 2 (native Effect plugin API, `@opencode/plugin@2.0.3`) adapter for
+OpenCode 2 (native Effect plugin API, `@opencode/plugin@2.0.15`) adapter for
 OMO. Ported from v1.
 
 ## Overview
@@ -25,7 +25,7 @@ Effect dependency is `4.0.0-rc.112`, matching the host SDK.
   `wait`, `ModelHookOptions.providerID` scoping, and a `v1/` compat subpath
   (`@opencode-ai/plugin/v1`) for v1-shaped plugins. All changes were additive;
   that earlier pin bump required zero adapter code changes.
-- Current pin: `@opencode/plugin` and `@opencode/schema` 2.0.3. The package
+- Current pin: `@opencode/plugin` and `@opencode/schema` 2.0.15. The package
   scope changed from `@opencode-ai`; retained Promise helpers are not the production entry. Commands
   register executable callbacks with `CommandEditor.add`, while agents retain
   their `update` method. Do not replace every domain's update based on a command
@@ -36,7 +36,7 @@ Effect dependency is `4.0.0-rc.112`, matching the host SDK.
 | Surface | Count | Detail |
 |---|---|---|
 | Agents | 11 | 4 primaries (sisyphus default, hephaestus, prometheus, atlas) + 7 subagents, plus delegation categories as subagents |
-| Tools | 11 base + 22 gated | `task`, `background_output`, `background_cancel`, `workflow`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + 3 goal tools when `goal.enabled` + 4 monitor tools when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` + `btw_start`/`btw_reply`/`btw_list` when `btw.enabled` |
+| Tools | 11 base + 19 gated | `task`, `background_output`, `background_cancel`, `workflow`, `hashline_edit`, `todowrite`, `look_at`, `session_list`, `session_read`, `session_search`, `session_info` + 3 goal tools when `goal.enabled` + 4 monitor tools when `monitor.enabled` + 12 `team_*` tools when `team_mode.enabled` |
 | Hook families | 6 dirs + context composer | hashline read-enhancer, write-existing-file-guard, prometheus-md-only, comment-checker, rules-context, goal + the `session.hook("context")` composer |
 | MCP servers | 3 built-ins | `context7` + `grep_app` (remote), `lsp` (local stdio) via `ctx.mcp.transform`; websearch omitted (native `ctx.websearch` exists) |
 | Skills | 17 | each `shared-skills` SKILL.md parsed and added via `skill.transform` |
@@ -47,7 +47,7 @@ Effect dependency is `4.0.0-rc.112`, matching the host SDK.
 These are v2-API-specific and differ from v1. Read before editing.
 
 - **The model catalog is empty at setup time.** It populates asynchronously via
-  `catalog.updated`. `createCatalogSource()` captures each update and agent model
+  model/provider updates. `createCatalogSource()` captures each update and agent model
   resolution reads `catalog.current` later; a setup-time snapshot is empty and
   silently drops every agent onto its first fallback.
 - **Agent transforms are lazy.** v2 defers `agent.transform` callbacks until first
@@ -64,7 +64,7 @@ These are v2-API-specific and differ from v1. Read before editing.
   in `hooks/register-context-hooks.ts` is load-bearing: sisyphus rebake, skill
   catalog, command catalog, rules, then keyword mode last.
 - **Managed execution goes through `orchestration/execution/`.** Task, workflow,
-  Team member turns, BTW and delegated look_at share one Executor. Submission
+  Team member turns and delegated look_at share one Executor. Submission
   persists a queued `RunRef` before returning; activation-scoped workers acquire
   provider/model (5), Team (4) and session (1) eligibility together. The sole
   native child prompt site is `execution/session-run.ts`, with preallocated
@@ -286,7 +286,6 @@ Settings belong at the root of this dedicated file:
 ```jsonc
 {
   "team_mode": { "enabled": true },
-  "btw": { "enabled": true },
   "monitor": { "enabled": true, "allowed_commands": ["bun"] }
 }
 ```
@@ -312,36 +311,6 @@ If both hosts currently share a host config with incompatible plugin entries,
 give OpenCode2 its own `OPENCODE_CONFIG_DIR` as well, including on the server and
 when invoking the source installer. Leave the original host directory intact.
 The plugin-settings filename does not change how the host finds its own config.
-
-## BTW side conversations
-
-`features/btw/` ports v1's BTW side conversations as tool-driven instead of
-TUI-driven. This adapter does not implement a TUI entrypoint; the
-capability is expressed as `btw_start` / `btw_reply` / `btw_list` tools the
-model calls. Gated on `btw.enabled` in `opencode2.json` (default off);
-`disabled_hooks` respects the name `btw`.
-
-- **The BTW tag rides prompt metadata, not session metadata.** v2 `Session.Info`
-  has no metadata field; `session.prompt({ metadata })` is persisted onto the
-  user message by core's projector, so `getBtwMetadata` reads it back from the
-  first user message of the side session on every turn.
-- **Parent context comes from the SQLite store**, through the same readonly
-  `SessionStore` the session-manager tools use (bounded 64KB / 64 messages,
-  binary-search tail truncation, ported from v1), and is rendered INLINE into
-  the side prompt (boundary sentinel + read-only transcript envelope) rather
-  than spliced as real messages.
-- **Delegation tools are stripped in the context hook, not blocked at
-  execute time.** `registerBtwToolGuard` deletes `task` / `btw_*` /
-  `monitor_start` from `event.tools` for tagged sessions — v2's idiomatic
-  surface, per the plugin README.
-- **Side prompts are NOT behind the shared dispatch gate.** Like
-  `child-session.ts`, the plugin creates and owns the side session; each
-  `btw_start`/`btw_reply` is a distinct user-initiated call, never an
-  idle-edge injection. Pinned in `session-dispatch-audit.test.ts`.
-- **Answers return through the shared foreground observer**, not a detached waiter
-  pump. Reply checks the parent owner, and list returns the side session ID. The
-  native context and execute guards deny mutation and delegation inside side
-  sessions, including workflow and Team tools.
 
 ## Runtime model fallback
 

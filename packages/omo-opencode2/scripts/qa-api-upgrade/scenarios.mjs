@@ -33,11 +33,11 @@ export async function runScenarios(options) {
     model.select(`${mode}-${name}`, fixture.readPath)
     const base = `/api/session/${session.id}`
     const result = await api("POST", `${base}/${command ? "command" : "prompt"}`, {
-      ...(command ? { command } : {}), text, delivery: "steer",
+      ...(command ? { name: command } : {}), text, delivery: "steer",
     })
     assert.equal(result.status, command ? 204 : 200, `${command ?? "prompt"} must be accepted by the real host`)
-    assert.equal((await api("POST", `${base}/wait`)).status, 204)
-    const messages = await api("GET", `${base}/message?limit=100&order=asc`)
+    assert.equal((await api("POST", `/api/experimental/session/${session.id}/wait`)).status, 204)
+    const messages = await api("GET", `${base}/context`)
     assert.equal(messages.status, 200)
     return { session, messages: messages.body.data, current: (await api("GET", base)).body.data }
   }
@@ -51,7 +51,7 @@ export async function runScenarios(options) {
       assert.ok(observed("control").some((request) => JSON.stringify(request.input).includes(TRANSPORT_PAYLOAD)))
     })
     await check(`${mode}: OMO command registry`, async () => {
-      const result = await api("GET", `/api/command?directory=${encodeURIComponent(fixture.project)}`)
+      const result = await api("GET", `/api/command?location[directory]=${encodeURIComponent(fixture.project)}`)
       assert.equal(result.status, 200)
       const names = result.body.data.map((entry) => entry.name)
       assert.ok(names.includes("goal"), "registered OMO goal command must be listed")
@@ -60,10 +60,10 @@ export async function runScenarios(options) {
     await check(`${mode}: rejects missing and malformed commands`, async () => {
       const session = await create()
       const endpoint = `/api/session/${session.id}/command`
-      const missing = await api("POST", endpoint, { command: "qa-command-does-not-exist", text: "QA_REJECTED" })
+      const missing = await api("POST", endpoint, { name: "qa-command-does-not-exist", text: "QA_REJECTED" })
       assert.equal(missing.status, 404)
-      assert.equal((await api("POST", endpoint, { command: 42, text: "QA_REJECTED" })).status, 400)
-      const messages = await api("GET", `/api/session/${session.id}/message`)
+      assert.equal((await api("POST", endpoint, { name: 42, text: "QA_REJECTED" })).status, 400)
+      const messages = await api("GET", `/api/session/${session.id}/context`)
       assert.ok(messages.body.data.every((message) => message.type !== "user"))
     })
     await check(`${mode}: goal literal dollar payload and agent preservation`, async () => {

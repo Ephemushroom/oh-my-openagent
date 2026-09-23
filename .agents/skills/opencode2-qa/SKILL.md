@@ -14,12 +14,12 @@ proves it via `OMO_SPIKE_TRACE` NDJSON**, because the v2 adapter emits its own
 trace events and the CLI does not expose raw system parts or tool results.
 
 Target the exact SDK version in `packages/omo-opencode2/package.json` and record
-the real host's `--version`. Current target: OpenCode 2.0.3 (`@opencode/cli@2.0.3`
-matching `@opencode/plugin@2.0.3` and `@opencode/schema@2.0.3` with
+the real host's `--version`. Current target: OpenCode 2.0.15 (`@opencode/cli@2.0.15`
+matching `@opencode/plugin@2.0.15` and `@opencode/schema@2.0.15` with
 `effect@4.0.0-rc.112`). The production entry is native Effect via
-`@opencode/plugin/effect`. Historical beta receipts (beta-17823, beta-19425)
-document their capture versions and are preserved as historical evidence, but do
-not prove 2.0.3 compatibility.
+`@opencode/plugin/effect`. The host's `/btw` side-question flow is native TUI
+behavior and is not an OMO plugin tool; QA must not reintroduce or assert a
+duplicate `btw_*` tool surface.
 
 ## Golden rules
 
