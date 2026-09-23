@@ -1,0 +1,77 @@
+{
+  "manualQa": {
+    "by": "main-session",
+    "status": "passed",
+    "evidence": "Real OpenCode 2.0.15 isolated API, Team, Workflow and tmux TUI smoke evidence is recorded in the scoped evidence bundle.",
+    "surfaceEvidence": [
+      {
+        "id": "surface-api",
+        "criterionRef": "C001",
+        "surface": "cli",
+        "invocation": "QA_OPENCODE_BIN=/opt/homebrew/bin/opencode node packages/omo-opencode2/scripts/qa-api-upgrade.mjs .omo/evidence/20260923-opencode2-sdk-2.0.15/green-api-3 --installer",
+        "verdict": "passed",
+        "artifactRefs": ["artifact-api"]
+      },
+      {
+        "id": "surface-team-workflow",
+        "criterionRef": "C002",
+        "surface": "cli",
+        "invocation": "qa-native-team.mjs and qa-workflow-team.mjs against isolated OpenCode 2.0.15",
+        "verdict": "passed",
+        "artifactRefs": ["artifact-team", "artifact-workflow"]
+      },
+      {
+        "id": "surface-tui",
+        "criterionRef": "C001",
+        "surface": "tmux",
+        "invocation": "opencode mini --standalone under tmux; type /btw and clean up",
+        "verdict": "passed",
+        "artifactRefs": ["artifact-btw"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-disabled-and-isolation",
+        "criterionRef": "C002",
+        "scenario": "features disabled, malformed commands, denied monitor command, foreign Team ownership, capacity saturation and forced deletion",
+        "expectedBehavior": "feature gates and ownership boundaries fail closed without leaking state",
+        "verdict": "passed",
+        "reason": "Covered by the real API and Team receipts.",
+        "artifactRefs": ["artifact-api", "artifact-team"]
+      }
+    ],
+    "artifactRefs": [
+      {"id":"artifact-api","kind":"cli-transcript","description":"35 isolated API/installer assertions","path":".omo/evidence/ulw/ses_f370854c1ffeMRvdN9fk726A4m/G001-adapt-the-opencode2-omo-adapter-to-o/a1/green-api-3-receipt.json"},
+      {"id":"artifact-team","kind":"cli-transcript","description":"11 real Team/background/monitor assertions","path":".omo/evidence/ulw/ses_f370854c1ffeMRvdN9fk726A4m/G001-adapt-the-opencode2-omo-adapter-to-o/a1/native-team-2-receipt.json"},
+      {"id":"artifact-workflow","kind":"cli-transcript","description":"10 workflow/restart/cancellation assertions","path":".omo/evidence/ulw/ses_f370854c1ffeMRvdN9fk726A4m/G001-adapt-the-opencode2-omo-adapter-to-o/a1/workflow-team-2-receipt.json"},
+      {"id":"artifact-btw","kind":"log","description":"bounded native /btw TUI smoke on OpenCode 2.0.15","path":".omo/evidence/ulw/ses_f370854c1ffeMRvdN9fk726A4m/G001-adapt-the-opencode2-omo-adapter-to-o/a1/native-btw-tui-2-receipt.txt"}
+    ]
+  },
+  "gateReview": {
+    "by": "category:deep",
+    "recommendation": "APPROVE",
+    "reportPath": ".omo/evidence/ulw/ses_f370854c1ffeMRvdN9fk726A4m/G001-adapt-the-opencode2-omo-adapter-to-o/a1/gate-review.md",
+    "evidence": "Independent reviewer approved after the native BTW evidence correction.",
+    "blockers": [],
+    "notes": []
+  },
+  "iteration": {
+    "fullRerun": true,
+    "status": "passed",
+    "rerunCommands": [
+      "bun test packages/omo-opencode2/src",
+      "bunx tsgo --noEmit -p packages/omo-opencode2/tsconfig.json",
+      "bun run typecheck",
+      "bun run build"
+    ],
+    "evidence": "Scoped tests/typecheck passed; root typecheck and build passed. Root tests completed with one unrelated existing sidecar fixture failure documented in the main README."
+  },
+  "criteriaCoverage": {
+    "totalCriteria": 3,
+    "passCount": 3,
+    "originalIntent": "Make the OpenCode2 adapter work with exact host and SDK 2.0.15 while relying on native BTW.",
+    "desiredOutcome": "The real host loads OMO and the orchestration surfaces remain usable with evidence-bound isolation.",
+    "userOutcomeReview": "The requested 2.0.15 adaptation is implemented and the redundant plugin BTW implementation is removed.",
+    "adversarialClassesCovered": ["disabled features", "malformed inputs", "ownership", "capacity", "restart", "TUI native BTW boundary"]
+  }
+}

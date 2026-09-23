@@ -1,0 +1,46 @@
+{
+  "evidence": "/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/.omo/evidence/20260923-opencode2-sdk-2.0.15/workflow-team-2",
+  "verdict": "PASS",
+  "results": [
+    {
+      "name": "native plugin tools visible in actual model request",
+      "verdict": "PASS"
+    },
+    {
+      "name": "workflow start and wait execute a real model-backed node",
+      "verdict": "PASS"
+    },
+    {
+      "name": "Team create message status and delete via native tools",
+      "verdict": "PASS"
+    },
+    {
+      "name": "invalid workflow rejected without child model dispatch",
+      "verdict": "PASS"
+    },
+    {
+      "name": "frontier advances without a wave barrier and same-key start is idempotent",
+      "verdict": "PASS"
+    },
+    {
+      "name": "explicit retry preserves successful nodes and enforces idempotent keys and generation checks",
+      "verdict": "PASS"
+    },
+    {
+      "name": "workflow cancellation drains five held executions without starting its queued node",
+      "verdict": "PASS"
+    },
+    {
+      "name": "host restart retains terminal history and requires explicit retry before new work",
+      "verdict": "PASS"
+    },
+    {
+      "name": "active host shutdown settles owned work and a reopened runtime can explicitly retry it",
+      "verdict": "PASS"
+    },
+    {
+      "name": "real host unchanged and owned resources cleaned",
+      "verdict": "PASS"
+    }
+  ]
+}

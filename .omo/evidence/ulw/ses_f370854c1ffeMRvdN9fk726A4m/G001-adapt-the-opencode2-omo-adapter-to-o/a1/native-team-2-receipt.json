@@ -1,0 +1,114 @@
+{
+  "results": [
+    {
+      "name": "full Team creates a configured category member through real execution",
+      "verdict": "PASS"
+    },
+    {
+      "name": "member followup is a new admitted turn on the retained session",
+      "verdict": "PASS"
+    },
+    {
+      "name": "preserved Team tasklist and status tools operate on durable Team core state",
+      "verdict": "PASS"
+    },
+    {
+      "name": "foreign session cannot delete the team",
+      "verdict": "PASS"
+    },
+    {
+      "name": "shutdown request rejection approval and forced deletion complete",
+      "verdict": "PASS"
+    },
+    {
+      "name": "two background task completions deliver distinct durable root notifications",
+      "verdict": "PASS"
+    },
+    {
+      "name": "background child completion resumes its managed parent through one admitted notification turn",
+      "verdict": "PASS"
+    },
+    {
+      "name": "monitor permission denial real watcher output and explicit stop work",
+      "verdict": "PASS"
+    },
+    {
+      "name": "four active Team members leave the fifth model slot available to an ordinary task",
+      "verdict": "PASS"
+    },
+    {
+      "name": "forced Team deletion drains held members and never starts its queued fifth member",
+      "verdict": "PASS"
+    },
+    {
+      "name": "host state isolation and owned process cleanup",
+      "verdict": "PASS"
+    }
+  ],
+  "before": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "97faf23017d593249f856fee7659d046aa743bd95f4b4693575e2833561bd5da",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "441f14eeaba42a3a90444c92aec07c19013f5a7ebfbbb63215d8d2b6ee5025c2",
+      "/Users/Bryan/.omo/opencode2.json": "f4261a0547834d4462b630684aaa1a2c9a0b2683c219229e411b42fc0138a51a",
+      "/Users/Bryan/.omo/opencode2.jsonc": "absent"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2706,
+      "session_v2": 2440
+    }
+  },
+  "after": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "97faf23017d593249f856fee7659d046aa743bd95f4b4693575e2833561bd5da",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "441f14eeaba42a3a90444c92aec07c19013f5a7ebfbbb63215d8d2b6ee5025c2",
+      "/Users/Bryan/.omo/opencode2.json": "f4261a0547834d4462b630684aaa1a2c9a0b2683c219229e411b42fc0138a51a",
+      "/Users/Bryan/.omo/opencode2.jsonc": "absent"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2706,
+      "session_v2": 2440
+    }
+  },
+  "processes": [
+    {
+      "name": "version",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "--version"
+      ],
+      "pid": 40241,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-team-GmGGlC/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "native-team",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 40242,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-native-team-GmGGlC/enabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    }
+  ],
+  "sandboxRemoved": true,
+  "omitted": "No credentials or host configuration copied; loopback model only."
+}
