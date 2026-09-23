@@ -38,7 +38,7 @@ try {
   const parent = await api("POST", "/api/session", { location: { directory: fixture.project }, title: "Executor QA" })
   assert.equal(parent.status, 200)
   async function command(input) {
-    const response = await api("POST", `/api/session/${parent.body.data.id}/command`, { command: "qa-execution", text: JSON.stringify(input) })
+    const response = await api("POST", `/api/session/${parent.body.data.id}/command`, { name: "qa-execution", text: JSON.stringify(input) })
     assert.equal(response.status, 204)
     return JSON.parse(readFileSync(fixture.env.OMO_SPIKE_TRACE, "utf8").trim().split("\n").at(-1)).result
   }

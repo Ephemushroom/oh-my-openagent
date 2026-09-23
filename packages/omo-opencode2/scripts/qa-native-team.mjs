@@ -25,11 +25,10 @@ try {
   fixture = createFixture({ sandbox, mode: "enabled", repo, mockUrl: model.url })
   const optionsPath = fixture.omoConfigPath
   const config = JSON.parse(readFileSync(optionsPath, "utf8"))
-  config.btw = { enabled: true }
-  config.monitor = { enabled: true, allowed_commands: ["bun"], batch_max_lines: 1 }
+   config.monitor = { enabled: true, allowed_commands: ["bun"], batch_max_lines: 1 }
   writeFileSync(optionsPath, JSON.stringify(config))
   const version = await runner.run("version", ["--version"], fixture)
-  assert.match(version.output, /2\.0\.3/)
+   assert.match(version.output, /2\.0\.15/)
   const host = await runner.serve("native-team", fixture)
   const api = createApi(host, join(evidence, "api.ndjson"))
   const create = async () => {
@@ -42,7 +41,7 @@ try {
   async function call(sessionID, tool, input) {
     const operation = model.operation(tool, input)
     assert.equal((await api("POST", `/api/session/${sessionID}/prompt`, { text: operation.marker, delivery: "queue" })).status, 200)
-    assert.equal((await api("POST", `/api/session/${sessionID}/wait`)).status, 204)
+   assert.equal((await api("POST", `/api/experimental/session/${sessionID}/wait`)).status, 204)
     assert.equal(typeof operation.output, "string", `${tool} must return through the real model tool loop`)
     return operation.output
   }
@@ -55,13 +54,13 @@ try {
   const member = created.runtimeState.members.find((entry) => entry.name === "worker")
   assert.ok(member?.sessionId)
   await model.entered("QA_TEAM_INITIAL_INPUT")
-  assert.equal((await api("POST", `/api/session/${member.sessionId}/wait`)).status, 204)
+   assert.equal((await api("POST", `/api/experimental/session/${member.sessionId}/wait`)).status, 204)
   results.push({ name: "full Team creates a configured category member through real execution", verdict: "PASS" })
   model.watch("QA_TEAM_FOLLOWUP_INPUT")
   await call(lead, "team_send_message", { teamRunId, to: "worker", body: "QA_TEAM_FOLLOWUP_INPUT" })
   await model.entered("QA_TEAM_FOLLOWUP_INPUT")
-  assert.equal((await api("POST", `/api/session/${member.sessionId}/wait`)).status, 204)
-  const history = await api("GET", `/api/session/${member.sessionId}/message?limit=100&order=asc`)
+   assert.equal((await api("POST", `/api/experimental/session/${member.sessionId}/wait`)).status, 204)
+   const history = await api("GET", `/api/session/${member.sessionId}/context`)
   assert.ok(history.body.data.some((entry) => entry.type === "user" && entry.text.includes("QA_TEAM_INITIAL_INPUT")))
   assert.ok(history.body.data.some((entry) => entry.type === "user" && entry.text.includes("QA_TEAM_FOLLOWUP_INPUT")))
   results.push({ name: "member followup is a new admitted turn on the retained session", verdict: "PASS" })
@@ -84,18 +83,6 @@ try {
   const deleted = JSON.parse(await call(lead, "team_delete", { teamRunId, force: true }))
   assert.equal(deleted.deleted, true)
   results.push({ name: "shutdown request rejection approval and forced deletion complete", verdict: "PASS" })
-  assert.match(await call(lead, "btw_start", { question: "QA_BTW_SIDE_PAYLOAD" }), /QA_NATIVE_TEAM_TURN_DONE/)
-  const sides = await call(lead, "btw_list", {})
-  const sideID = sides.match(/ses_[A-Za-z0-9]+/)?.[0]
-  assert.ok(sideID, "BTW list must return the public session ID")
-  assert.match(await call(outsider, "btw_reply", { side_session_id: sideID, text: "QA_FOREIGN_SIDE_INPUT" }), /another session/)
-  assert.match(await call(lead, "btw_reply", { side_session_id: sideID, text: "QA_BTW_REPLY_INPUT" }), /QA_NATIVE_TEAM_TURN_DONE/)
-  const sideRequests = model.requests.filter((entry) => JSON.stringify(entry.input).includes("<omo-btw-side"))
-  assert.ok(sideRequests.length > 0)
-  for (const request of sideRequests) for (const tool of ["task", "workflow", "team_create", "monitor_start", "shell", "patch"]) {
-    assert.ok(!request.tools.includes(tool), `BTW must not advertise ${tool}`)
-  }
-  results.push({ name: "BTW start reply caller ownership and read-only delegation guard work on the real host", verdict: "PASS" })
   const backgroundIDs = []
   for (const prompt of ["QA_BACKGROUND_ONE", "QA_BACKGROUND_TWO"]) {
     const output = await call(lead, "task", { category: "quick", prompt, run_in_background: true })
@@ -106,7 +93,7 @@ try {
   for (const task_id of backgroundIDs) {
     assert.match(await call(lead, "background_output", { task_id }), /completed/)
   }
-  const messages = (await api("GET", `/api/session/${lead}/message?limit=200&order=asc`)).body.data
+   const messages = (await api("GET", `/api/session/${lead}/context`)).body.data
   for (const taskID of backgroundIDs) {
     const delivered = messages.filter((entry) => entry.type === "synthetic" && entry.metadata?.omo_execution_run?.startsWith(taskID + "/"))
     assert.equal(delivered.length, 1, "each background completion must arrive once")
@@ -118,8 +105,8 @@ try {
   const parents = await api("GET", `/api/session?directory=${encodeURIComponent(fixture.project)}&search=QA_NESTED_PARENT_SESSION`)
   const nestedParent = parents.body.data.find((session) => session.title === "QA_NESTED_PARENT_SESSION")
   assert.ok(nestedParent)
-  assert.equal((await api("POST", `/api/session/${nestedParent.id}/wait`)).status, 204)
-  const nestedMessages = (await api("GET", `/api/session/${nestedParent.id}/message?limit=100&order=asc`)).body.data
+   assert.equal((await api("POST", `/api/experimental/session/${nestedParent.id}/wait`)).status, 204)
+   const nestedMessages = (await api("GET", `/api/session/${nestedParent.id}/context`)).body.data
   assert.equal(nestedMessages.filter((message) => message.type === "user" && message.metadata?.omo_execution_run).length, 1)
   results.push({ name: "background child completion resumes its managed parent through one admitted notification turn", verdict: "PASS" })
   assert.match(await call(lead, "monitor_start", { command: "not-allowed-qa-command" }), /denied/)

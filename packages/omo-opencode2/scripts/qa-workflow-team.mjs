@@ -31,7 +31,7 @@ try {
   const versionRun = await runner.run("version", ["--version"], fixture)
    version = versionRun.output.match(/^(?:opencode2? v)?(\d+\.\d+\.\d+(?:-[\w.-]+)?)$/m)?.[1]
   assert.equal(versionRun.code, 0)
-   assert.equal(version, "2.0.3")
+   assert.equal(version, "2.0.15")
    let host = await runner.serve("workflow-team", fixture)
    let api = createApi(host, join(evidence, "api.ndjson"))
   assert.equal((await api("GET", "/api/session", undefined, false)).status, 401)
@@ -45,8 +45,8 @@ try {
     const start = model.requests.length
     model.arm({ name, input, id })
     assert.equal((await api("POST", `${base}/prompt`, { text: `QA_STEP_${sequence}`, delivery: "steer" })).status, 200)
-    assert.equal((await api("POST", `${base}/wait`)).status, 204)
-    const messages = await api("GET", `${base}/message?limit=100&order=asc`)
+    assert.equal((await api("POST", `/api/experimental/session/${parent.body.data.id}/wait`)).status, 204)
+    const messages = await api("GET", `${base}/context`)
     assert.equal(messages.status, 200)
     const calls = messages.body.data.flatMap((message) => message.type === "assistant" ? message.content : [])
       .filter((part) => part.type === "tool" && part.name === name)
@@ -81,10 +81,10 @@ try {
     { name: "worker", kind: "category", category: "quick", prompt: "QA_TEAM_INITIAL" },
   ] })
   const memberID = team.runtimeState.members.find((member) => member.name === "worker").sessionId
-  assert.equal((await api("POST", `/api/session/${memberID}/wait`)).status, 204)
+    assert.equal((await api("POST", `/api/experimental/session/${memberID}/wait`)).status, 204)
   await tool("team_send_message", { teamRunId: team.teamRunId, to: "worker", body: "QA_TEAM_MESSAGE" })
-  assert.equal((await api("POST", `/api/session/${memberID}/wait`)).status, 204)
-  const memberMessages = (await api("GET", `/api/session/${memberID}/message?limit=100&order=asc`)).body.data
+    assert.equal((await api("POST", `/api/experimental/session/${memberID}/wait`)).status, 204)
+    const memberMessages = (await api("GET", `/api/session/${memberID}/context`)).body.data
   assert.ok(memberMessages.some((message) => message.type === "assistant" && message.content.some((part) => part.type === "text" && part.text === "QA_TEAM_MESSAGE_DONE")))
   assert.equal((await tool("team_delete", { teamRunId: team.teamRunId, force: true })).deleted, true)
   results.push({ name: "Team create message status and delete via native tools", verdict: "PASS" })

@@ -1,0 +1,625 @@
+bun test v1.4.2 (744846f84)
+
+packages/omo-opencode2/src/index.test.ts:
+(pass) omo-opencode2 spike plugin > #given the module default export #when inspected #then it is a v2 plugin definition with the omo id [0.47ms]
+
+packages/omo-opencode2/src/config/schema.test.ts:
+(pass) OpenCode2ConfigSchema > #given an adapter config with core schema keys #when parsed #then strict fields validate and core keys are silently stripped [0.70ms]
+(pass) OpenCode2ConfigSchema > #given malformed typed fields #when parsed #then schema rejects it with clear issue paths [0.24ms]
+(pass) OpenCode2ConfigSchema > #given a model fallback retry bound below one #when parsed #then schema rejects it [0.14ms]
+(pass) OpenCode2ConfigSchema > #given a malformed team mode gate #when parsed #then the schema rejects it [0.09ms]
+
+packages/omo-opencode2/src/config/schema-mcp.test.ts:
+(pass) OpenCode2ConfigSchema disabled_mcps > accepts built-in and retired names [0.12ms]
+(pass) OpenCode2ConfigSchema disabled_mcps > passes unknown names through permissively [0.08ms]
+(pass) OpenCode2ConfigSchema codegraph > #given stale CodeGraph config {"daemon":false,"install_dir":"/opt/cg","excluded_roots":["/tmp"]} #when parsing #then unrelated settings survive and the retired block is stripped [0.10ms]
+(pass) OpenCode2ConfigSchema codegraph > #given stale CodeGraph config {"daemon":"obsolete","install_dir":17} #when parsing #then unrelated settings survive and the retired block is stripped [0.07ms]
+(pass) OpenCode2ConfigSchema codegraph > #given stale CodeGraph config "retired" #when parsing #then unrelated settings survive and the retired block is stripped [0.06ms]
+
+packages/omo-opencode2/src/config/loader.test.ts:
+(pass) loadOpenCode2Config > #given separate v1 and v2 files #when both loaders run #then neither imports or rewrites the other's settings [3.52ms]
+(pass) loadOpenCode2Config > #given only original OMO files #when v2 loads #then no legacy user or project settings leak [0.88ms]
+(pass) loadOpenCode2Config > #given layers with overlapping keys #when loaded #then precedence is base(user)<base(proj)<block(user)<block(proj)<options [0.96ms]
+(pass) loadOpenCode2Config > #given a missing config file #when loaded #then defaults survive with no errors [0.42ms]
+(pass) loadOpenCode2Config > #given both extensions #when loaded #then json wins and jsonc remains a fallback [1.12ms]
+(pass) loadOpenCode2Config > #given nested project layers and a profile #when loaded #then nearest project and options win [1.37ms]
+(pass) loadOpenCode2Config > #given project symlinks to original OMO #when loaded #then refuse the linked settings [0.97ms]
+(pass) loadOpenCode2Config > #given no user security keys #when project and options request them #then both are stripped [0.64ms]
+(pass) loadOpenCode2Config > #given invalid v2 shape [] #when loaded #then report diagnostics without reading v1 [0.81ms]
+(pass) loadOpenCode2Config > #given invalid v2 shape null #when loaded #then report diagnostics without reading v1 [0.62ms]
+(pass) loadOpenCode2Config > #given invalid v2 shape 42 #when loaded #then report diagnostics without reading v1 [0.59ms]
+(pass) loadOpenCode2Config > #given invalid v2 shape {"team_mode":{"enabled":"yes"}} #when loaded #then report diagnostics without reading v1 [0.71ms]
+(pass) loadOpenCode2Config > #given a malformed config file #when loaded #then it returns diagnostics but does not throw [0.63ms]
+(pass) loadOpenCode2Config > #given security-restricted keys in project or options #when loaded #then they are ignored and only user values are kept [0.83ms]
+
+packages/omo-opencode2/src/plugin/execution-delivery.test.ts:
+(pass) #given a busy managed caller #when notification delivery is replayed #then queue one budgeted turn without a direct host write [7.21ms]
+(pass) #given a held managed parent #when its background child completes #then the production outbox queues a parent turn without reentering the completion lock [3.00ms]
+
+packages/omo-opencode2/src/agents/register.test.ts:
+(pass) resolveAgentModel > #given a per-agent model override #when resolving #then the override overrides the catalog and requirement [0.15ms]
+(pass) resolveAgentModel > #given a chain model available in the catalog #when resolving #then it uses the chain entry [0.39ms]
+(pass) resolveAgentModel > #given no chain entry available and a system default #when resolving #then it falls back to the default [0.07ms]
+(pass) resolveAgentModel > #given a cold catalog and no default #when resolving #then it uses the first fallback entry [0.07ms]
+(pass) registerSubagents > #given a catalog #when registering #then all seven subagents are upserted as subagents with a prompt [2.30ms]
+(pass) registerSubagents > #given a catalog #when registering oracle #then write/edit/task are denied [0.20ms]
+(pass) registerSubagents > #given an available chain model #when registering #then the agent model resolves from the catalog [0.40ms]
+(pass) registerSubagents > #given a per-agent model override #when registering #then the override overrides the catalog [0.28ms]
+(pass) registerPrimaries > #given a catalog with a GPT model available #when registering #then all four primaries register and default becomes sisyphus [0.78ms]
+(pass) registerPrimaries > #given a non-GPT system default on a cold catalog #when registering #then hephaestus is skipped but the other primaries register [0.29ms]
+(pass) registerPrimaries > #given a warm catalog without a required provider #when registering #then hephaestus is skipped via the requiresProvider gate [0.15ms]
+(pass) registerPrimaries > #given a catalog #when registering #then the built-in build agent is downgraded to a hidden subagent [0.11ms]
+(pass) registerPrimaries > #given a defaultAgent option #when registering #then it applies that as the default agent [0.10ms]
+(pass) registerCategories > #given a catalog #when registering #then all eight categories register as subagents with the executor prompt [0.31ms]
+
+packages/omo-opencode2/src/agents/sisyphus-prompt.test.ts:
+(pass) buildSisyphusPromptForModel > #given a kimi-k3 model #when building #then the kimi-k3 prompt family is selected [0.14ms]
+(pass) buildSisyphusPromptForModel > #given a glm-5.2 model #when building #then the glm family prompt is selected [0.20ms]
+(pass) buildSisyphusPromptForModel > #given a gpt-5.6 model #when building #then the gpt-5.5 family prompt is selected [0.09ms]
+(pass) buildSisyphusPromptForModel > #given a claude-opus-5 model #when building #then the opus-5 family prompt is selected [0.12ms]
+(pass) buildSisyphusPromptForModel > #given an unknown model #when building #then the fallback prompt is selected and lists remain effective [0.05ms]
+(pass) buildSisyphusPromptForModel > #given live agents and categories #when building #then they are threaded into the prompt [0.12ms]
+
+packages/omo-opencode2/src/agents/prompt-metadata.test.ts:
+(pass) Sisyphus specialist metadata table > #given the specialist table #when enumerated #then it contains exactly the six delegable specialists [0.06ms]
+(pass) Sisyphus specialist metadata table > #given the specialist table #when indexed by id #then every entry carries the four prompt-section fields [0.07ms]
+(pass) Sisyphus specialist metadata table > #given the specialist table #when a primary or category id is looked up #then it is absent [0.05ms]
+
+packages/omo-opencode2/src/agents/model-resolution.test.ts:
+(pass) captureCatalogDraft vision capture > #given models with and without image input #when capturing #then only image models are vision capable [0.09ms]
+(pass) captureCatalogDraft vision capture > #given a catalog entry with no capability block #when capturing #then it is not vision capable [0.08ms]
+(pass) captureCatalogDraft vision capture > #given no providers #when capturing #then the vision set is empty [0.06ms]
+
+packages/omo-opencode2/src/agents/register-configured.test.ts:
+(pass) registerConfiguredAgents with deferred transforms > #given deferred transforms #when registration returns #then delegation catalogs are populated [0.89ms]
+(pass) registerConfiguredAgents with deferred transforms > #given a configured Sisyphus model #when deferred registration returns #then its captured base equals the registered artifact [0.48ms]
+(pass) registerConfiguredAgents with deferred transforms > #given configured oracle #when deferred registration returns #then dispatch retains model custom-subagent/oracle-model [0.41ms]
+(pass) registerConfiguredAgents with deferred transforms > #given configured quick #when deferred registration returns #then dispatch retains model custom-category/quick-model [0.35ms]
+(pass) resolveAgentRegistrationConfig > #given distinct overrides and a configured default #when resolved #then neither falls back to built-in values [0.07ms]
+(pass) resolveAgentRegistrationConfig > #given no configured default #when resolved #then sisyphus remains the product default [0.05ms]
+
+packages/omo-opencode2/src/mcp/register.test.ts:
+(pass) registerBuiltinMcps > #given an empty MCP catalog #when registering built-ins #then only remote servers and LSP are added [0.94ms]
+(pass) registerBuiltinMcps > never overwrites a user-defined server [0.34ms]
+(pass) registerBuiltinMcps > #given explicit user MCPs #when registering built-ins #then CodeGraph and remaining built-in overrides are preserved [0.38ms]
+(pass) registerBuiltinMcps > #given stale CodeGraph settings #when registering #then disabled_mcps still removes selected built-ins [0.51ms]
+
+packages/omo-opencode2/src/mcp/types.test.ts:
+(pass) #given a user-owned CodeGraph server name #when classifying it #then it is not a built-in [0.06ms]
+
+packages/omo-opencode2/src/mcp/context7.test.ts:
+(pass) createContext7Config > returns bare remote config without an api key [0.10ms]
+(pass) createContext7Config > attaches a bearer header for a real key [0.12ms]
+(pass) createContext7Config > treats placeholder keys as absent [0.08ms]
+(pass) createContext7Config > trims a real key [0.06ms]
+(pass) createGrepAppConfig > returns the public endpoint with no auth [0.06ms]
+
+packages/omo-opencode2/src/mcp/lsp.test.ts:
+(pass) createLspMcpConfig > prefers the daemon dist CLI when it exists [0.71ms]
+(pass) createLspMcpConfig > falls back to the bun source CLI when only source + tools dist exist [0.55ms]
+(pass) createLspMcpConfig > emits the bootstrap script when no artifact exists [0.33ms]
+(pass) createLspMcpConfig > environment carries project and user config paths [0.32ms]
+(pass) createLspMcpConfig > source candidate is rejected without a readable daemon package.json [0.53ms]
+
+packages/omo-opencode2/src/hooks/ultrawork-context.test.ts:
+(pass) detectKeywordModes > #given a standalone hyperplan keyword #when detected #then only hyperplan resolves [0.17ms]
+(pass) detectKeywordModes > #given adjacent combo keywords in either order #when detected #then each resolves only the combo [0.06ms]
+(pass) detectKeywordModes > #given non-adjacent hyperplan and ultrawork keywords #when detected #then both standalone modes resolve [0.05ms]
+(pass) detectKeywordModes > #given hpp only as a C++ extension #when detected #then no mode resolves [0.05ms]
+(pass) detectUltraworkIntent > #given a message containing whole-word ulw #when detected #then true [0.07ms]
+(pass) detectUltraworkIntent > #given a message containing ultrawork #when detected #then true [0.08ms]
+(pass) detectUltraworkIntent > #given ulw embedded in a word #when detected #then false [0.09ms]
+(pass) detectUltraworkIntent > #given ulw inside fenced code #when detected #then false [0.06ms]
+(pass) detectUltraworkIntent > #given ulw inside inline code #when detected #then false [0.05ms]
+(pass) detectUltraworkIntent > #given a slash command #when detected #then false [0.05ms]
+(pass) selectUltraworkPrompt > #given a planner agent #when selecting #then the planner variant is chosen [0.10ms]
+(pass) selectUltraworkPrompt > #given a gpt model #when selecting #then the gpt variant is chosen [0.07ms]
+(pass) selectUltraworkPrompt > #given a gemini model #when selecting #then the gemini variant is chosen [0.06ms]
+(pass) selectUltraworkPrompt > #given a glm model #when selecting #then the glm variant is chosen [0.05ms]
+(pass) selectUltraworkPrompt > #given any other model #when selecting #then the default variant is chosen [0.05ms]
+(pass) injectUltraworkSystemPart > #given a system array without the tag #when injecting #then one tagged part is appended [0.10ms]
+(pass) injectUltraworkSystemPart > #given a system array already containing the tag #when injecting #then nothing is appended [0.06ms]
+(pass) injectUltraworkSystemPart > #given repeated injections #when invoking twice #then only one tagged part exists [0.07ms]
+(pass) injectUltraworkSystemPart > #given an empty system array #when injecting #then the tagged part is the only part [0.06ms]
+(pass) injectKeywordSystemParts > #given standalone hyperplan mode #when injected #then one hyperplan part is appended [0.09ms]
+(pass) injectKeywordSystemParts > #given combo mode #when injected #then one combo part embeds one ultrawork tag [0.09ms]
+(pass) injectKeywordSystemParts > #given no resolved mode #when injected #then the system array is unchanged [0.05ms]
+
+packages/omo-opencode2/src/hooks/skill-catalog-context.test.ts:
+(pass) injectSkillCatalogSystemPart > #given live skills #when injecting #then one structural catalog exposes every skill name [0.27ms]
+
+packages/omo-opencode2/src/hooks/sisyphus-context.test.ts:
+(pass) rebakeSisyphusSystemPart > #given live agents and tools #when rebaking #then only the static sisyphus part is replaced [0.28ms]
+(pass) rebakeSisyphusSystemPart > #given the sisyphus part is absent #when rebaking #then the system array is untouched [0.06ms]
+(pass) rebakeSisyphusSystemPart > #given live agent and skill lists #when rebaking #then categories are derived from agents, not the metadata table [0.11ms]
+(pass) rebakeSisyphusSystemPart > #given the agent list API rejects #when rebaking #then the static prompt is preserved [0.06ms]
+(pass) rebakeSisyphusSystemPart > #given repeated calls with the same inputs #when rebaking #then output is deterministic [0.09ms]
+
+packages/omo-opencode2/src/hooks/register-context-hooks.test.ts:
+(pass) createContextHookComposer > #given a standalone hyperplan turn #when composed #then only the hyperplan mode tag is appended [0.47ms]
+(pass) createContextHookComposer > #given the standalone hpp shorthand #when composed #then the hyperplan mode tag is appended [0.12ms]
+(pass) createContextHookComposer > #given adjacent hyperplan and ultrawork triggers #when composed #then the combo suppresses both standalone modes [0.12ms]
+(pass) createContextHookComposer > #given reverse adjacent combo triggers #when composed #then the same combo mode is appended [0.12ms]
+(pass) createContextHookComposer > #given repeated combo composition #when the same turn is processed twice #then one combo part persists [0.12ms]
+(pass) createContextHookComposer > #given non-adjacent hyperplan and ultrawork triggers #when composed #then both standalone modes are appended [0.12ms]
+(pass) createContextHookComposer > #given a C++ header path ending in hpp #when composed #then no hyperplan mode is appended [0.11ms]
+(pass) createContextHookComposer > #given a sisyphus session with live catalogs and a matching user turn #when composed #then dynamic rebake and one mode tag coexist [0.17ms]
+(pass) createContextHookComposer > #given a non-matching user turn #when composed #then rebake happens but no mode tag is appended [0.13ms]
+(pass) createContextHookComposer > #given the live agent list rejects #when composed #then the static sisyphus part survives and mode still injects [0.12ms]
+(pass) createContextHookComposer > #given repeated composed calls #when the same user turn triggers #then exactly one mode tag persists [0.12ms]
+(pass) createContextHookComposer > #given project rule context and a keyword turn #when composed #then rules join the same pipeline before the mode part [0.14ms]
+(pass) createContextHookComposer > #given empty project rule context #when composed #then no placeholder system part is appended [0.14ms]
+
+packages/omo-opencode2/src/hooks/command-catalog-context.test.ts:
+(pass) injectCommandCatalogSystemPart > #given live commands #when injecting #then one structural catalog exposes every slash name [0.08ms]
+
+packages/omo-opencode2/src/orchestration/session-dispatch-audit.test.ts:
+(pass) session dispatch audit > #given the v2 adapter source #when session dispatch call sites are collected #then they match the pinned allowlist exactly [4.12ms]
+
+packages/omo-opencode2/src/orchestration/idle-injector.test.ts:
+(pass) idle injector > #given a session with work left #when it goes idle #then it dispatches once [0.56ms]
+(pass) idle injector > #given resolve declines #when the session goes idle #then nothing is dispatched [0.08ms]
+(pass) idle injector > #given the session goes busy while settling #when settle finishes #then the dispatch is abandoned [0.09ms]
+(pass) idle injector > #given the session no longer exists #when it goes idle #then nothing is dispatched [0.07ms]
+(pass) idle injector > #given a dispatch threw #when the hold lapses #then the reservation does not leak [6.60ms]
+(pass) idle injector > #given a dispatch threw #when it is caught #then the error does not escape the pump [0.14ms]
+(pass) idle injector > #given a deleted session #when the event arrives #then the gate is released and cleanup runs [0.11ms]
+(pass) idle injector > #given a disposed injector #when a session goes idle #then nothing is dispatched [0.06ms]
+(pass) idle injector > #given two injectors sharing one gate #when one idle edge fires #then exactly one dispatches [0.10ms]
+(pass) idle injector > #given two injectors with separate gates #when one idle edge fires #then both dispatch, which is the bug [0.09ms]
+
+packages/omo-opencode2/src/orchestration/orchestration.test.ts:
+(pass) TaskRegistry > #given a fresh registry #when creating a task #then it tracks status and output [0.20ms]
+(pass) TaskRegistry > #given a running task #when text arrives #then output aggregates [0.08ms]
+(pass) TaskRegistry > #given a task #when completing/failing/cancelling #then status and error are recorded [0.09ms]
+(pass) ConcurrencyLimiter > #given a limit of 2 #when 3 tasks acquire #then the third queues until a release [0.14ms]
+(pass) ConcurrencyLimiter > #given different model keys #when acquiring #then they do not share slots [0.06ms]
+(pass) nextFallbackModel > #given an agent with a fallback chain #when the current model matches an entry #then returns the next entry [0.17ms]
+(pass) nextFallbackModel > #given the last chain entry #when resolving the next #then returns undefined [0.05ms]
+(pass) nextFallbackModel > #given an unknown agent #when resolving #then returns undefined [0.05ms]
+
+packages/omo-opencode2/src/orchestration/session-dispatch-gate.test.ts:
+(pass) session dispatch gate > #given a session already reserved by an in-flight caller > #when a second caller starts #then it is blocked and its body never runs [0.11ms]
+(pass) session dispatch gate > #given two distinct features sharing one gate instance > #when both observe the same idle edge #then exactly one dispatches [0.10ms]
+(pass) session dispatch gate > #given separate gate instances per feature > #when both observe the same idle edge #then both dispatch, which is the bug [0.07ms]
+(pass) session dispatch gate > #given a body that returns without dispatching > #when it completes #then the session is released immediately [0.07ms]
+(pass) session dispatch gate > #given a body that dispatched > #when it completes #then the hold keeps the session reserved until it expires [0.08ms]
+(pass) session dispatch gate > #given a hold that has expired and a newer caller has reserved > #when the older caller releases #then it does not free the newer reservation [0.09ms]
+(pass) session dispatch gate > #given a body that throws > #when it rejects #then the reservation is released and the error propagates [0.09ms]
+(pass) session dispatch gate > #given distinct sessions > #when each reserves #then they do not block one another [0.08ms]
+(pass) session dispatch gate > #given a disposed gate > #when a caller starts #then it is blocked [0.06ms]
+
+packages/omo-opencode2/src/orchestration/task-result-guidance.test.ts:
+(pass) guideTaskResult > #given whitespace-only child output #when guided #then it becomes an actionable empty-response result [0.09ms]
+(pass) guideTaskResult > #given a recognized task invocation error #when guided #then retry metadata and guidance are appended [0.15ms]
+(pass) guideTaskResult > #given normal non-empty task output #when guided #then it remains byte-for-byte unchanged [0.05ms]
+
+packages/omo-opencode2/src/orchestration/task-engine-guidance.test.ts:
+(pass) createTaskEngine background guidance > #given a background child with no text #when it succeeds #then the parent callback and registry receive guidance [0.40ms]
+
+packages/omo-opencode2/src/commands/render-command-template.test.ts:
+(pass) #given authored placeholders #when rendering #then values expand once and arguments stay literal [0.10ms]
+(pass) #given empty arguments "" #when no argument placeholder exists #then nothing is appended [0.06ms]
+(pass) #given empty arguments " \n " #when no argument placeholder exists #then nothing is appended [0.04ms]
+(pass) #given a template without an argument placeholder #when input is nonempty #then raw arguments append without expansion [0.05ms]
+(pass) #given an interior argument placeholder #when input has spaces #then input is not pre-trimmed [0.05ms]
+
+packages/omo-opencode2/src/commands/register-builtin-commands.test.ts:
+(pass) registerBuiltinCommands > #given an add-only editor #when registering twice #then the seven commands are executable without session writes [0.44ms]
+(pass) registerBuiltinCommands > #given steer delivery and attachments #when invoking goal #then one unchanged envelope is submitted [0.32ms]
+(pass) registerBuiltinCommands > #given queue delivery and attachments #when invoking goal #then one unchanged envelope is submitted [0.08ms]
+(pass) registerBuiltinCommands > #given initial agent sisyphus #when ulw-execute runs #then atlas model and variant are selected before submission [0.15ms]
+(pass) registerBuiltinCommands > #given initial agent atlas #when ulw-execute runs #then atlas model and variant are selected before submission [0.08ms]
+(pass) registerBuiltinCommands > #given an agent without a configured model #when selecting it #then the session model is not overwritten [0.09ms]
+(pass) registerBuiltinCommands > #given two explicit commands on one session #when invoked concurrently #then neither input is dropped [0.39ms]
+(pass) registerBuiltinCommands > #given pending native admission #when a command executes #then its callback awaits that admission [0.17ms]
+(pass) registerBuiltinCommands > #given lookup rejection #when executing #then failure propagates without another submission [0.16ms]
+(pass) registerBuiltinCommands > #given agent rejection #when executing #then failure propagates without another submission [0.09ms]
+(pass) registerBuiltinCommands > #given model rejection #when executing #then failure propagates without another submission [0.07ms]
+(pass) registerBuiltinCommands > #given prompt rejection #when executing #then failure propagates without another submission [0.06ms]
+
+packages/omo-opencode2/src/skills/register-shared-skills.test.ts:
+(pass) registerSharedSkills > #given the shared bundle #when registering #then every bundled skill is added [4.93ms]
+(pass) registerSharedSkills > #given a registered skill #when inspecting it #then path points at a real SKILL.md and content excludes frontmatter [0.95ms]
+(pass) registerSharedSkills > #given a missing root #when reading skill files #then it yields an empty list [0.09ms]
+(pass) registerSharedSkills > #given the real root #when reading skill files #then names come from frontmatter [0.73ms]
+
+packages/omo-opencode2/src/tools/monitor/register-effect.test.ts:
+(pass) native monitor registration > #given disabled config {"monitor":{"enabled":false}} #when registered #then tools remain absent [0.92ms]
+(pass) native monitor registration > #given disabled config {"monitor":{"enabled":true},"disabled_hooks":["monitor"]} #when registered #then tools remain absent [0.18ms]
+(pass) native monitor registration > #given an empty allowlist #when monitor_start executes #then no process starts [1.09ms]
+(pass) native monitor registration > #given managed routing returns %s #when a real watcher emits #then delivery uses the selected owner and shutdown stops it [7.18ms]
+(pass) native monitor registration > #given managed routing returns %s #when a real watcher emits #then delivery uses the selected owner and shutdown stops it [6.14ms]
+
+packages/omo-opencode2/src/tools/session-manager/message-shape.test.ts:
+(pass) parseMessage > #given a real user payload > #when parsed > #then it exposes text, created time, and file count [0.16ms]
+(pass) parseMessage > #given a real assistant payload > #when parsed > #then reasoning and answer text are separated [0.12ms]
+(pass) parseMessage > #given a real assistant payload > #when parsed > #then model is rendered as provider/id [0.06ms]
+(pass) parseMessage > #given a real assistant payload > #when parsed > #then cost, finish, and tokens survive [0.06ms]
+(pass) parseMessage > #given a real agent-switched payload > #when parsed > #then it reports the agent it switched to [0.05ms]
+(pass) parseMessage > #given a payload the schema does not describe > #when the type is unrecognized > #then it degrades to unknown instead of throwing [0.05ms]
+(pass) parseMessage > #given a payload the schema does not describe > #when the JSON is unparseable > #then it degrades to unknown instead of throwing [0.06ms]
+(pass) parseMessage > #given a payload the schema does not describe > #when required fields have the wrong type > #then missing values are undefined and nothing throws [0.07ms]
+(pass) searchableText > #given an assistant message > #when building the search corpus > #then reasoning is excluded so search matches what was said [0.07ms]
+
+packages/omo-opencode2/src/tools/session-manager/db-path.test.ts:
+(pass) resolveStorePath > #given OMO_OPENCODE2_DB is set > #when the override path exists > #then it wins over every other candidate [0.12ms]
+(pass) resolveStorePath > #given OMO_OPENCODE2_DB is set > #when the override path does not exist > #then it falls through to the next candidate [0.06ms]
+(pass) resolveStorePath > #given only XDG_DATA_HOME is set > #when the store exists under it > #then it resolves to XDG_DATA_HOME/opencode/opencode.db [0.05ms]
+(pass) resolveStorePath > #given no XDG override > #when the store sits in the home data dir > #then it resolves under ~/.local/share [0.05ms]
+(pass) resolveStorePath > #given win32 with LOCALAPPDATA > #when only the LOCALAPPDATA copy exists > #then it resolves there [0.05ms]
+(pass) resolveStorePath > #given win32 with LOCALAPPDATA > #when the platform is not win32 > #then LOCALAPPDATA is not consulted [0.05ms]
+(pass) resolveStorePath > #given no store anywhere > #when resolution runs > #then it reports not found without throwing and lists what it checked [0.06ms]
+
+packages/omo-opencode2/src/tools/session-manager/store.test.ts:
+(pass) SessionStore.listSessions > #given sessions in two directories > #when a directory filter is supplied > #then only that project's sessions come back [0.42ms]
+(pass) SessionStore.listSessions > #given a child session exists > #when includeChildren is not set > #then child sessions are excluded [0.10ms]
+(pass) SessionStore.listSessions > #given a child session exists > #when includeChildren is set > #then the child session is included [0.10ms]
+(pass) SessionStore.listSessions > #given sessions with different update times > #when listing > #then the most recently updated comes first [0.07ms]
+(pass) SessionStore.listSessions > #given sessions with different update times > #when a limit is supplied > #then the result is bounded [0.06ms]
+(pass) SessionStore.listSessions > #given the store holds forward-slash paths and the caller passes a Windows path > #when the separators and casing differ > #then the directory still matches [0.07ms]
+(pass) SessionStore.listSessions > #given the store holds forward-slash paths and the caller passes a Windows path > #when the caller passes a trailing slash > #then the directory still matches [0.07ms]
+(pass) SessionStore.listSessions > #given a date window > #when fromDate excludes the older session > #then only the newer session is returned [0.08ms]
+(pass) SessionStore.getSession > #given an existing session id > #when fetched > #then the row maps snake_case columns onto camelCase fields [0.08ms]
+(pass) SessionStore.getSession > #given an unknown session id > #when fetched > #then it returns undefined rather than throwing [0.05ms]
+(pass) SessionStore.readMessages > #given a session with messages > #when read > #then messages arrive in seq order, already parsed [0.12ms]
+(pass) SessionStore.readMessages > #given a session with messages > #when a limit is supplied > #then the result is bounded [0.07ms]
+(pass) SessionStore.countMessages > #given a session with two messages > #when counted > #then it reports two [0.06ms]
+(pass) SessionStore.searchMessages > #given a query matching one project > #when scoped by directory > #then only that project's messages match [0.20ms]
+(pass) SessionStore.searchMessages > #given assistant reasoning containing the query > #when searching > #then reasoning is not searched, so only the visible answer matches [0.11ms]
+(pass) SessionStore.searchMessages > #given a case difference > #when caseSensitive is false > #then the match still lands [0.10ms]
+(pass) SessionStore.searchMessages > #given a case difference > #when caseSensitive is true > #then the mismatched case does not match [0.09ms]
+(pass) SessionStore.searchMessages > #given a limit > #when more messages match than the limit > #then the hit list is bounded [0.08ms]
+(pass) SessionStore.searchMessages > #given a single session scope > #when sessionID is supplied > #then only that session is scanned [0.06ms]
+(pass) SessionStore.searchMessages > #given a match further into the message than the excerpt radius > #when excerpting > #then the excerpt is elided on the left and keeps the match [0.10ms]
+(pass) SessionStore.searchMessages > #given a match at the very start of the message > #when excerpting > #then there is no leading ellipsis [0.11ms]
+
+packages/omo-opencode2/src/tools/hashline-edit/execute-hashline-edit.test.ts:
+(pass) executeHashlineEdit > #given a valid line hash matching current content > #when replacing that line #then the file is modified on disk [1.18ms]
+(pass) executeHashlineEdit > #given a stale hash that no longer matches current content > #when editing #then the edit is rejected AND the file is byte-identical [0.44ms]
+(pass) executeHashlineEdit > #given a line hash pointing at content that changed after the read > #when editing with the old hash #then rejected and file unchanged [0.29ms]
+(pass) executeHashlineEdit > #given a missing file with an anchored edit > #when editing #then rejected fail-closed and nothing is written [0.15ms]
+
+packages/omo-opencode2/src/tools/look-at/look-at-arguments.test.ts:
+(pass) parseLookAtArgs > #given a singular file_path and a goal #when parsing #then it promotes the path to a list [0.10ms]
+(pass) parseLookAtArgs > #given the legacy path alias #when parsing #then it is accepted [0.04ms]
+(pass) parseLookAtArgs > #given several paths across both fields #when parsing #then all are collected [0.05ms]
+(pass) parseLookAtArgs > #given no path at all #when parsing #then it rejects with a path error [0.04ms]
+(pass) parseLookAtArgs > #given a blank goal #when parsing #then it rejects with a goal error [0.04ms]
+(pass) parseLookAtArgs > #given a remote URL #when parsing #then it is rejected as unsupported [0.04ms]
+(pass) parseLookAtArgs > #given a non-object input #when parsing #then it rejects instead of throwing [0.04ms]
+
+packages/omo-opencode2/src/tools/look-at/session-model-registry.test.ts:
+(pass) createSessionModelRegistry > #given a recorded session #when reading it back #then the model is returned [0.09ms]
+(pass) createSessionModelRegistry > #given an unseen session #when reading #then it is undefined rather than throwing [0.04ms]
+(pass) createSessionModelRegistry > #given a session that switched model #when reading #then the latest wins [0.05ms]
+(pass) createSessionModelRegistry > #given a forgotten session #when reading #then the entry is gone [0.05ms]
+(pass) createSessionModelRegistry > #given a blank session id or model #when recording #then nothing is stored [0.04ms]
+(pass) formatModelKey > #given a model ref #when formatting #then it joins provider and id [0.05ms]
+(pass) formatModelKey > #given an incomplete ref #when formatting #then it returns undefined [0.04ms]
+
+packages/omo-opencode2/src/tools/look-at/vision-gate.test.ts:
+(pass) selectVisionModel > #given a catalog with no vision models #when selecting #then it returns undefined [0.12ms]
+(pass) selectVisionModel > #given a fallback-chain model is vision capable #when selecting #then it prefers the chain entry [0.09ms]
+(pass) selectVisionModel > #given only an off-chain vision model #when selecting #then it falls back to that model [0.11ms]
+(pass) selectVisionModel > #given the caller's provider has a vision model #when selecting #then it beats the chain entry [0.08ms]
+(pass) selectVisionModel > #given the caller's provider has no vision model #when selecting #then it falls back to the chain [0.06ms]
+(pass) resolveLookAtRoute > #given the caller model accepts images #when routing #then it passes through without delegating [0.07ms]
+(pass) resolveLookAtRoute > #given a blind caller and an available vision model #when routing #then it delegates [0.05ms]
+(pass) resolveLookAtRoute > #given an unknown caller model #when routing #then it delegates rather than assuming sight [0.05ms]
+(pass) resolveLookAtRoute > #given a warm catalog with no vision model #when routing #then it reports no vision model [0.05ms]
+(pass) resolveLookAtRoute > #given a catalog that has not loaded #when routing #then it reports the cold catalog distinctly [0.05ms]
+
+packages/omo-opencode2/src/features/monitor/pipeline.test.ts:
+(pass) createMonitorFilter > #given no pattern > #when matching > #then every line matches [0.06ms]
+(pass) createMonitorFilter > #given a valid pattern > #when a line contains ANSI colour codes around the match > #then the match still lands because ANSI is stripped first [0.10ms]
+(pass) createMonitorFilter > #given a valid pattern > #when a line does not match > #then it is rejected [0.04ms]
+(pass) createMonitorFilter > #given a pattern with nested unbounded quantifiers > #when the filter is built > #then it is rejected before it can hang the output pump [0.07ms]
+(pass) createMonitorFilter > #given an over-long pattern > #when the filter is built > #then it is rejected [0.04ms]
+(pass) createMonitorFilter > #given a syntactically invalid pattern > #when the filter is built > #then it reports the regex error instead of throwing [0.06ms]
+(pass) MonitorRingBuffer > #given more lines than the ring holds > #when querying after overflow > #then the oldest lines are dropped and the drop is accounted [0.08ms]
+(pass) MonitorRingBuffer > #given matched and unmatched lines > #when querying each stream > #then they are kept apart [0.05ms]
+(pass) MonitorRingBuffer > #given matched and unmatched lines > #when querying all > #then lines come back in sequence order [0.05ms]
+(pass) MonitorRingBuffer > #given a since_sequence cursor > #when querying > #then only newer lines are returned [0.05ms]
+(pass) formatMonitorBatch > #given any batch > #when it is formatted > #then the untrusted-observation warning is present so the model does not obey process output [0.05ms]
+(pass) formatMonitorBatch > #given any batch > #when it is formatted > #then the output lines carry their stream and sequence [0.04ms]
+(pass) formatMonitorBatch > #given a terminal batch with an exit code > #when it is formatted > #then the exit status is reported [0.04ms]
+(pass) formatMonitorBatch > #given dropped lines > #when it is formatted > #then the drop count is disclosed so the model knows the window is partial [0.04ms]
+(pass) LineStream > #given a chunk with several newlines > #when fed > #then one line per newline is emitted [0.07ms]
+(pass) LineStream > #given a line split across two chunks > #when both are fed > #then the line is joined [0.06ms]
+(pass) LineStream > #given ANSI escapes in the output > #when fed > #then the decoded text is stripped but the raw text is kept [0.05ms]
+(pass) LineStream > #given a line longer than lineMaxBytes > #when fed > #then it is truncated and flagged [0.05ms]
+(pass) LineStream > #given a chunk containing NUL bytes > #when fed > #then it is suppressed as binary rather than pushed at the model [0.05ms]
+(pass) LineStream > #given trailing bytes with no newline > #when flushed > #then the remainder is emitted [0.05ms]
+
+packages/omo-opencode2/src/features/monitor/manager.test.ts:
+(pass) MonitorManager > #given a monitor whose output matches the pattern > #when the process writes lines > #then the matching lines are delivered to the parent session as a queued synthetic message [13.68ms]
+(pass) MonitorManager > #given a monitor whose output matches the pattern > #when the process writes lines > #then non-matching lines are not delivered but stay queryable [10.61ms]
+(pass) MonitorManager > #given the per-session monitor cap is reached > #when another monitor is started > #then it is refused with the limit named [0.25ms]
+(pass) MonitorManager > #given an unsafe match pattern > #when the monitor is started > #then it is rejected before any process is spawned [0.11ms]
+(pass) MonitorManager > #given monitors belonging to two sessions > #when one session is deleted > #then only that session's monitors are reaped [0.27ms]
+(pass) MonitorManager > #given a running monitor > #when the plugin disposes > #then every monitor is stopped [0.13ms]
+(pass) MonitorDelivery > #given the same batch is delivered twice > #when the second delivery runs > #then it is deduped so the session is not double-injected [0.09ms]
+(pass) MonitorDelivery > #given two different monitors flush at the same moment > #when both deliver > #then both land, because monitor output is a per-item notification and not a shared idle edge [0.08ms]
+(pass) MonitorDelivery > #given the harness rejects the synthetic message > #when the same batch is retried > #then the retry is allowed, because a failed delivery must not poison the dedupe set [0.09ms]
+
+packages/omo-opencode2/src/features/monitor/permission.test.ts:
+(pass) checkMonitorCommandPermission > #given the feature is disabled > #when a command is checked > #then it is refused regardless of the allowlist [0.07ms]
+(pass) checkMonitorCommandPermission > #given no allowed_commands is configured > #when any command is checked > #then it fails closed rather than defaulting to allow [0.05ms]
+(pass) checkMonitorCommandPermission > #given no allowed_commands is configured > #when any command is checked > #then the refusal names the config key so the user can fix it [0.06ms]
+(pass) checkMonitorCommandPermission > #given an allowlist > #when the program is listed > #then the command is allowed [0.05ms]
+(pass) checkMonitorCommandPermission > #given an allowlist > #when the program is not listed > #then the command is refused and the allowlist is reported [0.04ms]
+(pass) checkMonitorCommandPermission > #given an allowlist > #when an allowed program is followed by a shell operator > #then only the first token is matched, so the allowlist is not bypassed by argument smuggling [0.06ms]
+(pass) checkMonitorCommandPermission > #given an allowlist > #when the command is quoted > #then the quoted program name is extracted [0.05ms]
+(pass) checkMonitorCommandPermission > #given an allowlist > #when the command is empty > #then it is refused [0.05ms]
+
+packages/omo-opencode2/src/features/model-fallback/register.test.ts:
+(pass) registerConfiguredModelFallback > #given model fallback is not enabled #when registration runs #then it traces disabled and installs no event pump [0.43ms]
+(pass) registerConfiguredModelFallback > #given model fallback is enabled but listed in disabled_hooks #when registration runs #then disabled_hooks wins [0.22ms]
+(pass) registerConfiguredModelFallback > #given model fallback is enabled without a retry override #when registration runs #then one event pump is installed with the default retry bound [0.39ms]
+(pass) registerConfiguredModelFallback > #given Session.Info omits the active agent and model #when the context hook recorded them before a quota failure #then fallback still switches [0.83ms]
+
+packages/omo-opencode2/src/features/model-fallback/runtime-ownership.test.ts:
+(pass) #given delayed executor ownership %s #when a quota failure arrives #then the ownership result determines fallback [0.12ms]
+(pass) #given delayed executor ownership %s #when a quota failure arrives #then the ownership result determines fallback [0.08ms]
+(pass) #given fallback waits on session lookup #when session.execution.started arrives #then the stale recovery cannot switch or dispatch [0.13ms]
+(pass) #given fallback waits on session lookup #when session.input.admitted arrives #then the stale recovery cannot switch or dispatch [0.06ms]
+(pass) #given fallback waits on session lookup #when session.deleted arrives #then the stale recovery cannot switch or dispatch [0.06ms]
+(pass) #given fallback waits on session lookup #when dispose arrives #then the stale recovery cannot switch or dispatch [0.06ms]
+
+packages/omo-opencode2/src/features/model-fallback/register-effect.test.ts:
+(pass) #given native config {"options":{"model_fallback":{"enabled":false}},"expected":0} #when its scope closes #then enabled hooks and subscriptions are scoped [0.45ms]
+(pass) #given native config {"options":{"model_fallback":{"enabled":true},"disabled_hooks":["model_fallback"]},"expected":0} #when its scope closes #then enabled hooks and subscriptions are scoped [0.15ms]
+(pass) #given native config {"options":{"model_fallback":{"enabled":true,"max_retries":2}},"expected":1} #when its scope closes #then enabled hooks and subscriptions are scoped [0.73ms]
+
+packages/omo-opencode2/src/features/model-fallback/runtime.test.ts:
+(pass) model fallback runtime > #given a provider-exhaustion failure on a main session #when handled #then it switches to the next chain model and redispatches once [0.17ms]
+(pass) model fallback runtime > #given a non-exhaustion execution failure #when handled #then it does not switch or redispatch [0.15ms]
+(pass) model fallback runtime > #given an eligible failure from a task-engine child session #when handled #then it is skipped [0.08ms]
+(pass) model fallback runtime > #given one allowed retry #when failures repeat and then a success resets the counter #then only one switch occurs before reset and another is allowed after [0.13ms]
+(pass) model fallback runtime > #given another feature holds the shared session gate #when an eligible failure arrives #then fallback does not switch or redispatch [0.10ms]
+(pass) model fallback runtime > #given the active model is already the last fallback entry #when an eligible failure arrives #then the chain is exhausted without redispatch [0.12ms]
+
+packages/omo-opencode2/src/features/team-mode/core-primitives.test.ts:
+(pass) opencode2 Team Mode core bridge > #given an inline project team #when persisted and loaded #then team-core round-trips the normalized registry spec [2.16ms]
+(pass) opencode2 Team Mode core bridge > #given an active team runtime #when a message is sent, polled, and acknowledged #then the mailbox transitions from unread to empty [3.22ms]
+(pass) opencode2 Team Mode core bridge > #given a pending task #when claimed and advanced #then team-core enforces the claim and forward transitions [3.57ms]
+
+packages/omo-opencode2/src/features/team-mode/register.test.ts:
+(pass) registerTeamMode > #given default configuration #when Team Mode registers #then no team tools are exposed [0.46ms]
+(pass) registerTeamMode > #given enabled configuration #when Team Mode registers #then all twelve tools are exposed [1.32ms]
+(pass) registerTeamMode > #given an enabled two-worker spec #when team_create executes #then members spawn with the default and overridden agents [56.18ms]
+(pass) registerTeamMode > #given more than eight total members #when team_create executes #then bounds enforcement rejects the spec before spawning [1.10ms]
+(pass) registerTeamMode > #given an active member #when the lead sends a direct message #then it is delivered as one queued synthetic turn [3.79ms]
+
+packages/omo-opencode2/src/features/team-mode/mailbox.test.ts:
+(pass) TeamMailbox idle wake > #given an unread member-to-lead message #when concurrent member idle observers run #then the shared gate emits one queued lead summary [4.32ms]
+
+packages/omo-opencode2/src/features/workflow/contract-boundaries.test.ts:
+(pass) #given an unknown target #when starting a graph #then reject before submitting any node [2.02ms]
+(pass) #given a managed node session #when it starts another graph #then reject nested coordination [1.68ms]
+(pass) #given a failed generation #when retry requests race or repeat #then deduplicate its key and reject stale generations [1.95ms]
+(pass) #given a saved graph whose execution was interrupted #when reopening #then preserve history and permit only explicit retry [2.44ms]
+
+packages/omo-opencode2/src/features/workflow/tool.test.ts:
+(pass) #given malformed tool input #when decoding the boundary #then refuse missing node fields [0.48ms]
+(pass) #given a cyclic graph #when executing the native tool #then return Tool.Error and launch nothing [0.81ms]
+
+packages/omo-opencode2/src/features/workflow/graph.test.ts:
+(pass) #given empty graph #when validating #then reject before execution [0.11ms]
+(pass) #given duplicate graph #when validating #then reject before execution [0.07ms]
+(pass) #given unknown-dependency graph #when validating #then reject before execution [0.06ms]
+(pass) #given self-dependency graph #when validating #then reject before execution [0.07ms]
+(pass) #given cycle graph #when validating #then reject before execution [0.06ms]
+(pass) #given an unordered diamond #when validating #then accept the acyclic graph [0.11ms]
+
+packages/omo-opencode2/src/features/workflow/runtime.test.ts:
+(pass) #given held roots #when starting #then persist and return before completion across the caller scope [0.94ms]
+(pass) #given independent roots #when one finishes #then admit its dependent before the other root finishes [1.35ms]
+(pass) #given concurrent same-key starts #when submitting #then dedupe within caller and reject changed input [0.96ms]
+(pass) #given an owned workflow #when a different caller reads or mutates #then refuse every action [0.98ms]
+(pass) #given a completed stored workflow #when recreating its runtime #then read terminal output and dedupe without dispatch [0.87ms]
+
+packages/omo-opencode2/src/features/workflow/lifecycle.test.ts:
+(pass) #given a failed branch #when waiting #then block its descendants but finish independent work [1.32ms]
+(pass) #given full capacity and a waiter #when cancelling #then drain active work and never launch queued or dependent nodes [1.51ms]
+(pass) #given a failed workflow #when retrying #then retain successful output and execute unsuccessful nodes once [1.53ms]
+(pass) #given a running workflow #when the owning scope closes #then cancel children and persist the terminal workflow [0.81ms]
+
+packages/omo-opencode2/src/hooks/rules-context/index.test.ts:
+(pass) loadProjectRulesContext > #given project AGENTS.md and static plus conditional rules #when loading #then only applicable project context becomes system parts [2.15ms]
+(pass) loadProjectRulesContext > #given a project without rule or AGENTS.md files #when loading #then no system context is produced [0.30ms]
+
+packages/omo-opencode2/src/hooks/write-existing-file-guard/index.test.ts:
+(pass) write-existing-file-guard hook > #when tool is 'read' and file exists, #then marks permission and allows subsequent write [0.82ms]
+(pass) write-existing-file-guard hook > #when tool is 'write' on existing file without read, #then blocks [0.40ms]
+(pass) write-existing-file-guard hook > #when tool is 'write' with overwrite flag, #then allows [0.29ms]
+(pass) write-existing-file-guard hook > #when file is inside .omo workspace, #then allows existing write [0.36ms]
+
+packages/omo-opencode2/src/hooks/prometheus-md-only/index.test.ts:
+(pass) prometheus-md-only hook > #when agent is prometheus and writes non-md, #then blocks [0.32ms]
+(pass) prometheus-md-only hook > #when agent is prometheus and writes outside .omo, #then blocks [0.10ms]
+(pass) prometheus-md-only hook > #when agent is prometheus and writes a non-md extension inside .omo, #then blocks [0.09ms]
+(pass) prometheus-md-only hook > #when agent is prometheus and writes .omo plan, #then allows [0.07ms]
+(pass) prometheus-md-only hook > #when agent is NOT prometheus and writes non-md, #then allows [0.07ms]
+(pass) prometheus-md-only hook > #when prometheus writes to .omo/plans, #then execute.after injects reminder [0.11ms]
+(pass) prometheus-md-only hook > #when prometheus delegates with task tool, #then injects planning warning [0.07ms]
+
+packages/omo-opencode2/src/hooks/comment-checker/register.test.ts:
+(pass) OpenCode2 comment-checker post-tool hook > #given a completed write with a checker violation #when the hook runs #then feedback and a detection trace reach the model [0.41ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given a completed clean write #when the hook runs #then output is unchanged and no detection trace appears [0.13ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given an array-shaped tool result #when a violation is found #then feedback is appended as a text part [0.10ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given the v1 line escape #when the checker accepts it #then @allow is forwarded unchanged and no feedback is injected [0.14ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given the v1 file escape at the first line #when a write completes #then the adapter bypasses the checker [0.41ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given a completed edit #when the hook runs #then old and new strings are mapped to the core contract [0.12ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given apply_patch input without metadata #when the hook runs #then core patch extraction checks the edited file [0.24ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given the optional binary is unavailable #when completed writes repeat #then the hook stays inert and resolves once [0.18ms]
+(pass) OpenCode2 comment-checker post-tool hook > #given failed or non-mutation tools #when the hook runs #then the checker does not execute [0.12ms]
+
+packages/omo-opencode2/src/hooks/boulder-continuation/register.test.ts:
+(pass) native boulder continuation registration > #given disabled boulder continuation #when registered #then it returns without starting work [0.53ms]
+
+packages/omo-opencode2/src/hooks/boulder-continuation/runtime.test.ts:
+(pass) boulder continuation state > #given a session with an incomplete plan #when state is read #then the remaining checklist is reported [1.21ms]
+(pass) boulder continuation state > #given a single active work and a session not recorded in it #when state is read #then it is still the session's plan (sole-active) [0.66ms]
+(pass) boulder continuation state > #given no boulder file at all #when state is read #then it is null [0.33ms]
+(pass) boulder continuation state > #given a fully checked plan #when state is read #then it is null so no idle prompt fires [0.48ms]
+(pass) boulder continuation runtime > #given an unfinished plan #when the session goes idle #then the continuation lists the next task [0.69ms]
+(pass) boulder continuation runtime > #given no continuable state #when the session goes idle #then nothing is injected [0.35ms]
+
+packages/omo-opencode2/src/hooks/todo-continuation/register.test.ts:
+(pass) native todo continuation registration > #given disabled todo continuation #when registered #then it returns without starting work [0.20ms]
+
+packages/omo-opencode2/src/hooks/todo-continuation/runtime.test.ts:
+(pass) todo continuation runtime > #given unfinished todos #when the session goes idle #then a continuation is injected [0.23ms]
+(pass) todo continuation runtime > #given an in_progress todo #when the session goes idle #then it still counts as unfinished [0.07ms]
+(pass) todo continuation runtime > #given every todo is completed #when the session goes idle #then nothing is injected [0.06ms]
+(pass) todo continuation runtime > #given no todos at all #when the session goes idle #then nothing is injected [0.05ms]
+(pass) todo continuation runtime > #given a stuck session #when it idles past the budget #then continuations stop [30.22ms]
+(pass) todo continuation runtime > #given the budget is spent #when the remaining count drops #then the budget resets [14.92ms]
+
+packages/omo-opencode2/src/hooks/hashline-read-enhancer/tag-read-output.test.ts:
+(pass) tagReadOutput > #given a read result wrapped in a <content> block > #when tagging #then rewrites each file line as LINE#ID|content [0.35ms]
+(pass) tagReadOutput > #given the v2 read tool output that leads with a header line > #when tagging #then preserves the header and tags the numbered lines [0.09ms]
+(pass) tagReadOutput > #given plain numbered read output without content tags > #when tagging #then tags every numbered line [0.09ms]
+(pass) tagReadOutput > #given output that is already tagged > #when tagging repeatedly #then the result is idempotent (no double tagging) [0.07ms]
+(pass) tagReadOutput > #given a read result of a non-numbered payload > #when tagging #then leaves it unchanged [0.05ms]
+
+packages/omo-opencode2/src/hooks/hashline-read-enhancer/register.test.ts:
+(pass) applyHashlineTagsToResult > #given a read result whose content is a plain string > #when applying tags #then returns a string result with LINE#ID tags [0.09ms]
+(pass) applyHashlineTagsToResult > #given a read result whose content arrives as an array of content parts (R12) > #when applying tags #then tags the text parts and leaves non-text parts untouched [0.10ms]
+(pass) applyHashlineTagsToResult > #given a result already tagged by a prior execute.after pass > #when applying tags again #then the content is unchanged (idempotent) [0.07ms]
+(pass) applyHashlineTagsToResult > #given an array-shaped result already tagged > #when applying tags again #then array text parts stay identical (idempotent) [0.07ms]
+
+packages/omo-opencode2/src/hooks/hashline-read-enhancer/register-foreign-tool.test.ts:
+(pass) registerHashlineReadEnhancer on foreign tool results > #given an execute.after event for a non-read tool whose result is undefined > #when the hook runs #then it returns without dereferencing the missing result [0.16ms]
+(pass) registerHashlineReadEnhancer on foreign tool results > #given a completed non-read tool that reports no content > #when the hook runs #then it leaves the result untouched and does not throw [0.08ms]
+
+packages/omo-opencode2/src/hooks/goal/auto-start.test.ts:
+(pass) createGoalAutoStartHandler > #given a first main-session user turn #when context runs #then it creates the goal [1.24ms]
+(pass) createGoalAutoStartHandler > #given a child session #when its first user turn runs #then it does not create a goal [0.16ms]
+(pass) createGoalAutoStartHandler > #given multiple real user turns #when context runs #then it does not auto-start late [0.13ms]
+(pass) createGoalAutoStartHandler > #given concurrent first-context callbacks #when both run #then they create one goal [0.39ms]
+
+packages/omo-opencode2/src/hooks/goal/prompt.test.ts:
+(pass) #given markup in an objective #when continuation is built #then untrusted text is XML escaped [0.09ms]
+
+packages/omo-opencode2/src/hooks/goal/register.test.ts:
+(pass) native goal registration > #given disabled goal #when registered #then no native domains are touched [0.47ms]
+(pass) native goal registration > #given enabled goal #when its scope closes #then the event subscription is cancelled [0.53ms]
+(pass) Promise goal registration > #given goal is disabled #when registration runs #then no tools or lifecycle subscription are installed [0.15ms]
+
+packages/omo-opencode2/src/hooks/goal/controller.test.ts:
+(pass) OpenCode2 goal controller > #given no goal #when a goal is created #then it persists as active per session [0.40ms]
+(pass) OpenCode2 goal controller > #given goals for two sessions #when one changes #then the other is unchanged [0.87ms]
+(pass) OpenCode2 goal controller > #given an active goal #when it is completed #then completion persists [0.46ms]
+(pass) OpenCode2 goal controller > #given a persisted goal #when it is cleared #then its session file is removed [0.29ms]
+
+packages/omo-opencode2/src/hooks/goal/auto-start-sdk.test.ts:
+(pass) #given nullable compaction content #when auto-start processes the first user turn #then only user text becomes the objective [0.51ms]
+
+packages/omo-opencode2/src/hooks/goal/tools.test.ts:
+(pass) OpenCode2 goal tools > #given the goal tool set #when create_goal runs #then it targets the calling session and traces creation [0.94ms]
+(pass) OpenCode2 goal tools > #given an active goal #when update_goal completes it #then completion is persisted and traced [0.47ms]
+(pass) OpenCode2 goal tools > #given goals in two sessions #when get_goal runs #then it reads only the calling session [0.34ms]
+(pass) OpenCode2 goal tools > #given an explicit session_id #when a goal tool parses it #then the cross-session input is rejected [0.16ms]
+
+packages/omo-opencode2/src/hooks/goal/runtime.test.ts:
+(pass) OpenCode2 goal runtime > #given an active goal #when concurrent and repeated idle edges arrive #then one continuation is dispatched [0.42ms]
+(pass) OpenCode2 goal runtime > #given an idle continuation settling #when the session becomes active #then dispatch is cancelled [0.30ms]
+(pass) OpenCode2 goal runtime > #given an idle continuation settling #when its goal is paused #then dispatch is cancelled [0.40ms]
+(pass) OpenCode2 goal runtime > #given paused and complete goals #when idle edges arrive #then neither continues [0.57ms]
+(pass) OpenCode2 goal runtime > #given a persisted goal #when its session is deleted #then state and reservation are cleared [0.30ms]
+
+packages/omo-opencode2/src/orchestration/todo-store/store.test.ts:
+(pass) TodoStore > #given empty store #when get #then returns empty array [0.06ms]
+(pass) TodoStore > #given items set #when get #then returns them [0.06ms]
+(pass) TodoStore > #given items set #when set with empty array #then clears the session [0.05ms]
+(pass) TodoStore > #given two sessions #when set on one #then the other is unaffected [0.05ms]
+(pass) TodoStore > #given items set #when clear #then session is removed [0.05ms]
+
+packages/omo-opencode2/src/orchestration/todo-store/tool.test.ts:
+(pass) createTodoWriteTool > #given valid input #when execute #then stores items and returns count [0.18ms]
+(pass) createTodoWriteTool > #given completed items #when execute #then active count excludes them [0.07ms]
+(pass) createTodoWriteTool > #given invalid input (not an object) #when execute #then returns error [0.06ms]
+(pass) createTodoWriteTool > #given item missing required field #when execute #then returns error [0.07ms]
+(pass) createTodoWriteTool > #given empty todos array #when execute #then clears the store [0.07ms]
+(pass) createTodoWriteTool > #given todos as JSON string #when execute #then parses and stores [0.09ms]
+
+packages/omo-opencode2/src/orchestration/todo-store/inject.test.ts:
+(pass) injectTodoStateSystemPart > #given empty items #when inject #then system is unchanged [0.07ms]
+(pass) injectTodoStateSystemPart > #given items #when inject #then appends a todo-state part [0.07ms]
+(pass) injectTodoStateSystemPart > #given prior todo-state #when inject #then replaces it [0.06ms]
+(pass) injectTodoStateSystemPart > #given all completed #when inject #then shows zero active [0.05ms]
+(pass) todo compaction survival > #given todos written #when messages cleared then composer runs #then todo state is still present [0.07ms]
+
+packages/omo-opencode2/src/orchestration/execution/executor.test.ts:
+(pass) #given held execution #when submitting background work #then acceptance precedes completion and survives the caller scope [1.05ms]
+(pass) #given full model capacity #when queued work is cancelled #then it cannot launch after release [0.56ms]
+(pass) #given an active cancellation #when interrupt is acknowledged but drain is held #then queued work retains its place without launching [0.62ms]
+(pass) #given a finished task #when a continuation finishes #then the original generation remains unchanged [0.53ms]
+(pass) #given an active owner #when graceful stop starts #then new submissions fail while the current turn drains [0.64ms]
+(pass) #given an active member turn #when two messages arrive #then queue separate generations and never overlap the session [0.73ms]
+(pass) #given a queued notification #when its durable input is replayed #then retain one generation and one execution [0.51ms]
+(pass) #given a member approving its own shutdown #when admission closes #then return without waiting for its active turn and cancel queued turns [0.51ms]
+
+packages/omo-opencode2/src/orchestration/execution/admission.test.ts:
+(pass) #given saturated Team capacity #when another model request is admitted #then blocked Team work holds no model permit [0.11ms]
+(pass) #given queued work #when cancelled before capacity opens #then it is never admitted [0.06ms]
+(pass) #given a busy retained session #when another model turn is queued #then session admission remains serialized [0.06ms]
+(pass) #given eligible queued work #when nested immediate admission is requested #then queued work is not overtaken [0.10ms]
+
+packages/omo-opencode2/src/orchestration/execution/notifications.test.ts:
+(pass) #given a background terminal record #when enqueue runs #then dispatch happens outside enqueue and only once [24.81ms]
+(pass) #given repeated generations #when enqueue runs #then each generation has a distinct durable message ID [12.52ms]
+[08:51:02.468] ERROR (#317): execution notification delivery failed ExecutionError: delivery failed
+    at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.test.ts:72:50)
+    at execution.createNotifications (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.test.ts:69:27)
+    at execution.createNotifications (definition) (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.ts:52:52)
+(pass) #given a failed delivery #when the outbox is reopened #then the same message ID is replayed [23.83ms]
+(pass) #given a closed scope #when enqueue runs #then it rejects and foreground records never wake [0.43ms]
+[08:51:02.492] ERROR (#324): execution notification delivery failed Error: host transport defect
+    at dispatch (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.test.ts:102:26)
+    at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.ts:74:20)
+    at execution.createNotifications (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.test.ts:100:27)
+    at execution.createNotifications (definition) (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/notifications.ts:52:52)
+(pass) #given a defective delivery #when another completion arrives #then keep the first pending and continue processing the queue [0.56ms]
+(pass) #given multiple storage pages #when recovering notifications #then deliver pending entries beyond the first page [0.35ms]
+
+packages/omo-opencode2/src/orchestration/execution/persistence.test.ts:
+(pass) #given saved terminal and unfinished records #when activating #then load every page and drain without replay [1.17ms]
+(pass) #given a live writer #when another controller opens the namespace #then reject the competing writer [0.60ms]
+(pass) #given a completed background run #when waiting and reopening #then notify once and retain output [1.02ms]
+(pass) #given a notification failure #when execution completes #then retain success without interrupting the completed session [0.67ms]
+[08:51:02.498] ERROR (#350): execution notification enqueue failed Error: notification storage defect
+    at notify (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/persistence.test.ts:95:26)
+    at <anonymous> (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/lifecycle.ts:70:41)
+    at execution.enqueuePendingNotification (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/lifecycle.ts:62:10)
+    at execution.enqueuePendingNotification (definition) (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/lifecycle.ts:67:50)
+    at execution.finish (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/lifecycle.ts:86:48)
+    at execution.finish (definition) (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/lifecycle.ts:57:30)
+    at execution.runEntry (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/executor.ts:71:32)
+    at execution.runEntry (definition) (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/lifecycle.ts:78:32)
+    at execution.createExecutor (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/persistence.test.ts:93:29)
+    at execution.createExecutor (definition) (/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/src/orchestration/execution/executor.ts:23:38)
+(pass) #given a notification defect #when execution completes #then retain success without interrupting the completed session [0.56ms]
+(pass) #given a saved queued record #when restarting #then do not interrupt a session that was never created [0.44ms]
+(pass) #given generations ordered lexically by storage #when restoring managed lookup #then select the newest generation numerically [0.43ms]
+
+packages/omo-opencode2/src/orchestration/execution/task-tools.test.ts:
+(pass) #given shipped task arguments #when decoding #then no replacement agent/model/background fields are required [0.17ms]
+(pass) #given a held child #when background task submits #then task_id is returned and output reads without waiting [1.35ms]
+(pass) #given a foreground category task #when its child completes #then the caller receives its result and requested skills [0.49ms]
+(pass) #given a failed foreground child #when a fallback model exists #then Executor admits one replacement run [0.57ms]
+(pass) #given a running foreground child #when the caller interrupts #then cancellation drains the Executor run [0.46ms]
+(pass) #given another caller's task #when reading cancelling or continuing #then deny without modifying it [0.48ms]
+(pass) #given invalid task routing #when submitting #then reject before creating any child [0.23ms]
+
+packages/omo-opencode2/src/orchestration/execution/foreground.test.ts:
+(pass) #given held foreground execution #when timeout ends observation #then cancel and drain before returning [23.03ms]
+(pass) #given held foreground execution #when interrupt ends observation #then cancel and drain before returning [0.44ms]
+
+ 443 pass
+ 0 fail
+ 1026 expect() calls
+Ran 443 tests across 78 files. [1157.00ms]

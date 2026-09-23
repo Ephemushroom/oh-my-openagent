@@ -15,7 +15,6 @@ export const Owner = Schema.Union([
   Schema.Struct({ kind: Schema.Literal("task"), ...Caller }),
   Schema.Struct({ kind: Schema.Literal("team"), ...Caller, teamRunID: Schema.String, member: Schema.String }),
   Schema.Struct({ kind: Schema.Literal("workflow"), ...Caller, workflowID: Schema.String, nodeID: Schema.String }),
-  Schema.Struct({ kind: Schema.Literal("btw"), ...Caller }),
   Schema.Struct({ kind: Schema.Literal("look_at"), ...Caller }),
 ])
 export type Owner = typeof Owner.Type
@@ -84,7 +83,7 @@ export function assertNever(value: never): never {
 export function ownerKey(owner: Owner): string {
   const caller = `${owner.rootSessionID}/${owner.callerSessionID}`
   switch (owner.kind) {
-    case "task": case "btw": case "look_at": return `${caller}/${owner.kind}`
+    case "task": case "look_at": return `${caller}/${owner.kind}`
     case "team": return `${caller}/team/${owner.teamRunID}/${owner.member}`
     case "workflow": return `${caller}/workflow/${owner.workflowID}/${owner.nodeID}`
     default: return assertNever(owner)

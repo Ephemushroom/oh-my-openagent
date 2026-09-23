@@ -15,7 +15,7 @@ import type { Trace } from "./plugin/trace"
 export function registerNativeSurface(ctx: Context, trace?: Trace): Effect.Effect<ConfiguredAgentRegistration & { readonly catalog: CatalogSource }, never, import("effect").Scope.Scope> {
   return Effect.gen(function* () {
     const catalog = createCatalogSource()
-    yield* ctx.catalog.transform((draft) => catalog.capture(draft))
+    yield* ctx.model.transform((draft) => catalog.capture(draft))
     const config = loadOpenCode2Config({ directory: ctx.location.directory, options: { ...ctx.options } }).config
     const registration = yield* registerConfiguredAgents(ctx, { catalog, directory: ctx.location.directory, trace }).pipe(Effect.orDie)
     trace?.("omo.registration.complete", { primaries: [...registration.primaries], subagents: [...registration.subagents], categories: [...registration.categories] })

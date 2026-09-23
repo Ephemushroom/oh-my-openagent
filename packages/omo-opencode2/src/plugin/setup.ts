@@ -20,9 +20,6 @@ import { createExecutionDelivery } from "./execution-delivery"
 import { registerMonitorToolsEffect } from "../tools/monitor/register"
 import { registerConfiguredModelFallbackEffect } from "../features/model-fallback/register"
 import { registerLookAtToolEffect } from "../tools/look-at/register"
-import { registerBtwFeatureEffect } from "../features/btw/register"
-import { Agent } from "@opencode/schema/agent"
-import { Model } from "@opencode/schema/model"
 
 export const plugin = Plugin.define({
   id: "omo",
@@ -55,12 +52,6 @@ export const plugin = Plugin.define({
       dispatch: (sessionID, text) => delivery.dispatch({ sessionID, text, description: "Continue unfinished work" }),
     })
     yield* registerLookAtToolEffect(ctx, { executor, catalog: registration.catalog, sessionModels: base.sessionModels, trace })
-    const btwAgent = config.default_agent ?? "sisyphus"
-    const btwModel = registration.models.get(btwAgent)
-    yield* registerBtwFeatureEffect(ctx, { config: config.btw ?? {}, disabledHooks: config.disabled_hooks,
-      executor, agent: Agent.ID.make(btwAgent), model: btwModel ? Model.Ref.parse(btwModel) : undefined,
-      resolveSessionID: (value) => typeof value === "object" && value !== null && "sessionID" in value
-        && typeof value.sessionID === "string" ? value.sessionID : undefined, trace })
     yield* registerMonitorToolsEffect(ctx, { cwd: ctx.location.directory, trace, dispatchManaged: delivery.managed })
     yield* registerConfiguredModelFallbackEffect(ctx, { directory: ctx.location.directory, gate, executor, trace })
     yield* registerTeamModeEffect(ctx, { cwd: ctx.location.directory, gate, executor, registration, trace, dispatch: delivery.dispatch })

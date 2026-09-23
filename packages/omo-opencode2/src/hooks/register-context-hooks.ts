@@ -177,7 +177,7 @@ export function registerContextHooks(deps: ContextHookDeps): Effect.Effect<void,
         return data.map((skill) => ({
           name: skill.name,
           description: skill.description ?? "",
-          location: skill.location,
+           location: skill.path,
         }))
       },
       commandList: async () => {

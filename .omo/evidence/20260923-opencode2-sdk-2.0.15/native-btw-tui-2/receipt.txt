@@ -1,0 +1,5 @@
+binary=/opt/homebrew/bin/opencode
+version=opencode v2.0.15
+session=omo-btw-qa2-86559
+action=typed /btw, waited for command load, submitted, waited for dialog/model response
+native_btw_marker=observed

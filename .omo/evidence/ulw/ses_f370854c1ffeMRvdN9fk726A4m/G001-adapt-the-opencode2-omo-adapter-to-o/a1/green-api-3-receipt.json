@@ -1,0 +1,346 @@
+{
+  "invocation": [
+    "/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/scripts/qa-api-upgrade.mjs",
+    ".omo/evidence/20260923-opencode2-sdk-2.0.15/green-api-3",
+    "--installer"
+  ],
+  "binary": "/opt/homebrew/bin/opencode",
+  "red": false,
+  "installer": true,
+  "results": [
+    {
+      "name": "version",
+      "verdict": "PASS"
+    },
+    {
+      "name": "help",
+      "verdict": "PASS"
+    },
+    {
+      "name": "serve-help",
+      "verdict": "PASS"
+    },
+    {
+      "name": "bad-input",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: rejects unauthenticated API",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: native command transport control",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: OMO command registry",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: rejects missing and malformed commands",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: goal literal dollar payload and agent preservation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: ulw-execute routes atlas",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: real read and todo tool cycle",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: todo context appears then clears",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: real direct delegation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: real category delegation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: feature-gated tools visible to model",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: production hook trace",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: suite",
+      "verdict": "PASS"
+    },
+    {
+      "name": "enabled: original OMO configuration unchanged",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: rejects unauthenticated API",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: native command transport control",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: OMO command registry",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: rejects missing and malformed commands",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: goal literal dollar payload and agent preservation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: ulw-execute routes atlas",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: real read and todo tool cycle",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: todo context appears then clears",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: real direct delegation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: real category delegation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: feature-gated tools visible to model",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: production hook trace",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: suite",
+      "verdict": "PASS"
+    },
+    {
+      "name": "disabled: original OMO configuration unchanged",
+      "verdict": "PASS"
+    },
+    {
+      "name": "real host unchanged",
+      "verdict": "PASS"
+    },
+    {
+      "name": "cleanup completed",
+      "verdict": "PASS"
+    },
+    {
+      "name": "mock protocol",
+      "verdict": "PASS"
+    }
+  ],
+  "before": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "97faf23017d593249f856fee7659d046aa743bd95f4b4693575e2833561bd5da",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "441f14eeaba42a3a90444c92aec07c19013f5a7ebfbbb63215d8d2b6ee5025c2",
+      "/Users/Bryan/.omo/opencode2.json": "f4261a0547834d4462b630684aaa1a2c9a0b2683c219229e411b42fc0138a51a",
+      "/Users/Bryan/.omo/opencode2.jsonc": "absent"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2706,
+      "session_v2": 2440
+    }
+  },
+  "after": {
+    "configs": {
+      "/Users/Bryan/.config/opencode/opencode.json": "97faf23017d593249f856fee7659d046aa743bd95f4b4693575e2833561bd5da",
+      "/Users/Bryan/.config/opencode/opencode.jsonc": "absent",
+      "/Users/Bryan/.omo/omo.json": "absent",
+      "/Users/Bryan/.omo/omo.jsonc": "441f14eeaba42a3a90444c92aec07c19013f5a7ebfbbb63215d8d2b6ee5025c2",
+      "/Users/Bryan/.omo/opencode2.json": "f4261a0547834d4462b630684aaa1a2c9a0b2683c219229e411b42fc0138a51a",
+      "/Users/Bryan/.omo/opencode2.jsonc": "absent"
+    },
+    "db": "/Users/Bryan/.local/share/opencode/opencode.db",
+    "sessions": {
+      "session": 2706,
+      "session_v2": 2440
+    }
+  },
+  "fixtures": [
+    {
+      "mode": "enabled",
+      "project": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "isolation": {
+        "HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home",
+        "USERPROFILE": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home",
+        "PWD": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+        "XDG_DATA_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/data",
+        "XDG_CONFIG_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/config",
+        "XDG_CACHE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/cache",
+        "XDG_STATE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/state",
+        "OPENCODE_TEST_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home",
+        "OMO_SPIKE_TRACE": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/trace.ndjson"
+      },
+      "configSource": "installer resolver/writer"
+    },
+    {
+      "mode": "disabled",
+      "project": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home/project",
+      "isolation": {
+        "HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home",
+        "USERPROFILE": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home",
+        "PWD": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home/project",
+        "XDG_DATA_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/data",
+        "XDG_CONFIG_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/config",
+        "XDG_CACHE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/cache",
+        "XDG_STATE_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/state",
+        "OPENCODE_TEST_HOME": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home",
+        "OMO_SPIKE_TRACE": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/trace.ndjson"
+      },
+      "configSource": "installer resolver/writer"
+    }
+  ],
+  "processes": [
+    {
+      "name": "version",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "--version"
+      ],
+      "pid": 39633,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "help",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "run",
+        "--help"
+      ],
+      "pid": 39637,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "serve-help",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "serve",
+        "--help"
+      ],
+      "pid": 39638,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "bad-input",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "run",
+        "--omo-invalid-option"
+      ],
+      "pid": 39639,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "code": 1,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "enabled-installer",
+      "executable": "bun",
+      "args": [
+        "/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/scripts/qa-api-upgrade/installer-config.mjs",
+        "/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15",
+        "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/config/opencode/opencode.json"
+      ],
+      "pid": 39662,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "enabled-server",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 39663,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/enabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "disabled-installer",
+      "executable": "bun",
+      "args": [
+        "/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15/packages/omo-opencode2/scripts/qa-api-upgrade/installer-config.mjs",
+        "/Users/Bryan/Programme/Project/AI/oh-my-openagent-wt/opencode2-sdk-2.0.15",
+        "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/config/opencode/opencode.json"
+      ],
+      "pid": 39686,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home/project",
+      "code": 0,
+      "signal": null,
+      "closed": true
+    },
+    {
+      "name": "disabled-server",
+      "executable": "/opt/homebrew/bin/opencode",
+      "args": [
+        "serve",
+        "--stdio",
+        "--port",
+        "0",
+        "--hostname",
+        "127.0.0.1",
+        "--print-logs",
+        "--log-level",
+        "debug"
+      ],
+      "pid": 39687,
+      "cwd": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S/disabled/home/project",
+      "code": 130,
+      "signal": null,
+      "closed": true
+    }
+  ],
+  "requestCount": 26,
+  "sandbox": "/private/var/folders/cy/qc1d9pgd1hq599hhhw_z2l2w0000gn/T/omo-oc2-api-m7Hx9S",
+  "sandboxRemoved": true,
+  "mockClosed": true,
+  "cleanup": [
+    "closed",
+    "closed"
+  ],
+  "omitted": "No host credentials, authorization headers, or inherited environment dumps captured; local fake model only."
+}
