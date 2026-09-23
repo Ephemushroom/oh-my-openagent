@@ -51,12 +51,11 @@ function createMockContext(input: {
   const catalog = createCatalogSource()
   catalog.capture({
     provider: { list: () => providerRecords, get: () => undefined, update: () => {}, remove: () => {} },
-    model: {
-      get: () => undefined,
-      update: () => {},
-      remove: () => {},
-      default: { get: () => defaultRef, set: () => {} },
-    },
+    list: () => [],
+    get: () => undefined,
+    update: () => {},
+    remove: () => {},
+    default: { get: () => defaultRef, set: () => {} },
   } as unknown as Parameters<CatalogSource["capture"]>[0])
 
   const ctx: Parameters<typeof registerPrimaries>[0] = {

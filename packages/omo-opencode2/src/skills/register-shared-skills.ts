@@ -75,7 +75,7 @@ export function registerSharedSkills(
           id: Skill.ID.make(skill.id),
           name: Skill.Name.make(skill.name),
           ...(skill.description === undefined ? {} : { description: skill.description }),
-          location: AbsolutePath.make(skill.location),
+          path: AbsolutePath.make(skill.location),
           content: skill.content,
         }),
       )

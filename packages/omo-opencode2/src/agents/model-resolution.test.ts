@@ -10,14 +10,13 @@ type ProviderRecord = {
 
 function capture(providerRecords: ProviderRecord[]): CatalogSource {
   const catalog = createCatalogSource()
-  catalog.capture({
-    provider: { list: () => providerRecords, get: () => undefined, update: () => {}, remove: () => {} },
-    model: {
+    catalog.capture({
+      provider: { list: () => providerRecords, get: () => undefined, update: () => {}, remove: () => {} },
+      list: () => [],
       get: () => undefined,
       update: () => {},
       remove: () => {},
       default: { get: () => undefined, set: () => {} },
-    },
   } as unknown as Parameters<CatalogSource["capture"]>[0])
   return catalog
 }

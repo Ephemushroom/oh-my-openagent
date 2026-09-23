@@ -1,4 +1,4 @@
-import type { CatalogEditor } from "@opencode/plugin/effect/catalog"
+import type { ModelEditor } from "@opencode/plugin/effect/model"
 import { resolveModelPipeline } from "@oh-my-opencode/model-core"
 import type { ModelRequirement } from "@oh-my-opencode/model-core"
 import type { OpenCode2AgentOverride } from "../config"
@@ -36,8 +36,8 @@ function acceptsImageInput(model: CapabilityCarrier): boolean {
   return model.capabilities?.input?.includes(IMAGE_INPUT) === true
 }
 
-/** Read a catalog transform draft into a snapshot (pure). */
-export function captureCatalogDraft(draft: CatalogEditor): CatalogSnapshot {
+/** Read a model transform draft into a snapshot (pure). */
+export function captureCatalogDraft(draft: ModelEditor): CatalogSnapshot {
   const snapshot = emptySnapshot()
   for (const record of draft.provider.list()) {
     const providerID = record.provider.id as unknown as string
@@ -48,7 +48,7 @@ export function captureCatalogDraft(draft: CatalogEditor): CatalogSnapshot {
       if (acceptsImageInput(model)) snapshot.visionModels.add(key)
     }
   }
-  const def = draft.model.default.get()
+  const def = draft.default.get()
   if (def) {
     snapshot.systemDefaultModel = `${def.providerID as unknown as string}/${def.modelID as unknown as string}`
   }
@@ -57,9 +57,9 @@ export function captureCatalogDraft(draft: CatalogEditor): CatalogSnapshot {
 
 /**
  * Live handle to the harness catalog. The v2 catalog is populated
- * asynchronously (it is EMPTY at plugin setup; `catalog.updated` fires once
- * providers/models have loaded) and agent registration runs lazily on registry
- * materialization — so the catalog must be captured in a catalog.transform
+   * asynchronously (it is EMPTY at plugin setup; model/provider updates fire once
+   * providers/models have loaded) and agent registration runs lazily on registry
+   * materialization — so the model registry must be captured in a model.transform
  * callback that re-fires on updates, and agent models resolved inside the
  * agent.transform callback against the freshest snapshot held here.
  */
@@ -67,10 +67,10 @@ export interface CatalogSource {
   /** The most recently captured catalog. Empty until the catalog populates. */
   readonly current: CatalogSnapshot;
   /** Capture from a catalog transform draft; called once per update. */
-  capture(draft: CatalogEditor): void;
+  capture(draft: ModelEditor): void;
 }
 
-/** Create an empty catalog source, to be fed by a catalog.transform callback. */
+/** Create an empty catalog source, to be fed by a model.transform callback. */
 export function createCatalogSource(): CatalogSource {
   let snapshot = emptySnapshot()
   return {

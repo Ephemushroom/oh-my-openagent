@@ -43,7 +43,7 @@ describe("registerSharedSkills", () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  test("#given a registered skill #when inspecting it #then location points at a real SKILL.md and content excludes frontmatter", async () => {
+  test("#given a registered skill #when inspecting it #then path points at a real SKILL.md and content excludes frontmatter", async () => {
     // given
     const added: Skill.Info[] = []
 
@@ -54,8 +54,8 @@ describe("registerSharedSkills", () => {
     const gitMaster = added.find((skill) => skill.id === "git-master")
     expect(gitMaster).toBeDefined()
     if (!gitMaster) return
-    expect(gitMaster.location.endsWith("SKILL.md")).toBe(true)
-    expect(existsSync(gitMaster.location)).toBe(true)
+    expect(gitMaster.path.endsWith("SKILL.md")).toBe(true)
+    expect(existsSync(gitMaster.path)).toBe(true)
     expect(gitMaster.content.startsWith("---")).toBe(false)
     expect(gitMaster.description).toBeTruthy()
   })
